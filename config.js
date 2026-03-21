@@ -1,1 +1,0 @@
-const FRED_API_KEY = '0f629a233f4af6f1906326c49c5668da'
