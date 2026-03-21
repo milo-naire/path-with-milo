@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Path with Milo | The Navigator Hub</title>
+    <style>
+        :root {
+            --milo-amber: #FFB347;
+            --milo-slate: #34495E;
+            --milo-bg: #0F0E0D;
+            --milo-text: #F0F6FC;
+        }
+
+        body {
+            background-color: var(--milo-bg);
+            color: var(--milo-text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .hub-container {
+            max-width: 1000px;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif; /* Or your preferred Serif */
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--milo-amber);
+        }
+
+        p.subtitle {
+            font-size: 1.2rem;
+            color: var(--milo-slate);
+            margin-bottom: 3rem;
+            letter-spacing: 1px;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            width: 100%;
+        }
+
+        .tool-card {
+            background: #161B22;
+            border: 1px solid var(--milo-slate);
+            border-radius: 16px;
+            padding: 2rem;
+            text-decoration: none;
+            color: var(--milo-text);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card:hover {
+            border-color: var(--milo-amber);
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(255, 179, 71, 0.15);
+        }
+
+        .tool-card h3 {
+            color: var(--milo-amber);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tool-card p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #8B949E;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(255, 179, 71, 0.1);
+            color: var(--milo-amber);
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        .footer {
+            margin-top: 4rem;
+            font-size: 0.8rem;
+            color: var(--milo-slate);
+        }
+    </style>
+    
+</head>
+<body>
+
+    <div class="hub-container">
+        <div class="badge">Navigator System v1.0</div>
+        <h1>Path with Milo</h1>
+        <p class="subtitle">SIGNAL OVER NOISE • 2026 CAREER OPERATING SYSTEM</p>
+
+        <div class="tool-grid">
+            <a href="pathvanguard_1.html" class="tool-card">
+                <div class="badge">Security</div>
+                <h3>PathVantage</h3>
+                <p>The Vanguard for your search. Audit job postings for fraud and identity risks before you apply.</p>
+            </a>
+
+            <a href="compass.html" class="cell tool-card">
+                <div class="badge">Strategy</div>
+                <h3>The Compass</h3>
+                <p>Build your career. Chart your 90-day route. Bridge the gap between your current role and your target field.</p>
+            </a>
+
+            <a href="whisperer.html" class="tool-card">
+                <div class="badge">Connection</div>
+                <h3>The Whisperer</h3>
+                <p>Locate your field guides. Generate tactical networking scripts that actually get replies.</p>
+            </a>
+        </div>
+
+        <div class="footer">
+            Stay focused. Intentionality over guesswork. © 2026 Milo.
+        </div>
+    </div>
+
+</body>
+</html>
