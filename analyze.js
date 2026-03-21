@@ -1,21 +1,43 @@
 export default async (request, context) => {
-  // Only allow POST
-  if (request.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+  // Handle CORS preflight
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      }
+    });
   }
 
-  const ANTHROPIC_API_KEY = Netlify.env.get('ANTHROPIC_API_KEY');
-  if (!ANTHROPIC_API_KEY) {
-    return new Response(JSON.stringify({ error: 'API key not configured' }), {
-      status: 500,
+  if (request.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
       headers: { 'Content-Type': 'application/json' }
     });
   }
 
-  try {
-    const body = await request.json();
+  const ANTHROPIC_API_KEY = Netlify.env.get('ANTHROPIC_API_KEY');
+  if (!ANTHROPIC_API_KEY) {
+    return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY not set in environment variables' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+    });
+  }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+  let body;
+  try {
+    body = await request.json();
+  } catch (err) {
+    return new Response(JSON.stringify({ error: 'Invalid JSON in request body' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+
+  try {
+    const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -26,19 +48,38 @@ export default async (request, context) => {
       body: JSON.stringify(body)
     });
 
-    const data = await response.json();
+    // Read as text first so we can diagnose empty or non-JSON responses
+    const responseText = await anthropicResponse.text();
+
+    if (!responseText || responseText.trim() === '') {
+      return new Response(JSON.stringify({ error: 'Empty response from Anthropic API', httpStatus: anthropicResponse.status }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+      });
+    }
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseErr) {
+      return new Response(JSON.stringify({ error: 'Non-JSON response from Anthropic', raw: responseText.slice(0, 500) }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+      });
+    }
 
     return new Response(JSON.stringify(data), {
-      status: response.status,
+      status: anthropicResponse.status,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       }
     });
+
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
     });
   }
 };
