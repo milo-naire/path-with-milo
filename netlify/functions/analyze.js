@@ -1,78 +1,77 @@
-const https = require('https');
+export async function onRequestPost(context) {
+  const ANTHROPIC_API_KEY = context.env.ANTHROPIC_API_KEY;
 
-function anthropicRequest(apiKey, payload) {
-  return new Promise((resolve, reject) => {
-    const data = JSON.stringify(payload);
-    const options = {
-      hostname: 'api.anthropic.com',
-      path: '/v1/messages',
+  if (!ANTHROPIC_API_KEY) {
+    return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY not configured' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  let body;
+  try {
+    body = await context.request.json();
+  } catch (err) {
+    return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(data),
-        'x-api-key': apiKey,
+        'x-api-key': ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01',
         'anthropic-beta': 'web-search-2025-03-05'
-      }
-    };
-
-    const req = https.request(options, (res) => {
-      let body = '';
-      res.on('data', chunk => body += chunk);
-      res.on('end', () => resolve({ status: res.statusCode, body }));
+      },
+      body: JSON.stringify(body)
     });
 
-    req.on('error', reject);
-    req.write(data);
-    req.end();
-  });
+    const text = await response.text();
+
+    if (!text || text.trim() === '') {
+      return new Response(JSON.stringify({ error: 'Empty response from Anthropic', httpStatus: response.status }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      return new Response(JSON.stringify({ error: 'Non-JSON from Anthropic', raw: text.slice(0, 300) }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    return new Response(JSON.stringify(data), {
+      status: response.status,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
+
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+    });
+  }
 }
 
-exports.handler = async function(event, context) {
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'
-  };
-
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers, body: '' };
-  }
-
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
-  }
-
-  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-  if (!ANTHROPIC_API_KEY) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: 'ANTHROPIC_API_KEY not configured' }) };
-  }
-
-  let payload;
-  try {
-    payload = JSON.parse(event.body);
-  } catch (err) {
-    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid request body' }) };
-  }
-
-  try {
-    const { status, body } = await anthropicRequest(ANTHROPIC_API_KEY, payload);
-
-    if (!body || body.trim() === '') {
-      return { statusCode: 502, headers, body: JSON.stringify({ error: 'Empty response from Anthropic', httpStatus: status }) };
+export async function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
     }
-
-    let parsed;
-    try {
-      parsed = JSON.parse(body);
-    } catch (e) {
-      return { statusCode: 502, headers, body: JSON.stringify({ error: 'Non-JSON from Anthropic', raw: body.slice(0, 300) }) };
-    }
-
-    return { statusCode: status, headers, body: JSON.stringify(parsed) };
-
-  } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
-  }
-};
+  });
+}
