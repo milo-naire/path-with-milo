@@ -1296,7 +1296,7 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
     let finalText = null;
 
     while (!finalText) {
-      const response = await fetch('/.netlify/functions/analyze', {
+      const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
