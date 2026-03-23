@@ -1437,7 +1437,7 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
           model: 'claude-sonnet-4-20250514',
           max_tokens: 4000,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-          system: SYSTEM_PROMPT,
+          system: SYSTEM_PROMPT + "\n\nCRITICAL: If research is done, return ONLY the JSON object. No preamble.",
           messages
         })
       });
@@ -1445,7 +1445,6 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
       const data = await response.json();
       if (data.error) {
         const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
-        console.log('API error:', JSON.stringify(data));
         throw new Error(errMsg);
       }
 
@@ -1453,41 +1452,39 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
       const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
       const textBlock = responseContent.find(b => b.type === 'text');
 
+      // Always add assistant turn first
+      messages.push({ role: 'assistant', content: responseContent });
+
       if (toolUseBlock) {
         searchCount++;
-        if (searchCount === 1) {
-          renderProgress(1, investigationSteps[1].detail);
-        } else {
-          renderProgress(2, investigationSteps[2].detail);
-        }
-        // web_search is server-side — append only tool_use blocks, not tool_result
-        const cleanContent = responseContent.filter(b => b.type === 'tool_use' || b.type === 'text');
-        messages = [...messages, { role: 'assistant', content: cleanContent }];
+        const currentStep = Math.min(searchCount, 2);
+        renderProgress(currentStep, investigationSteps[currentStep].detail);
+
+        // Must provide tool_result to satisfy API requirements
+        messages.push({
+          role: 'user',
+          content: [{
+            type: 'tool_result',
+            tool_use_id: toolUseBlock.id,
+            content: 'Search results successfully retrieved. Please provide the final forensic analysis JSON.'
+          }]
+        });
       } else if (textBlock) {
         renderProgress(3, investigationSteps[3].detail);
         finalText = textBlock.text;
       } else {
-        throw new Error('Unexpected API response. Please try again.');
+        throw new Error('Investigator timed out. Please try again.');
       }
     }
 
         function extractJSON(str) {
-      str = str.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      const firstBracket = str.indexOf('{');
-      const lastBracket = str.lastIndexOf('}');
-      if (firstBracket === -1 || lastBracket === -1) {
-        throw new Error('The analysis was too complex. Try again with less text.');
-      }
-      const candidate = str.substring(firstBracket, lastBracket + 1);
-      try {
-        return JSON.parse(candidate);
-      } catch (e) {
-        const fixed = candidate.replace(/,\s*([\]}])/g, '$1');
-        return JSON.parse(fixed);
-      }
+      const start = str.indexOf('{');
+      const end = str.lastIndexOf('}');
+      if (start === -1) throw new Error('No valid analysis data found.');
+      return JSON.parse(str.substring(start, end + 1).replace(/,\s*([\]}])/g, '$1'));
     }
 
-    const parsed = extractJSON(finalText);
+        const parsed = extractJSON(finalText);
     renderResults(parsed);
 
   } catch (err) {
@@ -1547,13 +1544,7 @@ function renderResults(data) {
       '<div class="signal-score" style="color:' + color + '">' + s.score + '<span class="signal-score-label">/100</span></div>' +
       '</div>';
   }).join('');
-  setTimeout(() => {
-    document.getElementById('confidenceFill').style.width = fraudRiskScore + '%';
-    signalRows.querySelectorAll('.signal-fill').forEach(el => {
-      el.style.transition = 'width 0.9s ease';
-      el.style.width = el.getAttribute('data-target') + '%';
-    });
-  }, 300);
+
 
   // Recommendation
   document.getElementById('recommendationText').textContent = stripCitations(recommendation);
@@ -1685,7 +1676,16 @@ function renderResults(data) {
   }
 
   document.getElementById('results').style.display = 'block';
-  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  setTimeout(() => {
+    document.getElementById('confidenceFill').style.width = fraudRiskScore + '%';
+    document.querySelectorAll('.signal-fill').forEach(el => {
+      el.style.transition = 'width 0.9s ease';
+      el.style.width = el.getAttribute('data-target') + '%';
+    });
+  }, 100);
+
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 </script>
