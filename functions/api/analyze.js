@@ -1,3 +1,7 @@
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    
 async function analyze() {
   const text = document.getElementById('jobInput').value.trim();
   if (!text) return;
