@@ -1312,29 +1312,33 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
       const responseContent = data.content || [];
       const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
 
-      if (toolUseBlock) {
+      // web_search is a server-side tool — Anthropic executes it internally.
+      // The response will either contain tool_use blocks (still searching)
+      // or just text (done). We keep looping until stop_reason is end_turn.
+      const stopReason = data.stop_reason;
+      const textBlock = responseContent.find(b => b.type === 'text');
+
+      if (stopReason === 'end_turn' && textBlock) {
+        // Model finished — extract the final text
+        renderProgress(3, 'Scoring fraud signals and building your report...');
+        finalText = textBlock.text;
+      } else if (toolUseBlock) {
+        // Model is still using tools — update progress and keep looping
         searchCount++;
-        // Step 1 = searching for company, Step 2 = verifying role listing
         if (searchCount === 1) {
           renderProgress(1, investigationSteps[1].detail);
         } else {
           renderProgress(2, investigationSteps[2].detail);
         }
-
-        const searchText = responseContent
-          .filter(b => b.type === 'tool_result')
-          .map(b => Array.isArray(b.content) ? b.content.map(c => c.text || '').join('') : (b.content || ''))
-          .join('\n') || 'No results found.';
-
-        messages = [
-          ...messages,
-          { role: 'assistant', content: responseContent },
-          { role: 'user', content: [{ type: 'tool_result', tool_use_id: toolUseBlock.id, content: searchText }] }
-        ];
-      } else {
+        // Append assistant turn and loop again
+        messages = [...messages, { role: 'assistant', content: responseContent }];
+      } else if (textBlock) {
+        // Got text even without end_turn — use it
         renderProgress(3, 'Scoring fraud signals and building your report...');
-        const textBlock = responseContent.find(b => b.type === 'text');
-        finalText = textBlock ? textBlock.text : '';
+        finalText = textBlock.text;
+      } else {
+        // Unexpected response — break out to avoid infinite loop
+        throw new Error('Unexpected response structure from API');
       }
     }
 
