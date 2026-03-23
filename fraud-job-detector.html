@@ -742,6 +742,40 @@
   /* ─── Error ──────────────────────────────────────────────────────────── */
   .error-box { background: rgba(224,92,92,0.07); border: 1px solid rgba(224,92,92,0.25); border-radius: 12px; padding: 14px 18px; font-size: 0.78rem; color: #E07878; margin-bottom: 20px; }
 
+  /* ─── Thought Log ───────────────────────────────────────────────────────── */
+  #thoughtLog {
+    background: #0C0B0A;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin: 8px 0 4px;
+    font-family: 'DM Sans', monospace;
+    font-size: 0.68rem;
+    max-height: 90px;
+    overflow-y: auto;
+    line-height: 1.7;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .thought-search {
+    color: var(--amber);
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .thought-search::before { content: '⌕'; opacity: 0.7; flex-shrink: 0; }
+
+  .thought-info {
+    color: var(--muted);
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .thought-info::before { content: '·'; opacity: 0.5; flex-shrink: 0; }
+
   /* ─── Footer ─────────────────────────────────────────────────────────── */
   .footer-note { text-align: center; font-size: 0.63rem; color: var(--muted); margin-top: 48px; letter-spacing: 0.06em; line-height: 2; }
 </style>
@@ -797,6 +831,7 @@
   <div id="thinking">
     <div class="thinking-progress">
       <div class="progress-steps" id="progressSteps"></div>
+      <div id="thoughtLog" style="display:none;"></div>
       <div class="progress-current">
         <div class="thinking-bars"><span></span><span></span><span></span><span></span></div>
         <span id="thinkingDetail">Starting investigation...</span>
@@ -1119,20 +1154,23 @@ function clearInput() {
 
 async function analyze() {
   const text = document.getElementById('jobInput').value.trim();
-  if (!text) return;
   const jobTitle = document.getElementById('jobTitle').value.trim();
+  if (!text) return;
 
   const btn = document.getElementById('analyzeBtn');
+  const log = document.getElementById('thoughtLog');
   btn.disabled = true;
+  log.style.display = 'block';
+  log.innerHTML = '';
   document.getElementById('thinking').style.display = 'flex';
   document.getElementById('results').style.display = 'none';
   document.getElementById('errorBox').style.display = 'none';
 
   const investigationSteps = [
-    { label: 'Reading the job posting',        detail: 'Pulling apart the text for company name, pay, requirements...' },
-    { label: 'Searching for the company',       detail: "Looking up the company's real website and careers page..." },
-    { label: 'Checking if the role is listed',  detail: "Comparing the posting to what's actually on their site..." },
-    { label: 'Scoring fraud signals',           detail: 'Running all filters and calculating your risk score...' }
+    { label: 'Reading the job posting',       detail: 'Pulling apart the text for company name, pay, requirements...' },
+    { label: 'Searching for the company',      detail: "Looking up the company's real website and careers page..." },
+    { label: 'Checking if the role is listed', detail: "Comparing the posting to what's actually on their site..." },
+    { label: 'Scoring fraud signals',          detail: 'Running all filters and calculating your risk score...' }
   ];
 
   function renderProgress(step, detail) {
@@ -1149,174 +1187,26 @@ async function analyze() {
     document.getElementById('thinkingDetail').textContent = detail || investigationSteps[Math.min(step, investigationSteps.length - 1)].detail;
   }
 
-  const SYSTEM_PROMPT = `You are a cynical, experienced Fraud Investigator specializing in 2026 recruitment scams, ghost jobs, and task-based exploitation. Trained on two real-world datasets: 10,000 confirmed fake postings and a mixed dataset of 17,880 postings (866 fraudulent, 17,014 legitimate).
-
-YOUR MISSION: Protect vulnerable job seekers by DISPROVING legitimacy, not confirming it. Assume every posting is a scam until it passes forensic scrutiny.
-
-FILTER 1 — METADATA OVERRIDES:
-Apply +60 to fraudRiskScore if ANY present:
-• "Payment Unverified" + "$0 Spent" → 95% Task Scam indicator
-• Fixed price under $500 for 1-3 months skilled work → Free Labor fraud
-• Client account created within 48 hours
-• Budget "Fixed-price: Small" for roles requiring proven experience
-
-FILTER 2 — LINGUISTIC SCAM PATTERNS (2026):
-IMMEDIATE 100% RISK: Any mention of Telegram, WhatsApp, Signal, or Skype for interviews
-HIGH RISK: "Optimization tasks," "Daily data training," "Workbench activities," "Package handling"
-HIGH RISK: "Start immediately," "No interview required," "Urgent hiring" for high-skill roles
-HIGH RISK (20x more common in fraud): "Earn $X/week guaranteed," income promises
-
-FILTER 3 — REALITY CHECK MATH:
-Freelance market rates (USD 2026):
-• SEO/Content Writer: $25-75/hr; 1-3 month project = $3,000-15,000+
-• Web Developer (mid): $50-120/hr | Graphic Designer: $35-85/hr
-• Virtual Assistant: $15-40/hr | Social Media Manager: $25-60/hr
-Full-time annual (USD 2026):
-• Software Engineer (mid): $110k-160k | Marketing Manager: $65k-110k
-• Accountant: $55k-85k | Healthcare/Nurse: $60k-95k | Customer Service: $35k-55k
-FLAG: Budget less than 20% of market rate = CRITICAL fraud signal
-
-FILTER 4 — GHOST JOB DETECTION:
-Score 40-60 if: 100% generic JD with zero internal context, company had recent layoffs, no specific team/tool/project mentions
-DISTINGUISH: Generic JD from Fortune 500 = lazy HR (low risk). Generic JD from new account = fraud (high risk).
-
-TRUSTED DOMAIN OVERRIDE — apply BEFORE any other scoring:
-• If the employer website, email domain, or apply link ends in .gov or .edu → automatically set fraudRiskScore to MAX 15 and verdict to LEGITIMATE
-• .gov = verified government entity. .edu = accredited academic institution. Neither can be faked at the DNS level.
-• Note the trusted domain in greenFlags (e.g. "Employer domain is .gov — verified government institution")
-• Still complete the rest of the analysis for context, but the score cannot exceed 15
-
-LEGITIMACY REDUCERS (lower score 30-50pts if ALL true):
-• Verified Fortune 500 or established company with LinkedIn/website
-• Specific internal tools, proprietary software, or unique project context
-• On Upwork: 4.5+ stars AND $5,000+ spent → ignore "Unverified Payment"
-Also reduces score: company logo, detailed profile, 600+ char requirements, background check mentioned, Bachelor's+ required
-
-CAREERS PAGE (from web search):
-• Real careers page + role listed → no adjustment
-• Company exists but role not found → +40 fraudRiskScore
-• No careers page found → +40 fraudRiskScore
-• No company name → critical red flag
-
-JOB CLASSIFICATION:
-Before scoring, classify the role into one of these categories and apply the relevant context:
-• ENTRY-LEVEL / INTERNSHIP: Expect lower pay, less specificity in requirements — do not penalize for missing experience requirements
-• MID-LEVEL PROFESSIONAL: Expect specific skills, named tools, realistic salary range — flag vague JDs harder
-• SENIOR / EXECUTIVE: Expect detailed scope, compensation range, seniority signals — generic JD is a bigger red flag
-• ACADEMIC / RESEARCH (.edu employers): Standard academic hiring norms apply — lower pay is normal, slow process is normal
-• GOVERNMENT (.gov employers): Formal language, USAJobs-style formatting, and slow timelines are expected and legitimate
-• FREELANCE / CONTRACT: Apply platform-specific fraud filters (payment verification, budget vs. scope math)
-• VOLUNTEER / NONPROFIT: Unpaid or low-pay is legitimate if the org is verifiable — do not flag as fraud solely for low compensation
-
-SCORING THRESHOLDS:
-FRAUDULENT (70-100): 2+ critical signals OR income promise + missing identity + thin requirements
-SUSPICIOUS (35-69): 1 critical signal OR multiple moderate signals OR high-fraud industry + missing profile
-LEGITIMATE (0-34): Verified company, realistic pay, detailed requirements, role-appropriate credentials
-
-STATISTICAL BASELINES:
-• Missing company profile + no logo → 66% of fraud vs 12% legit
-• Entry-level req on professional role → 41% fraud vs 24% legit
-• High-fraud industries: Oil & Energy (18.4%), Accounting (9.6%), Healthcare (8.6%), Marketing (7.6%)
-
-DATA HARVEST AUDIT — run on every posting:
-
-STEP 1 — INTRUSIVE REQUESTS SCAN:
-Flag if the posting requests ANY of these at the application stage (before an offer):
-• SSN / Social Security Number
-• Passport number or copy
-• Driver's license number or copy
-• Bank account or routing numbers
-• Full date of birth (DOB) combined with address
-• Credit card or payment info
-• Government-issued ID uploads
-These are NEVER legitimate pre-offer requirements. Flag each one found.
-
-STEP 2 — APPLY METHOD / PHISHING CHECK:
-Analyze how the posting asks candidates to apply:
-• Verified ATS platforms (LOW RISK): Greenhouse, Lever, Workday, iCIMS, BambooHR, Taleo, SmartRecruiters, ADP, JazzHR, Jobvite, Rippling, Ashby
-• Google Forms / Typeform / Jotform (HIGH RISK): Never appropriate for job applications, especially from named companies
-• Personal email only (MEDIUM-HIGH RISK): No ATS = no accountability
-• WhatsApp/Telegram link (IMMEDIATE 100% RISK)
-• No apply method specified: note as missing
-LOGIC: If a company appears large/established but uses a Google Form to collect personal info → identityTheftRisk = 99
-
-STEP 3 — DATA HARVESTER DETECTION:
-Set dataHarvesterFlag = true if:
-• Asks for sensitive ID or financial data before an offer
-• Uses a Google Form or personal email AND requests personal data
-• Requests resume + photo + DOB + address simultaneously at application stage
-• The "job" has vague duties but detailed personal data collection requirements
-
-CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }. No text before or after.
-
-{
-  "verdict": "LEGITIMATE" | "SUSPICIOUS" | "FRAUDULENT",
-  "fraudRiskScore": number (0-100, applying all filter adjustments),
-  "confidence": number (0-100),
-  "summary": "2-3 sentences. Lead with bottom-line verdict. Be direct.",
-  "redFlags": ["cite specific text from posting"] (up to 6, [] if none),
-  "greenFlags": ["specific legitimacy signal with evidence"] (up to 6, [] if none),
-  "signals": [
-    {"name": "Compensation Claims", "score": 0-100},
-    {"name": "Company Legitimacy", "score": 0-100},
-    {"name": "Contact Info Quality", "score": 0-100},
-    {"name": "Language & Pressure", "score": 0-100},
-    {"name": "Personal Data Requests", "score": 0-100},
-    {"name": "Job Clarity & Realism", "score": 0-100}
-  ],
-  "salaryInPosting": "Salary mentioned in posting as short string, or 'Not mentioned'",
-  "marketRateShort": "2026 market rate — numbers and experience only (e.g. '$75,000-$95,000/yr · 2-4 yrs exp')",
-  "marketRateFineprint": "One sentence on required skills/education level",
-  "recommendation": "Direct actionable advice. If fraudulent: warn clearly. If suspicious: what to verify. If legitimate: confirm safe.",
-  "companyInfo": {
-    "show": boolean (true only if verdict is LEGITIMATE),
-    "website": "URL or null",
-    "careersPage": "URL or null",
-    "roleListed": boolean,
-    "glassdoor": "URL or null",
-    "linkedin": "URL or null",
-    "locations": ["City, State"] (up to 3, or [])
-  },
-  "betterPath": {
-    "show": boolean (true if SUSPICIOUS or FRAUDULENT, false if LEGITIMATE),
-    "realTitles": ["Title 1", "Title 2", "Title 3"] (3-4 real industry titles),
-    "vibeCheck": "One punchy sentence on why the posting was bad",
-    "marketRateShort": "Numbers and experience only (e.g. '$45,000-$65,000/yr · 1-3 yrs exp')",
-    "marketRateFineprint": "One sentence on skills/education required",
-    "companies": ["Company 1", "Company 2", "Company 3"],
-    "searchString": "Exact LinkedIn search string to copy-paste"
-  },
-  "dataAudit": {
-    "riskLevel": "SAFE" | "WARNING" | "DANGER",
-    "identityTheftRisk": number (0-100),
-    "intrusiveRequests": ["specific data point requested prematurely"] ([] if none — e.g. SSN, passport, bank details, DOB, home address at application stage),
-    "applyMethod": {
-      "type": "ATS" | "GOOGLE_FORM" | "TYPEFORM" | "EMAIL" | "EXTERNAL_UNKNOWN" | "NOT_SPECIFIED",
-      "url": "apply URL if present, else null",
-      "platform": "Name of ATS if identified (e.g. Greenhouse, Lever, Workday, iCIMS, BambooHR) or null",
-      "verdict": "One sentence assessment of the apply method"
-    },
-    "dataHarvesterFlag": boolean (true if posting appears designed to collect personal data rather than hire),
-    "validation": "One sentence: is this a data harvester? (e.g. 'This post is a Data Harvester disguised as a job listing.')",
-    "education": "One key fact about when employers legitimately need sensitive data (e.g. 'Employers only need your SSN after you sign an official offer letter — never during the application stage.')",
-    "action": "Specific instruction: what the user should or should not do with their personal data here"
+  function addLog(msg, type) {
+    const div = document.createElement('div');
+    div.className = type === 'search' ? 'thought-search' : 'thought-info';
+    div.textContent = msg;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
   }
-}`;
+
+  let searchCount = 0;
+  let finalText = null;
+  let messages = [{
+    role: 'user',
+    content: (jobTitle ? 'Job Title: ' + jobTitle + '\n\n' : '') +
+      'Before scoring, extract the company name. Use web_search to find "[company] careers" and "[company] jobs". Check: (1) does the company have a real careers page, (2) is this role listed. If no careers page or role not found, increase fraudRiskScore by 40 (cap 100). Note findings in redFlags or greenFlags. If no company name, note as red flag.\n\nJob posting:\n\n' + text
+  }];
+
+  renderProgress(0, investigationSteps[0].detail);
+  addLog('Reading job posting...', 'info');
 
   try {
-    let messages = [{
-      role: 'user',
-      content: (jobTitle ? 'Job Title: ' + jobTitle + '\n\n' : '') +
-        `Before scoring, extract the company name. Use web_search to find "[company] careers" and "[company] jobs". Check: (1) does the company have a real careers page, (2) is this role listed. If no careers page or role not found, increase fraudRiskScore by 40 (cap 100). Note findings in redFlags or greenFlags. If no company name, note as red flag.\n\nJob posting:\n\n` + text
-    }];
-
-    let step = 0;
-    let finalText = null;
-    let searchCount = 0;
-
-    // Show step 1 immediately
-    renderProgress(0, investigationSteps[0].detail);
-
     while (!finalText) {
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -1331,55 +1221,62 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
       });
 
       const data = await response.json();
-      if (data.error) throw new Error(data.error.message || data.error);
+      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
 
       const responseContent = data.content || [];
-      const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
+      const toolUse = responseContent.find(b => b.type === 'tool_use' || b.type === 'server_tool_use');
       const textBlock = responseContent.find(b => b.type === 'text');
 
-      // Always append the assistant turn to conversation history
       messages.push({ role: 'assistant', content: responseContent });
 
-      if (toolUseBlock) {
+      if (toolUse) {
         searchCount++;
+        const query = (toolUse.input && toolUse.input.query) ? toolUse.input.query : 'web search';
+        addLog(query, 'search');
         const currentStep = Math.min(searchCount, 2);
         renderProgress(currentStep, investigationSteps[currentStep].detail);
 
-        // Feed tool_result back so the model knows the search completed
         messages.push({
           role: 'user',
           content: [{
             type: 'tool_result',
-            tool_use_id: toolUseBlock.id,
-            content: 'Search completed. Please continue your analysis and return the final JSON.'
+            tool_use_id: toolUse.id,
+            content: 'Search completed. Continue analysis and return final JSON.'
           }]
         });
-      } else if (textBlock) {
+      } else if (textBlock && textBlock.text.includes('{')) {
+        addLog('Building your report...', 'info');
         renderProgress(3, investigationSteps[3].detail);
         finalText = textBlock.text;
+      } else if (textBlock) {
+        // Model returned prose without JSON yet — keep looping
+        addLog('Analyzing results...', 'info');
+        messages.push({
+          role: 'user',
+          content: 'Please now return your final analysis as a JSON object.'
+        });
       } else {
         throw new Error('Analysis cycle interrupted. Please try again.');
       }
     }
 
-        function extractJSON(str) {
+    function extractJSON(str) {
       str = str.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
       const firstBracket = str.indexOf('{');
       const lastBracket = str.lastIndexOf('}');
       if (firstBracket === -1 || lastBracket === -1) {
-        throw new Error('The analysis was too complex and timed out. Try again with less text.');
+        throw new Error('The analysis was too complex. Try again with less text.');
       }
       const candidate = str.substring(firstBracket, lastBracket + 1);
       try {
         return JSON.parse(candidate);
       } catch (e) {
-        // Remove trailing commas that break JSON.parse
         const fixed = candidate.replace(/,\s*([\]}])/g, '$1');
         return JSON.parse(fixed);
       }
     }
 
-        const parsed = extractJSON(finalText);
+    const parsed = extractJSON(finalText);
     renderResults(parsed);
 
   } catch (err) {
@@ -1388,8 +1285,10 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
   } finally {
     document.getElementById('thinking').style.display = 'none';
     btn.disabled = false;
+    log.style.display = 'none';
   }
 }
+
 
 function renderResults(data) {
   const { verdict, fraudRiskScore, summary, redFlags, greenFlags, signals, recommendation } = data;
