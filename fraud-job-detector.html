@@ -13,8 +13,8 @@
     --card:     #201E1B;
     --border:   #34495E;
     --amber:    #D46A6A;
-    --amber-dim:#C4862E;
-    --amber-glow: rgba(212,106,106,0.18);
+    --amber-dim:#A84545;
+    --amber-glow: rgba(255,179,71,0.18);
     --red:      #E05C5C;
     --green:    #88D4AB;
     --blue:     #7EB8D4;
@@ -41,7 +41,7 @@
     position: fixed;
     inset: 0;
     background-image:
-      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(212,106,106,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(255,179,71,0.04) 0%, transparent 60%),
       radial-gradient(ellipse 60% 40% at 80% 80%, rgba(255,179,71,0.03) 0%, transparent 50%),
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
     pointer-events: none;
@@ -125,8 +125,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(212,106,106,0.07);
-    border: 1px solid rgba(212,106,106,0.2);
+    background: rgba(255,179,71,0.07);
+    border: 1px solid rgba(255,179,71,0.2);
     border-radius: 999px;
     padding: 7px 16px;
     font-size: 0.68rem;
@@ -206,7 +206,7 @@
   }
 
   .title-field input::placeholder { color: var(--muted); font-family: var(--sans); font-size: 0.85rem; }
-  .title-field input:focus { border-color: var(--amber-dim); box-shadow: 0 0 0 3px rgba(212,106,106,0.08); }
+  .title-field input:focus { border-color: var(--amber-dim); box-shadow: 0 0 0 3px rgba(255,179,71,0.08); }
 
   textarea {
     width: 100%;
@@ -225,7 +225,7 @@
   }
 
   textarea::placeholder { color: var(--muted); }
-  textarea:focus { border-color: var(--amber-dim); box-shadow: 0 0 0 3px rgba(212,106,106,0.08); }
+  textarea:focus { border-color: var(--amber-dim); box-shadow: 0 0 0 3px rgba(255,179,71,0.08); }
 
   .input-actions {
     display: flex;
@@ -275,7 +275,7 @@
     background: var(--amber);
     border: none;
     border-radius: 10px;
-    color: #fff;
+    color: #1A1815;
     font-family: var(--sans);
     font-weight: 600;
     font-size: 0.85rem;
@@ -286,9 +286,9 @@
   }
 
   .analyze-btn:hover:not(:disabled) {
-    background: #E08080;
+    background: #FFC466;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(212,106,106,0.3);
+    box-shadow: 0 6px 20px rgba(255,179,71,0.3);
   }
 
   .analyze-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
@@ -335,7 +335,7 @@
   .progress-step.done  .step-icon { background: var(--green); border-color: var(--green); color: #0F0E0D; font-size: 0.65rem; }
   .progress-step.active .step-icon { border-color: var(--amber); animation: step-pulse 1.4s infinite; }
 
-  @keyframes step-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(212,106,106,0.4); } 50% { box-shadow: 0 0 0 5px rgba(255,179,71,0); } }
+  @keyframes step-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,179,71,0.4); } 50% { box-shadow: 0 0 0 5px rgba(255,179,71,0); } }
 
   .progress-current {
     display: flex;
@@ -358,7 +358,7 @@
   /* ─── Verdict ────────────────────────────────────────────────────────── */
   .verdict-card { border-radius: 16px; padding: 28px; margin-bottom: 20px; position: relative; overflow: hidden; }
   .verdict-card.legit      { background: rgba(111,207,138,0.06); border: 1px solid rgba(111,207,138,0.2); }
-  .verdict-card.suspicious { background: rgba(212,106,106,0.06);  border: 1px solid rgba(255,179,71,0.22); }
+  .verdict-card.suspicious { background: rgba(255,179,71,0.06);  border: 1px solid rgba(255,179,71,0.22); }
   .verdict-card.fraudulent { background: rgba(224,92,92,0.06);   border: 1px solid rgba(224,92,92,0.25); }
 
   .verdict-header { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
@@ -389,7 +389,7 @@
   }
 
   .legit      .score-badge { background: rgba(111,207,138,0.12); color: var(--green); }
-  .suspicious .score-badge { background: rgba(212,106,106,0.12);  color: var(--amber); }
+  .suspicious .score-badge { background: rgba(255,179,71,0.12);  color: var(--amber); }
   .fraudulent .score-badge { background: rgba(224,92,92,0.12);   color: var(--red);   }
 
   .risk-bar-wrap { margin-top: 4px; }
@@ -490,7 +490,7 @@
   .signal-name { font-size: 0.72rem; color: #9A9288; width: 155px; flex-shrink: 0; font-weight: 400; }
   .signal-name-hint { font-size: 0.6rem; color: var(--muted2); margin-left: 4px; }
 
-  .signal-bar-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .signal-bar-wrap { flex: 1; height: 6px; background: #2A2A3A; border-radius: 3px; overflow: hidden; }
   .signal-fill { height: 100%; border-radius: 2px; transition: width 0.9s ease; }
   .signal-score { font-size: 0.7rem; width: 32px; text-align: right; flex-shrink: 0; font-weight: 500; }
 
@@ -614,7 +614,7 @@
   }
 
   .pill-green  { background: rgba(111,207,138,0.08); border: 1px solid rgba(111,207,138,0.2); color: var(--green); }
-  .pill-amber  { background: rgba(212,106,106,0.08);  border: 1px solid rgba(212,106,106,0.2);  color: var(--amber); }
+  .pill-amber  { background: rgba(255,179,71,0.08);  border: 1px solid rgba(255,179,71,0.2);  color: var(--amber); }
   .pill-muted  { background: rgba(100,96,92,0.15);   border: 1px solid var(--border);          color: var(--muted); }
 
   /* ─── Better Path ────────────────────────────────────────────────────── */
@@ -668,7 +668,7 @@
     background: var(--amber);
     border: none;
     border-radius: 8px;
-    color: #fff;
+    color: #1A1815;
     font-family: var(--sans);
     font-weight: 600;
     font-size: 0.72rem;
@@ -683,7 +683,7 @@
   /* ─── Compass Glow (Transferable Gold) ───────────────────────────────── */
   @keyframes compass-glow {
     0%, 100% { box-shadow: 0 0 0 0 rgba(255,179,71,0); }
-    50% { box-shadow: 0 0 16px 6px rgba(212,106,106,0.35); }
+    50% { box-shadow: 0 0 16px 6px rgba(255,179,71,0.35); }
   }
 
   .compass-ring.glow { animation: compass-glow 2s ease-in-out 3; }
@@ -701,7 +701,7 @@
   }
 
   .da-risk-badge.safe    { background: rgba(111,207,138,0.1);  color: var(--green); border: 1px solid rgba(111,207,138,0.25); }
-  .da-risk-badge.warning { background: rgba(212,106,106,0.1);   color: var(--amber); border: 1px solid rgba(255,179,71,0.25); }
+  .da-risk-badge.warning { background: rgba(255,179,71,0.1);   color: var(--amber); border: 1px solid rgba(255,179,71,0.25); }
   .da-risk-badge.danger  { background: rgba(224,92,92,0.1);    color: var(--red);   border: 1px solid rgba(224,92,92,0.25); }
 
   .da-title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -720,7 +720,7 @@
   .da-method-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
   .da-method-icon.ats     { background: rgba(111,207,138,0.1); }
   .da-method-icon.risky   { background: rgba(224,92,92,0.1);   }
-  .da-method-icon.medium  { background: rgba(212,106,106,0.1);  }
+  .da-method-icon.medium  { background: rgba(255,179,71,0.1);  }
   .da-method-icon.unknown { background: rgba(100,96,92,0.15);  }
 
   .da-method-name { font-family: var(--sans); font-weight: 600; font-size: 0.85rem; color: var(--text); margin-bottom: 3px; }
@@ -733,7 +733,7 @@
   .da-vea-row:last-child { border-bottom: none; }
   .da-validation { background: rgba(224,92,92,0.04); }
   .da-education  { background: rgba(167,139,250,0.04); }
-  .da-action-row { background: rgba(212,106,106,0.04); }
+  .da-action-row { background: rgba(255,179,71,0.04); }
   .da-vea-icon   { font-size: 1rem; flex-shrink: 0; margin-top: 2px; }
   .da-vea-label  { font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
   .da-vea-text   { font-size: 0.78rem; line-height: 1.75; color: #C0B8B0; }
@@ -1006,6 +1006,134 @@
 
 </div>
 <script>
+const SYSTEM_PROMPT = `You are a cynical, experienced Fraud Investigator specializing in 2026 recruitment scams, ghost jobs, and task-based exploitation. Trained on two real-world datasets: 10,000 confirmed fake postings and a mixed dataset of 17,880 postings (866 fraudulent, 17,014 legitimate).
+
+YOUR MISSION: Protect vulnerable job seekers by DISPROVING legitimacy, not confirming it. Assume every posting is a scam until it passes forensic scrutiny.
+
+TRUSTED DOMAIN OVERRIDE — apply BEFORE any other scoring:
+• If the employer website, email domain, or apply link ends in .gov or .edu → automatically set fraudRiskScore to MAX 15 and verdict to LEGITIMATE
+• .gov = verified government entity. .edu = accredited academic institution.
+• Note the trusted domain in greenFlags
+
+JOB CLASSIFICATION:
+Before scoring, classify the role:
+• ENTRY-LEVEL / INTERNSHIP: Do not penalize for missing experience requirements
+• MID-LEVEL PROFESSIONAL: Flag vague JDs harder
+• ACADEMIC / RESEARCH (.edu): Lower pay is normal
+• GOVERNMENT (.gov): Formal language and slow timelines are expected
+• FREELANCE / CONTRACT: Apply platform fraud filters
+• VOLUNTEER / NONPROFIT: Low pay is legitimate if org is verifiable
+
+FILTER 1 — METADATA OVERRIDES:
+Apply +60 to fraudRiskScore if ANY present:
+• "Payment Unverified" + "$0 Spent" → 95% Task Scam indicator
+• Fixed price under $500 for 1-3 months skilled work → Free Labor fraud
+• Client account created within 48 hours
+
+FILTER 2 — LINGUISTIC SCAM PATTERNS (2026):
+IMMEDIATE 100% RISK: Any mention of Telegram, WhatsApp, Signal, or Skype for interviews
+HIGH RISK: "Optimization tasks," "Daily data training," "Workbench activities," "Package handling"
+HIGH RISK: "Start immediately," "No interview required," "Urgent hiring" for high-skill roles
+HIGH RISK (20x more common in fraud): "Earn $X/week guaranteed," income promises
+
+FILTER 3 — REALITY CHECK MATH:
+Freelance market rates (USD 2026):
+• SEO/Content Writer: $25-75/hr; 1-3 month project = $3,000-15,000+
+• Web Developer (mid): $50-120/hr | Graphic Designer: $35-85/hr
+• Virtual Assistant: $15-40/hr | Social Media Manager: $25-60/hr
+Full-time annual (USD 2026):
+• Software Engineer (mid): $110k-160k | Marketing Manager: $65k-110k
+• Accountant: $55k-85k | Healthcare/Nurse: $60k-95k | Customer Service: $35k-55k
+FLAG: Budget less than 20% of market rate = CRITICAL fraud signal
+
+FILTER 4 — GHOST JOB DETECTION:
+Score 40-60 if: 100% generic JD with zero internal context, no specific team/tool/project mentions
+DISTINGUISH: Generic JD from Fortune 500 = lazy HR (low risk). Generic JD from new account = fraud (high risk).
+
+LEGITIMACY REDUCERS (lower score 30-50pts if ALL true):
+• Verified Fortune 500 or established company with LinkedIn/website
+• Specific internal tools, proprietary software, or unique project context
+• On Upwork: 4.5+ stars AND $5,000+ spent → ignore "Unverified Payment"
+Also reduces score: company logo, detailed profile, 600+ char requirements, background check mentioned, Bachelor's+ required
+
+CAREERS PAGE (from web search):
+• Real careers page + role listed → no adjustment
+• Company exists but role not found → +40 fraudRiskScore
+• No careers page found → +40 fraudRiskScore
+• No company name → critical red flag
+
+SCORING THRESHOLDS:
+FRAUDULENT (70-100): 2+ critical signals OR income promise + missing identity + thin requirements
+SUSPICIOUS (35-69): 1 critical signal OR multiple moderate signals OR high-fraud industry + missing profile
+LEGITIMATE (0-34): Verified company, realistic pay, detailed requirements, role-appropriate credentials
+
+STATISTICAL BASELINES:
+• Missing company profile + no logo → 66% of fraud vs 12% legit
+• Entry-level req on professional role → 41% fraud vs 24% legit
+• High-fraud industries: Oil & Energy (18.4%), Accounting (9.6%), Healthcare (8.6%), Marketing (7.6%)
+
+DATA HARVEST AUDIT — run on every posting:
+Flag if posting requests: SSN, passport, driver's license, bank details, DOB+address, credit card, or government ID uploads at application stage.
+ATS platforms (LOW RISK): Greenhouse, Lever, Workday, iCIMS, BambooHR, Taleo, SmartRecruiters, ADP, JazzHR, Jobvite, Rippling, Ashby
+Google Forms / Typeform (HIGH RISK) | Personal email only (MEDIUM-HIGH RISK) | WhatsApp/Telegram (IMMEDIATE 100% RISK)
+Set dataHarvesterFlag = true if: asks for sensitive ID before offer, uses Google Form + requests personal data, or vague duties but detailed data collection.
+
+CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }. No text before or after.
+
+{
+  "verdict": "LEGITIMATE" | "SUSPICIOUS" | "FRAUDULENT",
+  "fraudRiskScore": number (0-100),
+  "confidence": number (0-100),
+  "summary": "2-3 sentences. Lead with bottom-line verdict. Be direct.",
+  "redFlags": ["cite specific text from posting"] (up to 6, [] if none),
+  "greenFlags": ["specific legitimacy signal with evidence"] (up to 6, [] if none),
+  "signals": [
+    {"name": "Compensation Claims", "score": 0-100},
+    {"name": "Company Legitimacy", "score": 0-100},
+    {"name": "Contact Info Quality", "score": 0-100},
+    {"name": "Language & Pressure", "score": 0-100},
+    {"name": "Personal Data Requests", "score": 0-100},
+    {"name": "Job Clarity & Realism", "score": 0-100}
+  ],
+  "salaryInPosting": "Salary mentioned or 'Not mentioned'",
+  "marketRateShort": "2026 market rate numbers and experience only",
+  "marketRateFineprint": "One sentence on required skills/education level",
+  "recommendation": "Direct actionable advice.",
+  "companyInfo": {
+    "show": boolean (true only if verdict is LEGITIMATE),
+    "website": "URL or null",
+    "careersPage": "URL or null",
+    "roleListed": boolean,
+    "glassdoor": "URL or null",
+    "linkedin": "URL or null",
+    "locations": ["City, State"] (up to 3, or [])
+  },
+  "betterPath": {
+    "show": boolean (true if SUSPICIOUS or FRAUDULENT),
+    "realTitles": ["Title 1", "Title 2", "Title 3"],
+    "vibeCheck": "One punchy sentence on why the posting was bad",
+    "marketRateShort": "Numbers and experience only",
+    "marketRateFineprint": "One sentence on skills/education required",
+    "companies": ["Company 1", "Company 2", "Company 3"],
+    "searchString": "Exact LinkedIn search string"
+  },
+  "dataAudit": {
+    "riskLevel": "SAFE" | "WARNING" | "DANGER",
+    "identityTheftRisk": number (0-100),
+    "intrusiveRequests": [],
+    "applyMethod": {
+      "type": "ATS" | "GOOGLE_FORM" | "TYPEFORM" | "EMAIL" | "EXTERNAL_UNKNOWN" | "NOT_SPECIFIED",
+      "url": "apply URL or null",
+      "platform": "ATS name or null",
+      "verdict": "One sentence assessment"
+    },
+    "dataHarvesterFlag": boolean,
+    "validation": "One sentence verdict",
+    "education": "One key fact about when employers need sensitive data",
+    "action": "Specific instruction for the user"
+  }
+}`;
+
 
 const EXAMPLES = {
   legit: `Software Engineer II — Backend Systems
@@ -1148,6 +1276,8 @@ async function analyze() {
     document.getElementById('thinkingDetail').textContent = detail || investigationSteps[Math.min(step, investigationSteps.length - 1)].detail;
   }
 
+  renderProgress(0, investigationSteps[0].detail);
+
   const SYSTEM_PROMPT = `You are a cynical, experienced Fraud Investigator specializing in 2026 recruitment scams, ghost jobs, and task-based exploitation. Trained on two real-world datasets: 10,000 confirmed fake postings and a mixed dataset of 17,880 postings (866 fraudulent, 17,014 legitimate).
 
 YOUR MISSION: Protect vulnerable job seekers by DISPROVING legitimacy, not confirming it. Assume every posting is a scam until it passes forensic scrutiny.
@@ -1179,12 +1309,6 @@ FILTER 4 — GHOST JOB DETECTION:
 Score 40-60 if: 100% generic JD with zero internal context, company had recent layoffs, no specific team/tool/project mentions
 DISTINGUISH: Generic JD from Fortune 500 = lazy HR (low risk). Generic JD from new account = fraud (high risk).
 
-TRUSTED DOMAIN OVERRIDE — apply BEFORE any other scoring:
-• If the employer website, email domain, or apply link ends in .gov or .edu → automatically set fraudRiskScore to MAX 15 and verdict to LEGITIMATE
-• .gov = verified government entity. .edu = accredited academic institution. Neither can be faked at the DNS level.
-• Note the trusted domain in greenFlags (e.g. "Employer domain is .gov — verified government institution")
-• Still complete the rest of the analysis for context, but the score cannot exceed 15
-
 LEGITIMACY REDUCERS (lower score 30-50pts if ALL true):
 • Verified Fortune 500 or established company with LinkedIn/website
 • Specific internal tools, proprietary software, or unique project context
@@ -1196,16 +1320,6 @@ CAREERS PAGE (from web search):
 • Company exists but role not found → +40 fraudRiskScore
 • No careers page found → +40 fraudRiskScore
 • No company name → critical red flag
-
-JOB CLASSIFICATION:
-Before scoring, classify the role into one of these categories and apply the relevant context:
-• ENTRY-LEVEL / INTERNSHIP: Expect lower pay, less specificity in requirements — do not penalize for missing experience requirements
-• MID-LEVEL PROFESSIONAL: Expect specific skills, named tools, realistic salary range — flag vague JDs harder
-• SENIOR / EXECUTIVE: Expect detailed scope, compensation range, seniority signals — generic JD is a bigger red flag
-• ACADEMIC / RESEARCH (.edu employers): Standard academic hiring norms apply — lower pay is normal, slow process is normal
-• GOVERNMENT (.gov employers): Formal language, USAJobs-style formatting, and slow timelines are expected and legitimate
-• FREELANCE / CONTRACT: Apply platform-specific fraud filters (payment verification, budget vs. scope math)
-• VOLUNTEER / NONPROFIT: Unpaid or low-pay is legitimate if the org is verifiable — do not flag as fraud solely for low compensation
 
 SCORING THRESHOLDS:
 FRAUDULENT (70-100): 2+ critical signals OR income promise + missing identity + thin requirements
@@ -1313,7 +1427,6 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
     let finalText = null;
     let searchCount = 0;
 
-    // Show step 1 immediately — we are reading the posting
     renderProgress(0, investigationSteps[0].detail);
 
     while (!finalText) {
@@ -1324,74 +1437,53 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
           model: 'claude-sonnet-4-20250514',
           max_tokens: 4000,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-          system: SYSTEM_PROMPT + "\n\nIMPORTANT: If you have finished your research, output ONLY the JSON object. No prose, no preamble.",
+          system: SYSTEM_PROMPT,
           messages
         })
       });
 
       const data = await response.json();
-      if (data.error) throw new Error(data.error);
+      if (data.error) {
+        const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
+        console.log('API error:', JSON.stringify(data));
+        throw new Error(errMsg);
+      }
 
       const responseContent = data.content || [];
       const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
       const textBlock = responseContent.find(b => b.type === 'text');
 
-      // 1. Handle Tool Use (Searching)
       if (toolUseBlock) {
         searchCount++;
-        // Update progress UI: 1 = Searching Company, 2 = Checking Role
-        let currentStep = Math.min(searchCount, 2); 
-        renderProgress(currentStep, investigationSteps[currentStep].detail);
-        
-        // Push the assistant's tool call to history so the next loop knows what happened
-        messages.push({ role: 'assistant', content: responseContent });
-      } 
-      
-      // 2. Handle Final Text (The JSON)
-      else if (textBlock) {
-        renderProgress(3, investigationSteps[3].detail); // Finalizing Report
+        if (searchCount === 1) {
+          renderProgress(1, investigationSteps[1].detail);
+        } else {
+          renderProgress(2, investigationSteps[2].detail);
+        }
+        // web_search is server-side — append only tool_use blocks, not tool_result
+        const cleanContent = responseContent.filter(b => b.type === 'tool_use' || b.type === 'text');
+        messages = [...messages, { role: 'assistant', content: cleanContent }];
+      } else if (textBlock) {
+        renderProgress(3, investigationSteps[3].detail);
         finalText = textBlock.text;
-      } 
-      
-      else {
-        throw new Error('Unexpected API response structure');
+      } else {
+        throw new Error('Unexpected API response. Please try again.');
       }
     }
 
-    function extractJSON(str) {
-      // Strip markdown fences
+        function extractJSON(str) {
       str = str.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      const start = str.indexOf('{');
-      if (start === -1) throw new Error('The analysis was too long and got cut off. Try a shorter job description.');
-
-      // Try balanced brace parser first (most accurate)
-      let depth = 0, inString = false, escape = false;
-      for (let i = start; i < str.length; i++) {
-        const ch = str[i];
-        if (escape) { escape = false; continue; }
-        if (ch === '\\') { escape = true; continue; }
-        if (ch === '"' && !escape) { inString = !inString; continue; }
-        if (inString) continue;
-        if (ch === '{') depth++;
-        else if (ch === '}') {
-          depth--;
-          if (depth === 0) {
-            try {
-              return JSON.parse(str.slice(start, i + 1));
-            } catch(e) {
-              break; // fall through to greedy fallback
-            }
-          }
-        }
+      const firstBracket = str.indexOf('{');
+      const lastBracket = str.lastIndexOf('}');
+      if (firstBracket === -1 || lastBracket === -1) {
+        throw new Error('The analysis was too complex. Try again with less text.');
       }
-
-      // Greedy fallback — find first { and last }
-      const end = str.lastIndexOf('}');
-      if (end === -1) throw new Error('The analysis was too long and got cut off. Try a shorter job description.');
+      const candidate = str.substring(firstBracket, lastBracket + 1);
       try {
-        return JSON.parse(str.slice(start, end + 1));
-      } catch(e) {
-        throw new Error('Analysis returned malformed data. Please try again.');
+        return JSON.parse(candidate);
+      } catch (e) {
+        const fixed = candidate.replace(/,\s*([\]}])/g, '$1');
+        return JSON.parse(fixed);
       }
     }
 
@@ -1425,8 +1517,11 @@ function renderResults(data) {
   document.getElementById('scoreBadge').textContent = fraudRiskScore + '/100';
   document.getElementById('scoreBadge').className = 'score-badge';
   document.getElementById('scoreLabel').textContent = fraudRiskScore + ' / 100';
-  setTimeout(() => { document.getElementById('confidenceFill').style.width = fraudRiskScore + '%'; }, 100);
-  document.getElementById('verdictSummary').textContent = summary;
+
+  function stripCitations(str) {
+    return (str || '').replace(/<cite[^>]*>/gi, '').replace(/<\/cite>/gi, '');
+  }
+  document.getElementById('verdictSummary').textContent = stripCitations(summary);
 
   // Red flags
   const redList = document.getElementById('redFlags');
@@ -1452,17 +1547,16 @@ function renderResults(data) {
       '<div class="signal-score" style="color:' + color + '">' + s.score + '<span class="signal-score-label">/100</span></div>' +
       '</div>';
   }).join('');
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      signalRows.querySelectorAll('.signal-fill').forEach(el => {
-        el.style.transition = 'width 0.9s ease';
-        el.style.width = el.dataset.target + '%';
-      });
+  setTimeout(() => {
+    document.getElementById('confidenceFill').style.width = fraudRiskScore + '%';
+    signalRows.querySelectorAll('.signal-fill').forEach(el => {
+      el.style.transition = 'width 0.9s ease';
+      el.style.width = el.getAttribute('data-target') + '%';
     });
-  });
+  }, 300);
 
   // Recommendation
-  document.getElementById('recommendationText').textContent = recommendation;
+  document.getElementById('recommendationText').textContent = stripCitations(recommendation);
 
   // ── Company Info (LEGITIMATE only) ─────────────────────────────────────────
   const ci = data.companyInfo;
