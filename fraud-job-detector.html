@@ -11,12 +11,12 @@
     --bg:       #0F0E0D;
     --surface:  #1A1815;
     --card:     #201E1B;
-    --border:   #2E2B27;
+    --border:   #34495E;
     --amber:    #D46A6A;
     --amber-dim:#C4862E;
     --amber-glow: rgba(212,106,106,0.18);
     --red:      #E05C5C;
-    --green:    #6FCF8A;
+    --green:    #88D4AB;
     --blue:     #7EB8D4;
     --text:     #EDE8E0;
     --muted:    #7A7368;
@@ -1148,8 +1148,6 @@ async function analyze() {
     document.getElementById('thinkingDetail').textContent = detail || investigationSteps[Math.min(step, investigationSteps.length - 1)].detail;
   }
 
-  renderProgress(0, investigationSteps[0].detail);
-
   const SYSTEM_PROMPT = `You are a cynical, experienced Fraud Investigator specializing in 2026 recruitment scams, ghost jobs, and task-based exploitation. Trained on two real-world datasets: 10,000 confirmed fake postings and a mixed dataset of 17,880 postings (866 fraudulent, 17,014 legitimate).
 
 YOUR MISSION: Protect vulnerable job seekers by DISPROVING legitimacy, not confirming it. Assume every posting is a scam until it passes forensic scrutiny.
@@ -1315,7 +1313,9 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
     let finalText = null;
     let searchCount = 0;
 
-    // Step 1 shown immediately on button press (already called above)
+    // Show step 1 immediately — we are reading the posting
+    renderProgress(0, investigationSteps[0].detail);
+
     while (!finalText) {
       const response = await fetch('/api/analyze', {
         method: 'POST',
