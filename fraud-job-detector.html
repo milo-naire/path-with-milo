@@ -1381,14 +1381,17 @@ async function analyze() {
         addLog(query, 'search');
         const currentStep = Math.min(searchCount, 2);
         renderProgress(currentStep, investigationSteps[currentStep].detail);
-        messages.push({ role: 'assistant', content: responseContent });
+        // Strip tool_result blocks before appending — API rejects them in assistant messages
+        const cleanContent = responseContent.filter(b => b.type !== 'tool_result' && b.type !== 'server_tool_result');
+        messages.push({ role: 'assistant', content: cleanContent });
       } else if (textBlock && textBlock.text.includes('{')) {
         addLog('Building your report...', 'info');
         renderProgress(3, investigationSteps[3].detail);
         finalText = textBlock.text;
       } else if (textBlock) {
         addLog('Analyzing results...', 'info');
-        messages.push({ role: 'assistant', content: responseContent });
+        const cleanContent2 = responseContent.filter(b => b.type !== 'tool_result' && b.type !== 'server_tool_result');
+        messages.push({ role: 'assistant', content: cleanContent2 });
         messages.push({ role: 'user', content: 'Please now return your final analysis as a JSON object.' });
       } else {
         throw new Error('Analysis cycle interrupted. Please try again.');
