@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<!-- build: 20260323-v4 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JobGuard — Forensic Fraud Detector</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -491,8 +490,8 @@
   .signal-name { font-size: 0.72rem; color: #9A9288; width: 155px; flex-shrink: 0; font-weight: 400; }
   .signal-name-hint { font-size: 0.6rem; color: var(--muted2); margin-left: 4px; }
 
-  .signal-bar-wrap { flex: 1; height: 6px; background: #2A2A3A; border-radius: 3px; overflow: hidden; }
-  .signal-fill { height: 100%; border-radius: 3px; transition: width 0.9s ease; }
+  .signal-bar-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .signal-fill { height: 100%; border-radius: 2px; transition: width 0.9s ease; }
   .signal-score { font-size: 0.7rem; width: 32px; text-align: right; flex-shrink: 0; font-weight: 500; }
 
   /* ─── Recommendation ─────────────────────────────────────────────────── */
@@ -742,40 +741,6 @@
   /* ─── Error ──────────────────────────────────────────────────────────── */
   .error-box { background: rgba(224,92,92,0.07); border: 1px solid rgba(224,92,92,0.25); border-radius: 12px; padding: 14px 18px; font-size: 0.78rem; color: #E07878; margin-bottom: 20px; }
 
-  /* ─── Thought Log ───────────────────────────────────────────────────────── */
-  #thoughtLog {
-    background: #0C0B0A;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 14px;
-    margin: 8px 0 4px;
-    font-family: 'DM Sans', monospace;
-    font-size: 0.68rem;
-    max-height: 90px;
-    overflow-y: auto;
-    line-height: 1.7;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-  }
-
-  .thought-search {
-    color: var(--amber);
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-  }
-
-  .thought-search::before { content: '⌕'; opacity: 0.7; flex-shrink: 0; }
-
-  .thought-info {
-    color: var(--muted);
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-  }
-
-  .thought-info::before { content: '·'; opacity: 0.5; flex-shrink: 0; }
-
   /* ─── Footer ─────────────────────────────────────────────────────────── */
   .footer-note { text-align: center; font-size: 0.63rem; color: var(--muted); margin-top: 48px; letter-spacing: 0.06em; line-height: 2; }
 </style>
@@ -831,7 +796,6 @@
   <div id="thinking">
     <div class="thinking-progress">
       <div class="progress-steps" id="progressSteps"></div>
-      <div id="thoughtLog" style="display:none;"></div>
       <div class="progress-current">
         <div class="thinking-bars"><span></span><span></span><span></span><span></span></div>
         <span id="thinkingDetail">Starting investigation...</span>
@@ -1152,25 +1116,41 @@ function clearInput() {
   document.getElementById('jobInput').focus();
 }
 
-const SYSTEM_PROMPT = `You are a cynical, experienced Fraud Investigator specializing in 2026 recruitment scams, ghost jobs, and task-based exploitation. Trained on two real-world datasets: 10,000 confirmed fake postings and a mixed dataset of 17,880 postings (866 fraudulent, 17,014 legitimate).
+async function analyze() {
+  const text = document.getElementById('jobInput').value.trim();
+  if (!text) return;
+  const jobTitle = document.getElementById('jobTitle').value.trim();
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  document.getElementById('thinking').style.display = 'flex';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+
+  const investigationSteps = [
+    { label: 'Reading the job posting',        detail: 'Pulling apart the text for company name, pay, requirements...' },
+    { label: 'Searching for the company',       detail: "Looking up the company's real website and careers page..." },
+    { label: 'Checking if the role is listed',  detail: "Comparing the posting to what's actually on their site..." },
+    { label: 'Scoring fraud signals',           detail: 'Running all filters and calculating your risk score...' }
+  ];
+
+  function renderProgress(step, detail) {
+    const container = document.getElementById('progressSteps');
+    container.innerHTML = investigationSteps.map((s, i) => {
+      const isDone = i < step;
+      const isActive = i === step;
+      const cls = isDone ? 'done' : isActive ? 'active' : '';
+      const icon = isDone ? '✓' : String(i + 1);
+      return '<div class="progress-step ' + cls + '">' +
+        '<div class="step-icon">' + icon + '</div>' +
+        '<span>' + s.label + '</span></div>';
+    }).join('');
+    document.getElementById('thinkingDetail').textContent = detail || investigationSteps[Math.min(step, investigationSteps.length - 1)].detail;
+  }
+
+  const SYSTEM_PROMPT = `You are a cynical, experienced Fraud Investigator specializing in 2026 recruitment scams, ghost jobs, and task-based exploitation. Trained on two real-world datasets: 10,000 confirmed fake postings and a mixed dataset of 17,880 postings (866 fraudulent, 17,014 legitimate).
 
 YOUR MISSION: Protect vulnerable job seekers by DISPROVING legitimacy, not confirming it. Assume every posting is a scam until it passes forensic scrutiny.
-
-TRUSTED DOMAIN OVERRIDE — apply BEFORE any other scoring:
-• If the employer website, email domain, or apply link ends in .gov or .edu → automatically set fraudRiskScore to MAX 15 and verdict to LEGITIMATE
-• .gov = verified government entity. .edu = accredited academic institution. Neither can be faked at the DNS level.
-• Note the trusted domain in greenFlags (e.g. "Employer domain is .gov — verified government institution")
-• Still complete the rest of the analysis for context, but the score cannot exceed 15
-
-JOB CLASSIFICATION:
-Before scoring, classify the role into one of these categories and apply the relevant context:
-• ENTRY-LEVEL / INTERNSHIP: Expect lower pay, less specificity — do not penalize for missing experience requirements
-• MID-LEVEL PROFESSIONAL: Expect specific skills, named tools, realistic salary — flag vague JDs harder
-• SENIOR / EXECUTIVE: Expect detailed scope, compensation range — generic JD is a bigger red flag
-• ACADEMIC / RESEARCH (.edu employers): Lower pay is normal, slow process is normal
-• GOVERNMENT (.gov employers): Formal language, USAJobs-style formatting, slow timelines are expected and legitimate
-• FREELANCE / CONTRACT: Apply platform-specific fraud filters (payment verification, budget vs. scope math)
-• VOLUNTEER / NONPROFIT: Unpaid or low-pay is legitimate if the org is verifiable
 
 FILTER 1 — METADATA OVERRIDES:
 Apply +60 to fraudRiskScore if ANY present:
@@ -1199,6 +1179,12 @@ FILTER 4 — GHOST JOB DETECTION:
 Score 40-60 if: 100% generic JD with zero internal context, company had recent layoffs, no specific team/tool/project mentions
 DISTINGUISH: Generic JD from Fortune 500 = lazy HR (low risk). Generic JD from new account = fraud (high risk).
 
+TRUSTED DOMAIN OVERRIDE — apply BEFORE any other scoring:
+• If the employer website, email domain, or apply link ends in .gov or .edu → automatically set fraudRiskScore to MAX 15 and verdict to LEGITIMATE
+• .gov = verified government entity. .edu = accredited academic institution. Neither can be faked at the DNS level.
+• Note the trusted domain in greenFlags (e.g. "Employer domain is .gov — verified government institution")
+• Still complete the rest of the analysis for context, but the score cannot exceed 15
+
 LEGITIMACY REDUCERS (lower score 30-50pts if ALL true):
 • Verified Fortune 500 or established company with LinkedIn/website
 • Specific internal tools, proprietary software, or unique project context
@@ -1210,6 +1196,16 @@ CAREERS PAGE (from web search):
 • Company exists but role not found → +40 fraudRiskScore
 • No careers page found → +40 fraudRiskScore
 • No company name → critical red flag
+
+JOB CLASSIFICATION:
+Before scoring, classify the role into one of these categories and apply the relevant context:
+• ENTRY-LEVEL / INTERNSHIP: Expect lower pay, less specificity in requirements — do not penalize for missing experience requirements
+• MID-LEVEL PROFESSIONAL: Expect specific skills, named tools, realistic salary range — flag vague JDs harder
+• SENIOR / EXECUTIVE: Expect detailed scope, compensation range, seniority signals — generic JD is a bigger red flag
+• ACADEMIC / RESEARCH (.edu employers): Standard academic hiring norms apply — lower pay is normal, slow process is normal
+• GOVERNMENT (.gov employers): Formal language, USAJobs-style formatting, and slow timelines are expected and legitimate
+• FREELANCE / CONTRACT: Apply platform-specific fraud filters (payment verification, budget vs. scope math)
+• VOLUNTEER / NONPROFIT: Unpaid or low-pay is legitimate if the org is verifiable — do not flag as fraud solely for low compensation
 
 SCORING THRESHOLDS:
 FRAUDULENT (70-100): 2+ critical signals OR income promise + missing identity + thin requirements
@@ -1225,28 +1221,36 @@ DATA HARVEST AUDIT — run on every posting:
 
 STEP 1 — INTRUSIVE REQUESTS SCAN:
 Flag if the posting requests ANY of these at the application stage (before an offer):
-• SSN / Social Security Number | Passport number or copy | Driver's license number or copy
-• Bank account or routing numbers | Full date of birth (DOB) combined with address
-• Credit card or payment info | Government-issued ID uploads
+• SSN / Social Security Number
+• Passport number or copy
+• Driver's license number or copy
+• Bank account or routing numbers
+• Full date of birth (DOB) combined with address
+• Credit card or payment info
+• Government-issued ID uploads
+These are NEVER legitimate pre-offer requirements. Flag each one found.
 
 STEP 2 — APPLY METHOD / PHISHING CHECK:
+Analyze how the posting asks candidates to apply:
 • Verified ATS platforms (LOW RISK): Greenhouse, Lever, Workday, iCIMS, BambooHR, Taleo, SmartRecruiters, ADP, JazzHR, Jobvite, Rippling, Ashby
-• Google Forms / Typeform / Jotform (HIGH RISK)
-• Personal email only (MEDIUM-HIGH RISK)
+• Google Forms / Typeform / Jotform (HIGH RISK): Never appropriate for job applications, especially from named companies
+• Personal email only (MEDIUM-HIGH RISK): No ATS = no accountability
 • WhatsApp/Telegram link (IMMEDIATE 100% RISK)
-LOGIC: Large company + Google Form to collect personal info → identityTheftRisk = 99
+• No apply method specified: note as missing
+LOGIC: If a company appears large/established but uses a Google Form to collect personal info → identityTheftRisk = 99
 
 STEP 3 — DATA HARVESTER DETECTION:
 Set dataHarvesterFlag = true if:
 • Asks for sensitive ID or financial data before an offer
 • Uses a Google Form or personal email AND requests personal data
 • Requests resume + photo + DOB + address simultaneously at application stage
+• The "job" has vague duties but detailed personal data collection requirements
 
 CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }. No text before or after.
 
 {
   "verdict": "LEGITIMATE" | "SUSPICIOUS" | "FRAUDULENT",
-  "fraudRiskScore": number (0-100),
+  "fraudRiskScore": number (0-100, applying all filter adjustments),
   "confidence": number (0-100),
   "summary": "2-3 sentences. Lead with bottom-line verdict. Be direct.",
   "redFlags": ["cite specific text from posting"] (up to 6, [] if none),
@@ -1262,7 +1266,7 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
   "salaryInPosting": "Salary mentioned in posting as short string, or 'Not mentioned'",
   "marketRateShort": "2026 market rate — numbers and experience only (e.g. '$75,000-$95,000/yr · 2-4 yrs exp')",
   "marketRateFineprint": "One sentence on required skills/education level",
-  "recommendation": "Direct actionable advice.",
+  "recommendation": "Direct actionable advice. If fraudulent: warn clearly. If suspicious: what to verify. If legitimate: confirm safe.",
   "companyInfo": {
     "show": boolean (true only if verdict is LEGITIMATE),
     "website": "URL or null",
@@ -1274,9 +1278,9 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
   },
   "betterPath": {
     "show": boolean (true if SUSPICIOUS or FRAUDULENT, false if LEGITIMATE),
-    "realTitles": ["Title 1", "Title 2", "Title 3"],
+    "realTitles": ["Title 1", "Title 2", "Title 3"] (3-4 real industry titles),
     "vibeCheck": "One punchy sentence on why the posting was bad",
-    "marketRateShort": "Numbers and experience only",
+    "marketRateShort": "Numbers and experience only (e.g. '$45,000-$65,000/yr · 1-3 yrs exp')",
     "marketRateFineprint": "One sentence on skills/education required",
     "companies": ["Company 1", "Company 2", "Company 3"],
     "searchString": "Exact LinkedIn search string to copy-paste"
@@ -1284,75 +1288,34 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
   "dataAudit": {
     "riskLevel": "SAFE" | "WARNING" | "DANGER",
     "identityTheftRisk": number (0-100),
-    "intrusiveRequests": [],
+    "intrusiveRequests": ["specific data point requested prematurely"] ([] if none — e.g. SSN, passport, bank details, DOB, home address at application stage),
     "applyMethod": {
       "type": "ATS" | "GOOGLE_FORM" | "TYPEFORM" | "EMAIL" | "EXTERNAL_UNKNOWN" | "NOT_SPECIFIED",
       "url": "apply URL if present, else null",
-      "platform": "Name of ATS if identified or null",
+      "platform": "Name of ATS if identified (e.g. Greenhouse, Lever, Workday, iCIMS, BambooHR) or null",
       "verdict": "One sentence assessment of the apply method"
     },
-    "dataHarvesterFlag": boolean,
-    "validation": "One sentence verdict on data harvesting",
-    "education": "One key fact about when employers legitimately need sensitive data",
-    "action": "Specific instruction for the user"
+    "dataHarvesterFlag": boolean (true if posting appears designed to collect personal data rather than hire),
+    "validation": "One sentence: is this a data harvester? (e.g. 'This post is a Data Harvester disguised as a job listing.')",
+    "education": "One key fact about when employers legitimately need sensitive data (e.g. 'Employers only need your SSN after you sign an official offer letter — never during the application stage.')",
+    "action": "Specific instruction: what the user should or should not do with their personal data here"
   }
 }`;
 
-async function analyze() {
-  const text = document.getElementById('jobInput').value.trim();
-  const jobTitle = document.getElementById('jobTitle').value.trim();
-  if (!text) return;
-
-  const btn = document.getElementById('analyzeBtn');
-  const log = document.getElementById('thoughtLog');
-  btn.disabled = true;
-  log.style.display = 'block';
-  log.innerHTML = '';
-  document.getElementById('thinking').style.display = 'flex';
-  document.getElementById('results').style.display = 'none';
-  document.getElementById('errorBox').style.display = 'none';
-
-  const investigationSteps = [
-    { label: 'Reading the job posting',       detail: 'Pulling apart the text for company name, pay, requirements...' },
-    { label: 'Searching for the company',      detail: "Looking up the company's real website and careers page..." },
-    { label: 'Checking if the role is listed', detail: "Comparing the posting to what's actually on their site..." },
-    { label: 'Scoring fraud signals',          detail: 'Running all filters and calculating your risk score...' }
-  ];
-
-  function renderProgress(step, detail) {
-    const container = document.getElementById('progressSteps');
-    container.innerHTML = investigationSteps.map((s, i) => {
-      const isDone = i < step;
-      const isActive = i === step;
-      const cls = isDone ? 'done' : isActive ? 'active' : '';
-      const icon = isDone ? '✓' : String(i + 1);
-      return '<div class="progress-step ' + cls + '">' +
-        '<div class="step-icon">' + icon + '</div>' +
-        '<span>' + s.label + '</span></div>';
-    }).join('');
-    document.getElementById('thinkingDetail').textContent = detail || investigationSteps[Math.min(step, investigationSteps.length - 1)].detail;
-  }
-
-  function addLog(msg, type) {
-    const div = document.createElement('div');
-    div.className = type === 'search' ? 'thought-search' : 'thought-info';
-    div.textContent = msg;
-    log.appendChild(div);
-    log.scrollTop = log.scrollHeight;
-  }
-
-  let searchCount = 0;
-  let finalText = null;
-  let messages = [{
-    role: 'user',
-    content: (jobTitle ? 'Job Title: ' + jobTitle + '\n\n' : '') +
-      'Before scoring, extract the company name. Use web_search to find "[company] careers" and "[company] jobs". Check: (1) does the company have a real careers page, (2) is this role listed. If no careers page or role not found, increase fraudRiskScore by 40 (cap 100). Note findings in redFlags or greenFlags. If no company name, note as red flag.\n\nJob posting:\n\n' + text
-  }];
-
-  renderProgress(0, investigationSteps[0].detail);
-  addLog('Reading job posting...', 'info');
-
   try {
+    let messages = [{
+      role: 'user',
+      content: (jobTitle ? 'Job Title: ' + jobTitle + '\n\n' : '') +
+        `Before scoring, extract the company name. Use web_search to find "[company] careers" and "[company] jobs". Check: (1) does the company have a real careers page, (2) is this role listed. If no careers page or role not found, increase fraudRiskScore by 40 (cap 100). Note findings in redFlags or greenFlags. If no company name, note as red flag.\n\nJob posting:\n\n` + text
+    }];
+
+    let step = 0;
+    let finalText = null;
+    let searchCount = 0;
+
+    // Show step 1 immediately — we are reading the posting
+    renderProgress(0, investigationSteps[0].detail);
+
     while (!finalText) {
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -1361,56 +1324,74 @@ async function analyze() {
           model: 'claude-sonnet-4-20250514',
           max_tokens: 4000,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-          system: SYSTEM_PROMPT,
+          system: SYSTEM_PROMPT + "\n\nIMPORTANT: If you have finished your research, output ONLY the JSON object. No prose, no preamble.",
           messages
         })
       });
 
       const data = await response.json();
-      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+      if (data.error) throw new Error(data.error);
 
       const responseContent = data.content || [];
-      const toolUse = responseContent.find(b => b.type === 'tool_use' || b.type === 'server_tool_use');
+      const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
       const textBlock = responseContent.find(b => b.type === 'text');
 
-      if (toolUse) {
-        // Anthropic web_search is fully server-side.
-        // NEVER send tool_result back — just append and loop.
+      // 1. Handle Tool Use (Searching)
+      if (toolUseBlock) {
         searchCount++;
-        const query = (toolUse.input && toolUse.input.query) ? toolUse.input.query : 'web search';
-        addLog(query, 'search');
-        const currentStep = Math.min(searchCount, 2);
+        // Update progress UI: 1 = Searching Company, 2 = Checking Role
+        let currentStep = Math.min(searchCount, 2); 
         renderProgress(currentStep, investigationSteps[currentStep].detail);
-        // Strip tool_result blocks before appending — API rejects them in assistant messages
-        const cleanContent = responseContent.filter(b => b.type !== 'tool_result' && b.type !== 'server_tool_result');
-        messages.push({ role: 'assistant', content: cleanContent });
-      } else if (textBlock && textBlock.text.includes('{')) {
-        addLog('Building your report...', 'info');
-        renderProgress(3, investigationSteps[3].detail);
+        
+        // Push the assistant's tool call to history so the next loop knows what happened
+        messages.push({ role: 'assistant', content: responseContent });
+      } 
+      
+      // 2. Handle Final Text (The JSON)
+      else if (textBlock) {
+        renderProgress(3, investigationSteps[3].detail); // Finalizing Report
         finalText = textBlock.text;
-      } else if (textBlock) {
-        addLog('Analyzing results...', 'info');
-        const cleanContent2 = responseContent.filter(b => b.type !== 'tool_result' && b.type !== 'server_tool_result');
-        messages.push({ role: 'assistant', content: cleanContent2 });
-        messages.push({ role: 'user', content: 'Please now return your final analysis as a JSON object.' });
-      } else {
-        throw new Error('Analysis cycle interrupted. Please try again.');
+      } 
+      
+      else {
+        throw new Error('Unexpected API response structure');
       }
     }
 
     function extractJSON(str) {
+      // Strip markdown fences
       str = str.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      const firstBracket = str.indexOf('{');
-      const lastBracket = str.lastIndexOf('}');
-      if (firstBracket === -1 || lastBracket === -1) {
-        throw new Error('The analysis was too complex. Try again with less text.');
+      const start = str.indexOf('{');
+      if (start === -1) throw new Error('The analysis was too long and got cut off. Try a shorter job description.');
+
+      // Try balanced brace parser first (most accurate)
+      let depth = 0, inString = false, escape = false;
+      for (let i = start; i < str.length; i++) {
+        const ch = str[i];
+        if (escape) { escape = false; continue; }
+        if (ch === '\\') { escape = true; continue; }
+        if (ch === '"' && !escape) { inString = !inString; continue; }
+        if (inString) continue;
+        if (ch === '{') depth++;
+        else if (ch === '}') {
+          depth--;
+          if (depth === 0) {
+            try {
+              return JSON.parse(str.slice(start, i + 1));
+            } catch(e) {
+              break; // fall through to greedy fallback
+            }
+          }
+        }
       }
-      const candidate = str.substring(firstBracket, lastBracket + 1);
+
+      // Greedy fallback — find first { and last }
+      const end = str.lastIndexOf('}');
+      if (end === -1) throw new Error('The analysis was too long and got cut off. Try a shorter job description.');
       try {
-        return JSON.parse(candidate);
-      } catch (e) {
-        const fixed = candidate.replace(/,\s*([\]}])/g, '$1');
-        return JSON.parse(fixed);
+        return JSON.parse(str.slice(start, end + 1));
+      } catch(e) {
+        throw new Error('Analysis returned malformed data. Please try again.');
       }
     }
 
@@ -1423,10 +1404,8 @@ async function analyze() {
   } finally {
     document.getElementById('thinking').style.display = 'none';
     btn.disabled = false;
-    log.style.display = 'none';
   }
 }
-
 
 function renderResults(data) {
   const { verdict, fraudRiskScore, summary, redFlags, greenFlags, signals, recommendation } = data;
@@ -1446,11 +1425,8 @@ function renderResults(data) {
   document.getElementById('scoreBadge').textContent = fraudRiskScore + '/100';
   document.getElementById('scoreBadge').className = 'score-badge';
   document.getElementById('scoreLabel').textContent = fraudRiskScore + ' / 100';
-  // Strip any citation tags the model may have included
-  function stripCitations(str) {
-    return (str || '').replace(/<cite[^>]*>/gi, '').replace(/<\/cite>/gi, '');
-  }
-  document.getElementById('verdictSummary').textContent = stripCitations(summary);
+  setTimeout(() => { document.getElementById('confidenceFill').style.width = fraudRiskScore + '%'; }, 100);
+  document.getElementById('verdictSummary').textContent = summary;
 
   // Red flags
   const redList = document.getElementById('redFlags');
@@ -1476,17 +1452,17 @@ function renderResults(data) {
       '<div class="signal-score" style="color:' + color + '">' + s.score + '<span class="signal-score-label">/100</span></div>' +
       '</div>';
   }).join('');
-  // Delay until #results is visible before animating bars
-  setTimeout(() => {
-    document.getElementById('confidenceFill').style.width = fraudRiskScore + '%';
-    signalRows.querySelectorAll('.signal-fill').forEach(el => {
-      el.style.transition = 'width 0.9s ease';
-      el.style.width = el.getAttribute('data-target') + '%';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      signalRows.querySelectorAll('.signal-fill').forEach(el => {
+        el.style.transition = 'width 0.9s ease';
+        el.style.width = el.dataset.target + '%';
+      });
     });
-  }, 300);
+  });
 
   // Recommendation
-  document.getElementById('recommendationText').textContent = stripCitations(recommendation);
+  document.getElementById('recommendationText').textContent = recommendation;
 
   // ── Company Info (LEGITIMATE only) ─────────────────────────────────────────
   const ci = data.companyInfo;
