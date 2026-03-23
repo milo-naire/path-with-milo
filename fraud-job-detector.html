@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- build: 20260323-v4 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JobGuard — Forensic Fraud Detector</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -490,8 +491,8 @@
   .signal-name { font-size: 0.72rem; color: #9A9288; width: 155px; flex-shrink: 0; font-weight: 400; }
   .signal-name-hint { font-size: 0.6rem; color: var(--muted2); margin-left: 4px; }
 
-  .signal-bar-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .signal-fill { height: 100%; border-radius: 2px; transition: width 0.9s ease; }
+  .signal-bar-wrap { flex: 1; height: 6px; background: #2A2A3A; border-radius: 3px; overflow: hidden; }
+  .signal-fill { height: 100%; border-radius: 3px; transition: width 0.9s ease; }
   .signal-score { font-size: 0.7rem; width: 32px; text-align: right; flex-shrink: 0; font-weight: 500; }
 
   /* ─── Recommendation ─────────────────────────────────────────────────── */
@@ -1313,7 +1314,7 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
     let finalText = null;
     let searchCount = 0;
 
-    // Show step 1 immediately — we are reading the posting
+    // Show step 1 immediately
     renderProgress(0, investigationSteps[0].detail);
 
     while (!finalText) {
@@ -1324,78 +1325,61 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
           model: 'claude-sonnet-4-20250514',
           max_tokens: 4000,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-          system: SYSTEM_PROMPT + "\n\nIMPORTANT: If you have finished your research, output ONLY the JSON object. No prose, no preamble.",
+          system: SYSTEM_PROMPT,
           messages
         })
       });
 
       const data = await response.json();
-      if (data.error) throw new Error(data.error);
+      if (data.error) throw new Error(data.error.message || data.error);
 
       const responseContent = data.content || [];
       const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
       const textBlock = responseContent.find(b => b.type === 'text');
 
-      // 1. Handle Tool Use (Searching)
+      // Always append the assistant turn to conversation history
+      messages.push({ role: 'assistant', content: responseContent });
+
       if (toolUseBlock) {
         searchCount++;
-        // Update progress UI: 1 = Searching Company, 2 = Checking Role
-        let currentStep = Math.min(searchCount, 2); 
+        const currentStep = Math.min(searchCount, 2);
         renderProgress(currentStep, investigationSteps[currentStep].detail);
-        
-        // Push the assistant's tool call to history so the next loop knows what happened
-        messages.push({ role: 'assistant', content: responseContent });
-      } 
-      
-      // 2. Handle Final Text (The JSON)
-      else if (textBlock) {
-        renderProgress(3, investigationSteps[3].detail); // Finalizing Report
+
+        // Feed tool_result back so the model knows the search completed
+        messages.push({
+          role: 'user',
+          content: [{
+            type: 'tool_result',
+            tool_use_id: toolUseBlock.id,
+            content: 'Search completed. Please continue your analysis and return the final JSON.'
+          }]
+        });
+      } else if (textBlock) {
+        renderProgress(3, investigationSteps[3].detail);
         finalText = textBlock.text;
-      } 
-      
-      else {
-        throw new Error('Unexpected API response structure');
+      } else {
+        throw new Error('Analysis cycle interrupted. Please try again.');
       }
     }
 
-    function extractJSON(str) {
-      // Strip markdown fences
+        function extractJSON(str) {
       str = str.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      const start = str.indexOf('{');
-      if (start === -1) throw new Error('The analysis was too long and got cut off. Try a shorter job description.');
-
-      // Try balanced brace parser first (most accurate)
-      let depth = 0, inString = false, escape = false;
-      for (let i = start; i < str.length; i++) {
-        const ch = str[i];
-        if (escape) { escape = false; continue; }
-        if (ch === '\\') { escape = true; continue; }
-        if (ch === '"' && !escape) { inString = !inString; continue; }
-        if (inString) continue;
-        if (ch === '{') depth++;
-        else if (ch === '}') {
-          depth--;
-          if (depth === 0) {
-            try {
-              return JSON.parse(str.slice(start, i + 1));
-            } catch(e) {
-              break; // fall through to greedy fallback
-            }
-          }
-        }
+      const firstBracket = str.indexOf('{');
+      const lastBracket = str.lastIndexOf('}');
+      if (firstBracket === -1 || lastBracket === -1) {
+        throw new Error('The analysis was too complex and timed out. Try again with less text.');
       }
-
-      // Greedy fallback — find first { and last }
-      const end = str.lastIndexOf('}');
-      if (end === -1) throw new Error('The analysis was too long and got cut off. Try a shorter job description.');
+      const candidate = str.substring(firstBracket, lastBracket + 1);
       try {
-        return JSON.parse(str.slice(start, end + 1));
-      } catch(e) {
-        throw new Error('Analysis returned malformed data. Please try again.');
+        return JSON.parse(candidate);
+      } catch (e) {
+        // Remove trailing commas that break JSON.parse
+        const fixed = candidate.replace(/,\s*([\]}])/g, '$1');
+        return JSON.parse(fixed);
       }
     }
 
-    const parsed = extractJSON(finalText);
+        const parsed = extractJSON(finalText);
     renderResults(parsed);
 
   } catch (err) {
@@ -1425,8 +1409,11 @@ function renderResults(data) {
   document.getElementById('scoreBadge').textContent = fraudRiskScore + '/100';
   document.getElementById('scoreBadge').className = 'score-badge';
   document.getElementById('scoreLabel').textContent = fraudRiskScore + ' / 100';
-  setTimeout(() => { document.getElementById('confidenceFill').style.width = fraudRiskScore + '%'; }, 100);
-  document.getElementById('verdictSummary').textContent = summary;
+  // Strip any citation tags the model may have included
+  function stripCitations(str) {
+    return (str || '').replace(/<cite[^>]*>/gi, '').replace(/<\/cite>/gi, '');
+  }
+  document.getElementById('verdictSummary').textContent = stripCitations(summary);
 
   // Red flags
   const redList = document.getElementById('redFlags');
@@ -1452,17 +1439,17 @@ function renderResults(data) {
       '<div class="signal-score" style="color:' + color + '">' + s.score + '<span class="signal-score-label">/100</span></div>' +
       '</div>';
   }).join('');
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      signalRows.querySelectorAll('.signal-fill').forEach(el => {
-        el.style.transition = 'width 0.9s ease';
-        el.style.width = el.dataset.target + '%';
-      });
+  // Delay until #results is visible before animating bars
+  setTimeout(() => {
+    document.getElementById('confidenceFill').style.width = fraudRiskScore + '%';
+    signalRows.querySelectorAll('.signal-fill').forEach(el => {
+      el.style.transition = 'width 0.9s ease';
+      el.style.width = el.getAttribute('data-target') + '%';
     });
-  });
+  }, 300);
 
   // Recommendation
-  document.getElementById('recommendationText').textContent = recommendation;
+  document.getElementById('recommendationText').textContent = stripCitations(recommendation);
 
   // ── Company Info (LEGITIMATE only) ─────────────────────────────────────────
   const ci = data.companyInfo;
