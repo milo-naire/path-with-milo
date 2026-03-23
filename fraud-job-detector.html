@@ -11,12 +11,12 @@
     --bg:       #0F0E0D;
     --surface:  #1A1815;
     --card:     #201E1B;
-    --border:   #34495E;
+    --border:   #2E2B27;
     --amber:    #D46A6A;
-    --amber-dim:#A84545;
+    --amber-dim:#C4862E;
     --amber-glow: rgba(212,106,106,0.18);
     --red:      #E05C5C;
-    --green:    #88D4AB;
+    --green:    #6FCF8A;
     --blue:     #7EB8D4;
     --text:     #EDE8E0;
     --muted:    #7A7368;
@@ -42,7 +42,7 @@
     inset: 0;
     background-image:
       radial-gradient(ellipse 80% 60% at 20% 10%, rgba(212,106,106,0.04) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(212,106,106,0.025) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(255,179,71,0.03) 0%, transparent 50%),
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
     pointer-events: none;
     z-index: 0;
@@ -58,8 +58,8 @@
         -30deg,
         transparent,
         transparent 60px,
-        rgba(212,106,106,0.012) 60px,
-        rgba(212,106,106,0.012) 61px
+        rgba(255,179,71,0.018) 60px,
+        rgba(255,179,71,0.018) 61px
       );
     pointer-events: none;
     z-index: 0;
@@ -92,6 +92,13 @@
     align-items: center;
     justify-content: center;
   }
+
+  @keyframes shield-glow {
+    0%, 100% { filter: drop-shadow(0 0 0px rgba(136,212,171,0)); }
+    50%       { filter: drop-shadow(0 0 8px rgba(136,212,171,0.7)); }
+  }
+
+  .shield-wrap.glow svg { animation: shield-glow 2s ease-in-out 3; }
 
   .logo-text { display: flex; flex-direction: column; gap: 2px; }
 
@@ -199,7 +206,7 @@
   }
 
   .title-field input::placeholder { color: var(--muted); font-family: var(--sans); font-size: 0.85rem; }
-  .title-field input:focus { border-color: var(--amber-dim); box-shadow: 0 0 0 3px rgba(212,106,106,0.1); }
+  .title-field input:focus { border-color: var(--amber-dim); box-shadow: 0 0 0 3px rgba(212,106,106,0.08); }
 
   textarea {
     width: 100%;
@@ -218,7 +225,7 @@
   }
 
   textarea::placeholder { color: var(--muted); }
-  textarea:focus { border-color: var(--amber-dim); box-shadow: 0 0 0 3px rgba(212,106,106,0.1); }
+  textarea:focus { border-color: var(--amber-dim); box-shadow: 0 0 0 3px rgba(212,106,106,0.08); }
 
   .input-actions {
     display: flex;
@@ -281,7 +288,7 @@
   .analyze-btn:hover:not(:disabled) {
     background: #E08080;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(212,106,106,0.35);
+    box-shadow: 0 6px 20px rgba(212,106,106,0.3);
   }
 
   .analyze-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
@@ -328,7 +335,7 @@
   .progress-step.done  .step-icon { background: var(--green); border-color: var(--green); color: #0F0E0D; font-size: 0.65rem; }
   .progress-step.active .step-icon { border-color: var(--amber); animation: step-pulse 1.4s infinite; }
 
-  @keyframes step-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(212,106,106,0.4); } 50% { box-shadow: 0 0 0 5px rgba(212,106,106,0); } }
+  @keyframes step-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(212,106,106,0.4); } 50% { box-shadow: 0 0 0 5px rgba(255,179,71,0); } }
 
   .progress-current {
     display: flex;
@@ -350,9 +357,9 @@
 
   /* ─── Verdict ────────────────────────────────────────────────────────── */
   .verdict-card { border-radius: 16px; padding: 28px; margin-bottom: 20px; position: relative; overflow: hidden; }
-  .verdict-card.legit      { background: rgba(136,212,171,0.06); border: 1px solid rgba(136,212,171,0.2); box-shadow: 0 0 28px 4px rgba(136,212,171,0.1); }
-  .verdict-card.suspicious { background: rgba(212,106,106,0.04); border: 1px solid rgba(212,106,106,0.2); }
-  .verdict-card.fraudulent { background: rgba(212,106,106,0.07); border: 1px solid rgba(212,106,106,0.3); box-shadow: 0 0 36px 6px rgba(212,106,106,0.15); }
+  .verdict-card.legit      { background: rgba(111,207,138,0.06); border: 1px solid rgba(111,207,138,0.2); }
+  .verdict-card.suspicious { background: rgba(212,106,106,0.06);  border: 1px solid rgba(255,179,71,0.22); }
+  .verdict-card.fraudulent { background: rgba(224,92,92,0.06);   border: 1px solid rgba(224,92,92,0.25); }
 
   .verdict-header { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
 
@@ -382,7 +389,7 @@
   }
 
   .legit      .score-badge { background: rgba(111,207,138,0.12); color: var(--green); }
-  .suspicious .score-badge { background: rgba(212,106,106,0.12); color: var(--amber); }
+  .suspicious .score-badge { background: rgba(212,106,106,0.12);  color: var(--amber); }
   .fraudulent .score-badge { background: rgba(224,92,92,0.12);   color: var(--red);   }
 
   .risk-bar-wrap { margin-top: 4px; }
@@ -485,8 +492,7 @@
 
   .signal-bar-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
   .signal-fill { height: 100%; border-radius: 2px; transition: width 0.9s ease; }
-  .signal-score { font-size: 0.7rem; width: 48px; text-align: right; flex-shrink: 0; font-weight: 600; line-height: 1; }
-  .signal-score-label { font-size: 0.58rem; color: var(--muted); font-weight: 400; margin-left: 1px; }
+  .signal-score { font-size: 0.7rem; width: 32px; text-align: right; flex-shrink: 0; font-weight: 500; }
 
   /* ─── Recommendation ─────────────────────────────────────────────────── */
   .recommendation { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
@@ -675,12 +681,12 @@
   .copy-btn:hover { opacity: 0.82; }
 
   /* ─── Compass Glow (Transferable Gold) ───────────────────────────────── */
-  @keyframes shield-glow {
-    0%, 100% { filter: drop-shadow(0 0 0px rgba(136,212,171,0)); }
-    50%       { filter: drop-shadow(0 0 8px rgba(136,212,171,0.7)); }
+  @keyframes compass-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,179,71,0); }
+    50% { box-shadow: 0 0 16px 6px rgba(212,106,106,0.35); }
   }
 
-  .shield-wrap.glow svg { animation: shield-glow 2s ease-in-out 3; }
+  .compass-ring.glow { animation: compass-glow 2s ease-in-out 3; }
 
   /* ─── Data Audit ─────────────────────────────────────────────────────── */
   .da-risk-badge {
@@ -695,7 +701,7 @@
   }
 
   .da-risk-badge.safe    { background: rgba(111,207,138,0.1);  color: var(--green); border: 1px solid rgba(111,207,138,0.25); }
-  .da-risk-badge.warning { background: rgba(212,106,106,0.1);  color: var(--amber); border: 1px solid rgba(212,106,106,0.25); }
+  .da-risk-badge.warning { background: rgba(212,106,106,0.1);   color: var(--amber); border: 1px solid rgba(255,179,71,0.25); }
   .da-risk-badge.danger  { background: rgba(224,92,92,0.1);    color: var(--red);   border: 1px solid rgba(224,92,92,0.25); }
 
   .da-title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -714,7 +720,7 @@
   .da-method-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
   .da-method-icon.ats     { background: rgba(111,207,138,0.1); }
   .da-method-icon.risky   { background: rgba(224,92,92,0.1);   }
-  .da-method-icon.medium  { background: rgba(255,179,71,0.1);  }
+  .da-method-icon.medium  { background: rgba(212,106,106,0.1);  }
   .da-method-icon.unknown { background: rgba(100,96,92,0.15);  }
 
   .da-method-name { font-family: var(--sans); font-weight: 600; font-size: 0.85rem; color: var(--text); margin-bottom: 3px; }
@@ -833,14 +839,11 @@
     <!-- Signals -->
     <div class="signals-section">
       <div class="signals-header">
-        <div>
-          <div class="signals-title">Signal Breakdown</div>
-          <div style="font-size:0.65rem;color:var(--muted);margin-top:3px;">Each score is out of 100 — higher means more suspicious. Hover any row to learn more.</div>
-        </div>
+        <div class="signals-title">Signal Breakdown</div>
         <div class="signals-legend">
-          <span><span class="leg-dot" style="background:var(--green)"></span>Low risk</span>
+          <span><span class="leg-dot" style="background:var(--green)"></span>Low</span>
           <span><span class="leg-dot" style="background:var(--amber)"></span>Medium</span>
-          <span><span class="leg-dot" style="background:var(--red)"></span>High risk</span>
+          <span><span class="leg-dot" style="background:var(--red)"></span>High</span>
         </div>
       </div>
       <div id="signalRows"></div>
@@ -856,7 +859,7 @@
     <div id="companyInfo" class="info-panel panel-accent-green" style="display:none;">
       <div class="panel-header">
         <div class="panel-title">🏢 Company Verification</div>
-        <div class="panel-sub">We looked it up. Here's what we found.</div>
+        <div class="panel-sub">Cross-referenced against public records and official listings.</div>
       </div>
       <div class="ci-rows">
         <div class="ci-row">
@@ -898,8 +901,8 @@
     <!-- Salary (LEGITIMATE) -->
     <div id="ciSalary" class="info-panel panel-accent-green" style="display:none;">
       <div class="panel-header">
-        <div class="panel-title">$ Salary Analysis</div>
-        <div class="panel-sub">Know what you're worth before you apply.</div>
+        <div class="panel-title">💰 Salary Analysis</div>
+        <div class="panel-sub">How this posting compares to 2026 market rates.</div>
       </div>
       <div class="two-col">
         <div class="data-card">
@@ -918,7 +921,7 @@
     <div id="betterPath" class="info-panel panel-accent-amber" style="display:none;">
       <div class="panel-header">
         <div class="panel-title">🧭 Find the Real Version of This Job</div>
-        <div class="panel-sub">Don't chase a ghost. Here's where the real work is.</div>
+        <div class="panel-sub">You deserve better. Here's where to actually look.</div>
       </div>
       <div class="two-col">
         <div class="data-card">
@@ -952,7 +955,7 @@
           <div style="font-size:1.3rem;">🔍</div>
           <div>
             <div class="panel-title">Privacy & Data Audit</div>
-            <div class="panel-sub">What they're asking for tells you everything about their intentions.</div>
+            <div class="panel-sub">Checking what this posting is actually asking for — and why.</div>
           </div>
           <div class="da-risk-badge" id="daRiskBadge"></div>
         </div>
@@ -1091,9 +1094,9 @@ const SIGNAL_TOOLTIPS = {
 function loadExample(type) { document.getElementById('jobInput').value = EXAMPLES[type]; }
 
 function getScoreColor(score) {
-  if (score <= 30) return 'var(--accent3)';
-  if (score <= 65) return 'var(--accent2)';
-  return 'var(--accent)';
+  if (score <= 30) return 'var(--green)';
+  if (score <= 65) return 'var(--amber)';
+  return 'var(--red)';
 }
 
 function copySearch() {
@@ -1178,6 +1181,12 @@ FILTER 4 — GHOST JOB DETECTION:
 Score 40-60 if: 100% generic JD with zero internal context, company had recent layoffs, no specific team/tool/project mentions
 DISTINGUISH: Generic JD from Fortune 500 = lazy HR (low risk). Generic JD from new account = fraud (high risk).
 
+TRUSTED DOMAIN OVERRIDE — apply BEFORE any other scoring:
+• If the employer website, email domain, or apply link ends in .gov or .edu → automatically set fraudRiskScore to MAX 15 and verdict to LEGITIMATE
+• .gov = verified government entity. .edu = accredited academic institution. Neither can be faked at the DNS level.
+• Note the trusted domain in greenFlags (e.g. "Employer domain is .gov — verified government institution")
+• Still complete the rest of the analysis for context, but the score cannot exceed 15
+
 LEGITIMACY REDUCERS (lower score 30-50pts if ALL true):
 • Verified Fortune 500 or established company with LinkedIn/website
 • Specific internal tools, proprietary software, or unique project context
@@ -1189,6 +1198,16 @@ CAREERS PAGE (from web search):
 • Company exists but role not found → +40 fraudRiskScore
 • No careers page found → +40 fraudRiskScore
 • No company name → critical red flag
+
+JOB CLASSIFICATION:
+Before scoring, classify the role into one of these categories and apply the relevant context:
+• ENTRY-LEVEL / INTERNSHIP: Expect lower pay, less specificity in requirements — do not penalize for missing experience requirements
+• MID-LEVEL PROFESSIONAL: Expect specific skills, named tools, realistic salary range — flag vague JDs harder
+• SENIOR / EXECUTIVE: Expect detailed scope, compensation range, seniority signals — generic JD is a bigger red flag
+• ACADEMIC / RESEARCH (.edu employers): Standard academic hiring norms apply — lower pay is normal, slow process is normal
+• GOVERNMENT (.gov employers): Formal language, USAJobs-style formatting, and slow timelines are expected and legitimate
+• FREELANCE / CONTRACT: Apply platform-specific fraud filters (payment verification, budget vs. scope math)
+• VOLUNTEER / NONPROFIT: Unpaid or low-pay is legitimate if the org is verifiable — do not flag as fraud solely for low compensation
 
 SCORING THRESHOLDS:
 FRAUDULENT (70-100): 2+ critical signals OR income promise + missing identity + thin requirements
@@ -1294,14 +1313,16 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
 
     let step = 0;
     let finalText = null;
+    let searchCount = 0;
 
+    // Step 1 shown immediately on button press (already called above)
     while (!finalText) {
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
-          max_tokens: 2000,
+          max_tokens: 4000,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
           system: SYSTEM_PROMPT,
           messages
@@ -1311,41 +1332,31 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
       const data = await response.json();
       const responseContent = data.content || [];
       const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
-
-      // web_search is a server-side tool — Anthropic executes it internally.
-      // The response will either contain tool_use blocks (still searching)
-      // or just text (done). We keep looping until stop_reason is end_turn.
-      const stopReason = data.stop_reason;
       const textBlock = responseContent.find(b => b.type === 'text');
 
-      if (stopReason === 'end_turn' && textBlock) {
-        // Model finished — extract the final text
-        renderProgress(3, 'Scoring fraud signals and building your report...');
-        finalText = textBlock.text;
-      } else if (toolUseBlock) {
-        // Model is still using tools — update progress and keep looping
+      if (toolUseBlock) {
         searchCount++;
         if (searchCount === 1) {
           renderProgress(1, investigationSteps[1].detail);
         } else {
           renderProgress(2, investigationSteps[2].detail);
         }
-        // Append assistant turn and loop again
         messages = [...messages, { role: 'assistant', content: responseContent }];
       } else if (textBlock) {
-        // Got text even without end_turn — use it
-        renderProgress(3, 'Scoring fraud signals and building your report...');
+        renderProgress(3, investigationSteps[3].detail);
         finalText = textBlock.text;
       } else {
-        // Unexpected response — break out to avoid infinite loop
-        throw new Error('Unexpected response structure from API');
+        throw new Error('Unexpected API response: ' + JSON.stringify(data).slice(0, 200));
       }
     }
 
     function extractJSON(str) {
+      // Strip markdown fences
       str = str.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
       const start = str.indexOf('{');
-      if (start === -1) throw new Error('No JSON object found in response');
+      if (start === -1) throw new Error('The analysis was too long and got cut off. Try a shorter job description.');
+
+      // Try balanced brace parser first (most accurate)
       let depth = 0, inString = false, escape = false;
       for (let i = start; i < str.length; i++) {
         const ch = str[i];
@@ -1354,9 +1365,26 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
         if (ch === '"' && !escape) { inString = !inString; continue; }
         if (inString) continue;
         if (ch === '{') depth++;
-        else if (ch === '}') { depth--; if (depth === 0) { return JSON.parse(str.slice(start, i + 1)); } }
+        else if (ch === '}') {
+          depth--;
+          if (depth === 0) {
+            try {
+              return JSON.parse(str.slice(start, i + 1));
+            } catch(e) {
+              break; // fall through to greedy fallback
+            }
+          }
+        }
       }
-      throw new Error('Unbalanced JSON in response');
+
+      // Greedy fallback — find first { and last }
+      const end = str.lastIndexOf('}');
+      if (end === -1) throw new Error('The analysis was too long and got cut off. Try a shorter job description.');
+      try {
+        return JSON.parse(str.slice(start, end + 1));
+      } catch(e) {
+        throw new Error('Analysis returned malformed data. Please try again.');
+      }
     }
 
     const parsed = extractJSON(finalText);
@@ -1416,7 +1444,6 @@ function renderResults(data) {
       '<div class="signal-score" style="color:' + color + '">' + s.score + '<span class="signal-score-label">/100</span></div>' +
       '</div>';
   }).join('');
-  // Use double rAF to guarantee elements are painted before animating
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       signalRows.querySelectorAll('.signal-fill').forEach(el => {
@@ -1503,7 +1530,7 @@ function renderResults(data) {
 
     // Risk score meter
     const risk = da.identityTheftRisk || 0;
-    const riskColor = risk <= 30 ? 'var(--accent3)' : risk <= 65 ? 'var(--accent2)' : 'var(--accent)';
+    const riskColor = risk <= 30 ? 'var(--green)' : risk <= 65 ? 'var(--amber)' : 'var(--red)';
     const riskScoreEl = document.getElementById('daRiskScore');
     riskScoreEl.textContent = risk + '/100';
     riskScoreEl.style.color = riskColor;
@@ -1556,13 +1583,6 @@ function renderResults(data) {
   }
 
   document.getElementById('results').style.display = 'block';
-  if (verdict === 'LEGITIMATE') {
-    const ring = document.getElementById('compassRing');
-    ring.classList.remove('glow');
-    void ring.offsetWidth;
-    ring.classList.add('glow');
-    ring.addEventListener('animationend', () => ring.classList.remove('glow'), { once: true });
-  }
   document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
