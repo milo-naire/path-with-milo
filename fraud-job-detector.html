@@ -1373,15 +1373,19 @@ async function analyze() {
       const toolUse = responseContent.find(b => b.type === 'tool_use' || b.type === 'server_tool_use');
       const textBlock = responseContent.find(b => b.type === 'text');
 
-      messages.push({ role: 'assistant', content: responseContent });
+      // Check if the response already contains tool_result blocks (server-side search)
+      // If so, we don't need to add our own tool_result — just append and continue
+      const hasToolResult = responseContent.some(b => b.type === 'tool_result' || b.type === 'server_tool_result');
 
-      if (toolUse) {
+      if (toolUse && !hasToolResult) {
+        // Client-side tool use — we need to provide the tool_result ourselves
         searchCount++;
         const query = (toolUse.input && toolUse.input.query) ? toolUse.input.query : 'web search';
         addLog(query, 'search');
         const currentStep = Math.min(searchCount, 2);
         renderProgress(currentStep, investigationSteps[currentStep].detail);
 
+        messages.push({ role: 'assistant', content: responseContent });
         messages.push({
           role: 'user',
           content: [{
@@ -1390,13 +1394,22 @@ async function analyze() {
             content: 'Search completed. Continue analysis and return final JSON.'
           }]
         });
+      } else if (toolUse && hasToolResult) {
+        // Server already handled the search and included results — just append and loop
+        searchCount++;
+        const query = (toolUse.input && toolUse.input.query) ? toolUse.input.query : 'web search';
+        addLog(query, 'search');
+        const currentStep = Math.min(searchCount, 2);
+        renderProgress(currentStep, investigationSteps[currentStep].detail);
+        messages.push({ role: 'assistant', content: responseContent });
       } else if (textBlock && textBlock.text.includes('{')) {
         addLog('Building your report...', 'info');
         renderProgress(3, investigationSteps[3].detail);
+        messages.push({ role: 'assistant', content: responseContent });
         finalText = textBlock.text;
       } else if (textBlock) {
-        // Model returned prose without JSON yet — keep looping
         addLog('Analyzing results...', 'info');
+        messages.push({ role: 'assistant', content: responseContent });
         messages.push({
           role: 'user',
           content: 'Please now return your final analysis as a JSON object.'
