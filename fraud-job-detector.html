@@ -1324,29 +1324,37 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
           model: 'claude-sonnet-4-20250514',
           max_tokens: 4000,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-          system: SYSTEM_PROMPT,
+          system: SYSTEM_PROMPT + "\n\nIMPORTANT: If you have finished your research, output ONLY the JSON object. No prose, no preamble.",
           messages
         })
       });
 
       const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
       const responseContent = data.content || [];
       const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
       const textBlock = responseContent.find(b => b.type === 'text');
 
+      // 1. Handle Tool Use (Searching)
       if (toolUseBlock) {
         searchCount++;
-        if (searchCount === 1) {
-          renderProgress(1, investigationSteps[1].detail);
-        } else {
-          renderProgress(2, investigationSteps[2].detail);
-        }
-        messages = [...messages, { role: 'assistant', content: responseContent }];
-      } else if (textBlock) {
-        renderProgress(3, investigationSteps[3].detail);
+        // Update progress UI: 1 = Searching Company, 2 = Checking Role
+        let currentStep = Math.min(searchCount, 2); 
+        renderProgress(currentStep, investigationSteps[currentStep].detail);
+        
+        // Push the assistant's tool call to history so the next loop knows what happened
+        messages.push({ role: 'assistant', content: responseContent });
+      } 
+      
+      // 2. Handle Final Text (The JSON)
+      else if (textBlock) {
+        renderProgress(3, investigationSteps[3].detail); // Finalizing Report
         finalText = textBlock.text;
-      } else {
-        throw new Error('Unexpected API response: ' + JSON.stringify(data).slice(0, 200));
+      } 
+      
+      else {
+        throw new Error('Unexpected API response structure');
       }
     }
 
