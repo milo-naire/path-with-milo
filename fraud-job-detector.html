@@ -1452,8 +1452,13 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
       const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
       const textBlock = responseContent.find(b => b.type === 'text');
 
-      // Always add assistant turn first
-      messages.push({ role: 'assistant', content: responseContent });
+      // Only keep tool_use and text blocks — drop search result content to save tokens
+      const trimmedContent = responseContent.map(b => {
+        if (b.type === 'tool_use') return b;
+        if (b.type === 'text') return b;
+        return null;
+      }).filter(Boolean);
+      messages.push({ role: 'assistant', content: trimmedContent });
 
       if (toolUseBlock) {
         searchCount++;
