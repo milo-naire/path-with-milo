@@ -1,0 +1,2462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Compass — 2026 Career Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-base: #0F0E0D;
+    --bg-card: #171512;
+    --bg-glass: rgba(255,255,255,0.035);
+
+    /* Amber — reserved for: compass needle, progress bars, timeline dots ONLY */
+    --amber: #FFB347;
+    --amber-dim: rgba(255,179,71,0.12);
+    --amber-glow: rgba(255,179,71,0.35);
+    --amber-faint: rgba(255,179,71,0.05);
+    --amber-border: rgba(255,179,71,0.28);
+
+    /* Slate — all borders, card outlines, input rings */
+    --slate: #34495E;
+    --slate-dim: rgba(52,73,94,0.5);
+    --slate-border: rgba(52,73,94,0.7);
+    --slate-faint: rgba(52,73,94,0.18);
+    --slate-hover: rgba(52,73,94,0.9);
+
+    /* Typography */
+    --text-primary: #F0F6FC;
+    --text-secondary: #8A9BB0;
+    --text-muted: #4A5568;
+    --text-emphasis: #FFB347;   /* amber — for keywords/headings only */
+
+    --border: rgba(52,73,94,0.55);
+    --red-accent: #E05C47;
+    --teal: #4ECDC4;
+    --radius: 16px;
+    --radius-lg: 20px;
+    --serif: 'DM Sans', system-ui, sans-serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --mono: 'DM Sans', system-ui, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.65;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── TOPOGRAPHIC TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: 0.4;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% 40%, rgba(52,73,94,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 70%, rgba(52,73,94,0.04) 0%, transparent 60%),
+      repeating-radial-gradient(circle at 50% 50%, transparent 0, transparent 28px, rgba(52,73,94,0.04) 29px, transparent 30px),
+      repeating-radial-gradient(circle at 20% 80%, transparent 0, transparent 42px, rgba(52,73,94,0.025) 43px, transparent 44px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: -180px; left: 50%;
+    transform: translateX(-50%);
+    width: 800px; height: 480px;
+    background: radial-gradient(ellipse, rgba(52,73,94,0.09) 0%, transparent 68%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 52px 0 36px;
+    text-align: center;
+    position: relative;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+  }
+
+  .header-text { display: flex; flex-direction: column; align-items: center; }
+
+  /* Compass — amber palette, needle glow state */
+  .compass-icon {
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 14px rgba(255,179,71,0.35));
+    animation: compass-spin 22s linear infinite;
+    transition: filter 0.6s ease;
+  }
+
+  .compass-icon.gold-glow {
+    filter: drop-shadow(0 0 28px rgba(255,179,71,0.85)) drop-shadow(0 0 8px rgba(255,230,120,0.6));
+    animation: compass-spin 22s linear infinite, needle-pulse 1.2s ease-in-out 3;
+  }
+
+  @keyframes needle-pulse {
+    0%, 100% { filter: drop-shadow(0 0 28px rgba(255,179,71,0.85)); }
+    50%       { filter: drop-shadow(0 0 44px rgba(255,220,80,1)) drop-shadow(0 0 16px rgba(255,200,60,0.9)); }
+  }
+
+  .compass-needle {
+    transform-origin: 60px 60px;
+    animation: counter-spin 22s linear infinite, needle-sway 5s ease-in-out infinite;
+  }
+
+  @keyframes counter-spin { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+  @keyframes compass-spin  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes needle-sway {
+    0%, 100% { transform: rotate(0deg); }
+    30%       { transform: rotate(6deg); }
+    70%       { transform: rotate(-6deg); }
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--slate-faint);
+    border: 1px solid var(--slate-border);
+    border-radius: 999px;
+    padding: 5px 16px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 22px;
+  }
+
+  .header-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--slate);
+    border-radius: 50%;
+    animation: pulse-dot 2.4s infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.65); }
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(38px, 6vw, 66px);
+    font-weight: 400;
+    font-style: normal;
+    letter-spacing: -0.01em;
+    line-height: 1.0;
+    color: var(--text-primary);
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--text-emphasis);
+    text-shadow: 0 0 40px var(--amber-glow);
+  }
+
+  .header-sub {
+    margin-top: 14px;
+    color: var(--text-secondary);
+    font-size: 15.5px;
+    font-weight: 300;
+    max-width: 460px;
+    text-align: center;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  /* ── CARDS ── */
+  .glass-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    transition: border-color 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Subtle inner top-edge highlight */
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(52,73,94,0.4), transparent);
+  }
+
+  .glass-card:hover { border-color: rgba(52,73,94,0.9); }
+
+  /* ── INPUT FORM ── */
+  .form-section { margin: 32px 0; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  label .label-num {
+    background: var(--slate-faint);
+    border: 1px solid var(--slate-border);
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--text-secondary);
+  }
+
+  input, textarea {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--slate-border);
+    border-radius: var(--radius);
+    padding: 13px 16px;
+    color: var(--text-primary);
+    font-family: var(--sans);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+    width: 100%;
+    resize: none;
+  }
+
+  input::placeholder, textarea::placeholder { color: var(--text-muted); }
+
+  input:focus, textarea:focus {
+    border-color: var(--slate);
+    background: rgba(52,73,94,0.06);
+    box-shadow: 0 0 0 3px rgba(52,73,94,0.15);
+  }
+
+  /* ── RESUME UPLOAD ── */
+  .upload-zone {
+    border: 1.5px dashed var(--slate-border);
+    border-radius: var(--radius);
+    background: var(--slate-faint);
+    padding: 30px 20px;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 10px; cursor: pointer;
+    transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+    position: relative; text-align: center; min-height: 130px;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--slate);
+    background: rgba(52,73,94,0.14);
+    box-shadow: 0 0 0 3px rgba(52,73,94,0.12);
+  }
+
+  .upload-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0;
+    cursor: pointer; width: 100%; height: 100%;
+    padding: 0; border: none; background: none;
+  }
+
+  .upload-icon {
+    width: 42px; height: 42px;
+    background: var(--slate-faint);
+    border: 1px solid var(--slate-border);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px; flex-shrink: 0; transition: transform 0.2s;
+  }
+
+  .upload-zone:hover .upload-icon { transform: translateY(-2px); }
+
+  .upload-title {
+    font-family: var(--serif);
+    font-size: 15px; color: var(--text-primary);
+  }
+
+  .upload-sub {
+    font-size: 11px; color: var(--text-muted);
+    font-family: var(--mono); letter-spacing: 0.04em;
+  }
+
+  .resume-parsed {
+    display: none; align-items: center; gap: 10px;
+    background: var(--slate-faint);
+    border: 1px solid var(--slate-border);
+    border-radius: var(--radius); padding: 11px 15px;
+  }
+
+  .resume-parsed.active { display: flex; }
+  .resume-parsed-icon { font-size: 20px; flex-shrink: 0; }
+  .resume-parsed-info { flex: 1; min-width: 0; }
+
+  .resume-parsed-name {
+    font-family: var(--sans); font-size: 13px; font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .resume-parsed-meta {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--text-secondary); margin-top: 2px;
+  }
+
+  .resume-clear-btn {
+    background: none;
+    border: 1px solid rgba(224,92,71,0.3);
+    border-radius: 8px;
+    padding: 4px 9px;
+    color: var(--red-accent);
+    font-family: var(--mono);
+    font-size: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .resume-clear-btn:hover { background: rgba(224,92,71,0.1); }
+
+  /* ── CTA BUTTON ── */
+  .btn-simulate {
+    width: 100%; margin-top: 24px; padding: 18px;
+    background: var(--amber);
+    color: #1A1208;
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .btn-simulate::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.55s;
+  }
+
+  .btn-simulate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 36px var(--amber-glow);
+  }
+
+  .btn-simulate:hover::after { transform: translateX(100%); }
+  .btn-simulate:active { transform: translateY(0); }
+  .btn-simulate.loading { opacity: 0.65; pointer-events: none; }
+
+  /* ── LOADER ── */
+  .loader-wrap {
+    display: none; flex-direction: column; align-items: center;
+    gap: 16px; padding: 52px 0; text-align: center;
+  }
+
+  .loader-wrap.active { display: flex; }
+
+  .loader-ring {
+    width: 44px; height: 44px;
+    border: 2px solid rgba(255,255,255,0.07);
+    border-top-color: var(--amber);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loader-text {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--amber);
+    letter-spacing: 0.1em;
+  }
+
+  .loader-steps {
+    display: flex; flex-direction: column; gap: 6px;
+    font-size: 12px; color: var(--text-muted);
+    font-family: var(--sans);
+  }
+
+  .loader-step { opacity: 0; animation: fadeInStep 0.4s forwards; }
+  .loader-step:nth-child(1) { animation-delay: 0.3s; }
+  .loader-step:nth-child(2) { animation-delay: 1.2s; }
+  .loader-step:nth-child(3) { animation-delay: 2.1s; }
+  .loader-step:nth-child(4) { animation-delay: 3.0s; }
+
+  @keyframes fadeInStep { to { opacity: 1; } }
+
+  /* ── RESULTS ── */
+  #results { display: none; flex-direction: column; gap: 24px; padding-bottom: 110px; }
+  #results.active { display: flex; }
+
+  .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+
+  .section-icon {
+    width: 38px; height: 38px;
+    background: var(--slate-faint);
+    border: 1px solid var(--slate-border);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: var(--serif);
+    font-size: 20px; font-weight: 400;
+    color: var(--text-primary); line-height: 1.2;
+  }
+
+  .section-subtitle {
+    font-size: 11px; color: var(--text-secondary);
+    font-family: var(--mono); text-transform: uppercase;
+    letter-spacing: 0.1em; margin-top: 2px;
+  }
+
+  /* ── COMPETENCY CARDS ── */
+  .competency-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+  .competency-card {
+    background: var(--slate-faint);
+    border: 1px solid var(--slate-border);
+    border-radius: var(--radius);
+    padding: 20px; position: relative; overflow: hidden;
+    animation: slideUp 0.5s ease both;
+  }
+
+  .competency-card:nth-child(2) { animation-delay: 0.1s; }
+  .competency-card:nth-child(3) { animation-delay: 0.2s; }
+
+  .competency-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--slate), transparent);
+  }
+
+  .comp-label {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.14em;
+    margin-bottom: 6px; opacity: 0.7;
+  }
+
+  .comp-title {
+    font-family: var(--serif); font-size: 16px;
+    color: var(--text-emphasis);
+    margin-bottom: 8px; line-height: 1.25;
+  }
+
+  .comp-desc {
+    font-size: 12.5px; color: var(--text-primary);
+    line-height: 1.55; font-style: italic;
+  }
+
+  /* ── COMPATIBILITY METER ── */
+  .meter-layout { display: grid; grid-template-columns: 220px 1fr; gap: 36px; align-items: center; }
+  .meter-svg-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  #compat-svg { overflow: visible; }
+
+  .meter-score-label {
+    font-family: var(--mono);
+    font-size: 11px; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.1em; text-align: center;
+    max-width: 190px;
+  }
+
+  .meter-details { display: flex; flex-direction: column; gap: 14px; }
+
+  .meter-bar-row { display: flex; flex-direction: column; gap: 5px; position: relative; }
+
+  .meter-bar-label {
+    display: flex; justify-content: space-between;
+    font-size: 12.5px; color: var(--text-secondary);
+    font-family: var(--sans);
+  }
+
+  .meter-bar-label span:last-child {
+    font-family: var(--mono);
+    font-size: 11px; color: var(--amber);
+  }
+
+  .bar-track {
+    height: 5px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 99px; overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--amber), #FFD580);
+    transform-origin: left; transform: scaleX(0);
+    transition: transform 1.1s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  /* ── TOOLTIPS ── */
+  .meter-bar-row .tooltip-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.11);
+    font-size: 9px; color: var(--text-muted);
+    cursor: help; margin-left: 5px; flex-shrink: 0;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .meter-bar-row:hover .tooltip-icon { border-color: var(--slate); color: var(--text-secondary); }
+
+  .tooltip-box {
+    display: none;
+    position: absolute; bottom: calc(100% + 8px); left: 0; right: 0;
+    background: #1A1713;
+    border: 1px solid var(--slate-border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 12px; color: var(--text-secondary);
+    line-height: 1.5; z-index: 50; pointer-events: none;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  }
+
+  .tooltip-box strong {
+    display: block; font-family: var(--serif);
+    font-size: 13px; font-weight: 400;
+    color: var(--text-primary); margin-bottom: 3px;
+  }
+
+  .meter-bar-row:hover .tooltip-box { display: block; }
+
+  /* ── TIMELINE ── */
+  .timeline-card { position: relative; overflow: hidden; }
+
+  /* Topographic concentric ring background for this card */
+  .timeline-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-radial-gradient(circle at 10% 50%, transparent 0, transparent 44px, rgba(52,73,94,0.06) 45px, transparent 46px),
+      repeating-radial-gradient(circle at 90% 50%, transparent 0, transparent 60px, rgba(52,73,94,0.04) 61px, transparent 62px),
+      repeating-radial-gradient(circle at 50% 10%, transparent 0, transparent 72px, rgba(52,73,94,0.03) 73px, transparent 74px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .timeline-card .section-header,
+  .timeline { position: relative; z-index: 1; }
+
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    padding-left: 4px;
+  }
+
+  .timeline-node {
+    display: flex;
+    gap: 24px;
+    animation: slideUp 0.5s ease both;
+  }
+
+  .tl-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    width: 48px;
+  }
+
+  .tl-waypoint {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: rgba(15,14,13,0.95);
+    border: 2px solid var(--wp-color, #FFB347);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+    position: relative; z-index: 2;
+    box-shadow:
+      0 0 16px color-mix(in srgb, var(--wp-color, #FFB347) 40%, transparent),
+      0 0 5px  color-mix(in srgb, var(--wp-color, #FFB347) 55%, transparent);
+    transition: box-shadow 0.3s;
+  }
+
+  .timeline-node:hover .tl-waypoint {
+    box-shadow:
+      0 0 30px color-mix(in srgb, var(--wp-color, #FFB347) 65%, transparent),
+      0 0 10px color-mix(in srgb, var(--wp-color, #FFB347) 80%, transparent);
+  }
+
+  .tl-line {
+    flex: 1;
+    width: 2px;
+    min-height: 36px;
+    background: linear-gradient(to bottom, #FFB347 0%, rgba(255,179,71,0.25) 100%);
+    margin: 3px 0;
+  }
+
+  .tl-content {
+    flex: 1;
+    padding: 2px 0 44px;
+  }
+
+  .timeline-node:last-child .tl-content { padding-bottom: 4px; }
+
+  .tl-month-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    margin-bottom: 2px;
+  }
+
+  .tl-stage {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .tl-type {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 5px;
+  }
+
+  .tl-action {
+    font-family: var(--serif);
+    font-size: 20px;
+    color: var(--text-primary);
+    line-height: 1.25;
+    margin-bottom: 10px;
+  }
+
+  .tl-why {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-style: italic;
+    max-width: 520px;
+  }
+
+  /* ── SEARCH STRING ── */
+  .search-string-wrap { position: relative; }
+
+  .search-string-box {
+    background: rgba(0,0,0,0.35);
+    border: 1px solid var(--slate-border);
+    border-radius: var(--radius);
+    padding: 16px 64px 16px 20px;
+    font-family: var(--mono);
+    font-size: 13px; color: var(--text-primary);
+    line-height: 1.65; word-break: break-word;
+  }
+
+  .copy-btn {
+    position: absolute; top: 12px; right: 12px;
+    background: var(--slate-faint);
+    border: 1px solid var(--slate-border);
+    border-radius: 8px; padding: 6px 11px;
+    font-family: var(--mono); font-size: 10px; color: var(--text-secondary);
+    cursor: pointer; transition: background 0.2s, color 0.2s;
+  }
+
+  .copy-btn:hover { background: var(--slate-dim); color: var(--text-primary); }
+
+  .search-platforms { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+  .platform-chip {
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 999px; padding: 4px 13px;
+    font-size: 11px; color: var(--text-secondary);
+    font-family: var(--mono);
+  }
+
+  /* ── FOOTER CTA ── */
+  .footer-cta {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(15,14,13,0.93);
+    border-top: 1px solid var(--slate-border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+    z-index: 100;
+    transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .footer-cta.visible { transform: translateY(0); }
+
+  .footer-cta-label {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em;
+  }
+
+  .btn-whisperer {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 30px;
+    background: transparent;
+    border: 2px solid var(--slate);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-family: var(--sans); font-size: 14px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    cursor: pointer; position: relative; overflow: hidden;
+    transition: color 0.25s, box-shadow 0.25s, transform 0.2s;
+  }
+
+  .btn-whisperer::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--slate);
+    transform: translateX(-100%);
+    transition: transform 0.3s; z-index: 0;
+  }
+
+  .btn-whisperer span { position: relative; z-index: 1; }
+  .btn-whisperer:hover::before { transform: translateX(0); }
+  .btn-whisperer:hover { color: var(--text-primary); box-shadow: 0 0 24px rgba(52,73,94,0.5); transform: translateY(-1px); }
+
+  /* ── RESULT TAG ── */
+  .result-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--slate-faint);
+    border: 1px solid var(--slate-border);
+    border-radius: 999px; padding: 3px 12px;
+    font-family: var(--mono); font-size: 10px; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 18px;
+  }
+
+  /* ── ERROR ── */
+  .error-msg {
+    display: none;
+    background: rgba(224,92,71,0.07);
+    border: 1px solid rgba(224,92,71,0.28);
+    border-radius: var(--radius); padding: 14px 18px;
+    color: var(--red-accent); font-size: 13px; margin-top: 12px;
+    font-family: var(--mono);
+  }
+
+  .error-msg.active { display: block; }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* ── DEEP DIVE LINK ── */
+  .deep-dive-link {
+    display: inline-flex; align-items: center; gap: 5px;
+    margin-top: 10px;
+    font-family: var(--mono); font-size: 10px;
+    color: var(--text-secondary);
+    text-decoration: none; opacity: 0.65; cursor: pointer;
+    background: none; border: none; padding: 0;
+    letter-spacing: 0.06em; transition: opacity 0.2s;
+  }
+  .deep-dive-link:hover { opacity: 1; }
+
+  .modal-dimension-name {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 20px;
+  }
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 9, 8, 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal-card {
+    background: #1C1A17;
+    border: 1px solid var(--slate-border);
+    border-radius: var(--radius-lg);
+    padding: 36px 32px;
+    max-width: 460px; width: 100%;
+    position: relative;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    animation: slideUp 0.3s ease both;
+  }
+
+  .modal-card::before {
+    content: '';
+    position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(52,73,94,0.5), transparent);
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 14px; right: 16px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+  }
+
+  .modal-close:hover { color: var(--text-primary); }
+
+  .modal-icon {
+    font-size: 28px;
+    margin-bottom: 14px;
+  }
+
+  .modal-title {
+    font-family: var(--serif);
+    font-size: 22px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .modal-desc {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 6px;
+    font-style: italic;
+  }
+
+  .modal-dimension-name {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+  }
+
+  .modal-features {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-bottom: 24px;
+  }
+
+  .modal-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .modal-feature-icon {
+    color: var(--text-secondary);
+    font-size: 13px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-modal-primary {
+    width: 100%;
+    padding: 14px;
+    background: var(--slate);
+    color: var(--text-primary);
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--sans);
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+
+  .btn-modal-primary:hover {
+    box-shadow: 0 4px 20px rgba(52,73,94,0.5);
+    transform: translateY(-1px);
+  }
+
+  .btn-modal-secondary {
+    width: 100%;
+    padding: 13px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    font-family: var(--sans);
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-modal-secondary:hover { border-color: rgba(255,255,255,0.2); color: var(--text-primary); }
+
+  .modal-fine-print {
+    text-align: center;
+    font-size: 10.5px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    margin-top: 12px;
+  }
+
+  /* ── RESPONSIVE ── */
+  /* ── SOURCES FOOTNOTE ── */
+  .sources-footnote {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    color: var(--text-muted);
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+    cursor: help;
+    transition: color 0.2s;
+  }
+  .sources-footnote:hover { color: var(--text-secondary); }
+  .sources-footnote span { opacity: 0.55; margin-right: 4px; }
+
+  /* ── MARKET PULSE BAR ── */
+  .market-pulse {
+    background: rgba(15,14,13,0.85);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 10;
+    transition: border-color 0.3s;
+    min-height: 36px;
+  }
+
+  .market-pulse.loaded { border-bottom-color: rgba(52,73,94,0.6); }
+
+  .pulse-label {
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 9.5px;
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+
+  .pulse-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(52,73,94,0.2);
+    border: 1px solid var(--slate-border);
+    border-radius: 999px;
+    padding: 3px 10px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    transition: border-color 0.3s, color 0.3s;
+  }
+
+  .pulse-chip.signal-warm {
+    border-color: rgba(255,179,71,0.35);
+    color: var(--amber);
+  }
+
+  .pulse-chip.signal-cool {
+    border-color: rgba(78,205,196,0.35);
+    color: #4ECDC4;
+  }
+
+  .pulse-chip.signal-alert {
+    border-color: rgba(224,92,71,0.4);
+    color: var(--red-accent);
+  }
+
+  .pulse-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse-dot 2.4s infinite;
+    flex-shrink: 0;
+  }
+
+  .pulse-divider {
+    width: 1px; height: 14px;
+    background: var(--border);
+    flex-shrink: 0;
+    margin: 0 4px;
+  }
+
+  .pulse-milo-insight {
+    display: none;
+    margin-left: auto;
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-style: italic;
+    max-width: 340px;
+    text-align: right;
+    border-left: 1px solid var(--border);
+    padding-left: 12px;
+  }
+
+  .pulse-milo-insight.active { display: block; }
+
+  .pulse-loading {
+    color: var(--text-muted);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    animation: fadeInStep 0.5s ease forwards;
+  }
+
+  @media (max-width: 700px) {
+    .pulse-milo-insight { display: none !important; }
+    .market-pulse { gap: 4px; }
+  }
+
+  @media (max-width: 700px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: auto; }
+    .competency-grid { grid-template-columns: 1fr; }
+    .sprint-grid { grid-template-columns: 1fr; }
+    .meter-layout { grid-template-columns: 1fr; }
+    .meter-svg-wrap { margin: 0 auto; }
+    .header-inner { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- MARKET PULSE BAR — Live FRED data -->
+<div class="market-pulse" id="market-pulse">
+  <span class="pulse-label">Market Signal</span>
+  <span class="pulse-loading" id="pulse-loading">⟳ Fetching live data…</span>
+  <span class="pulse-milo-insight" id="milo-insight"></span>
+</div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-badge">Career Readiness Charter · 2026 Edition</div>
+    <div class="header-inner">
+      <div class="header-text">
+        <h1>The <em>Compass</em></h1>
+        <p class="header-sub">You already know more than you think. This is your journey to career mastery — let's walk this path.</p>
+      </div>
+      <!-- Compass SVG Icon — amber palette -->
+      <svg class="compass-icon" width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="54" stroke="rgba(255,179,71,0.22)" stroke-width="1.5"/>
+        <circle cx="60" cy="60" r="48" stroke="rgba(255,179,71,0.1)" stroke-width="0.75"/>
+        <g stroke="rgba(255,179,71,0.38)" stroke-width="1.5" stroke-linecap="round">
+          <line x1="60" y1="8"   x2="60" y2="16"/>
+          <line x1="60" y1="104" x2="60" y2="112"/>
+          <line x1="104" y1="60" x2="112" y2="60"/>
+          <line x1="8"  y1="60" x2="16"  y2="60"/>
+          <line x1="88.5" y1="14.9" x2="84.5" y2="21.8"/>
+          <line x1="105.1" y1="88.5" x2="98.2" y2="84.5"/>
+          <line x1="31.5" y1="105.1" x2="35.5" y2="98.2"/>
+          <line x1="14.9" y1="31.5" x2="21.8" y2="35.5"/>
+        </g>
+        <text x="60" y="26"  text-anchor="middle" font-family="Georgia, serif" font-size="9" font-weight="700" fill="#FFB347" letter-spacing="0.05em">N</text>
+        <text x="60" y="100" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="rgba(255,179,71,0.4)" letter-spacing="0.05em">S</text>
+        <text x="96" y="64"  text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="rgba(255,179,71,0.4)" letter-spacing="0.05em">E</text>
+        <text x="24" y="64"  text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="rgba(255,179,71,0.4)" letter-spacing="0.05em">W</text>
+        <circle cx="60" cy="60" r="30" stroke="rgba(255,179,71,0.15)" stroke-width="1" stroke-dasharray="4 4"/>
+        <g class="compass-needle">
+          <polygon points="60,22 55,60 60,56 65,60" fill="#FFB347" opacity="0.95"/>
+          <polygon points="60,98 55,60 60,64 65,60" fill="rgba(255,179,71,0.25)"/>
+        </g>
+        <circle cx="60" cy="60" r="5"   fill="#0F0E0D" stroke="#FFB347" stroke-width="1.5"/>
+        <circle cx="60" cy="60" r="2.5" fill="#FFB347" opacity="0.85"/>
+      </svg>
+    </div>
+  </header>
+
+  <!-- INPUT FORM -->
+  <div class="glass-card form-section">
+    <div class="result-tag">◈ Chart Your Course</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label><span class="label-num">01</span> Current Role</label>
+        <input type="text" id="current-role" placeholder="e.g. Psychology Major, HR Generalist, Econ Minor…" />
+      </div>
+      <div class="form-group">
+        <label><span class="label-num">02</span> Target Field</label>
+        <input type="text" id="target-field" placeholder="e.g. UX Research, Product Management, Data Analytics…" />
+      </div>
+      <div class="form-group full">
+        <label><span class="label-num">03</span> Drop your resume — we'll read between the lines</label>
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" id="resume-file" accept=".pdf,.docx,.txt" />
+          <div class="upload-icon">📄</div>
+          <div class="upload-title">Drag your resume here, or click to browse</div>
+          <div class="upload-sub">PDF · DOCX · TXT &nbsp;·&nbsp; Parsed locally, never stored</div>
+        </div>
+        <div class="resume-parsed" id="resume-parsed">
+          <div class="resume-parsed-icon">✅</div>
+          <div class="resume-parsed-info">
+            <div class="resume-parsed-name" id="resume-name">—</div>
+            <div class="resume-parsed-meta" id="resume-meta">Ready</div>
+          </div>
+          <button class="resume-clear-btn" onclick="clearResume()">✕ Remove</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn-simulate" id="simulate-btn" onclick="runSimulation()">
+      Find My Path →
+    </button>
+    <div class="error-msg" id="error-msg"></div>
+  </div>
+
+  <!-- LOADER -->
+  <div class="loader-wrap" id="loader">
+    <div class="loader-ring"></div>
+    <div class="loader-text">Reading your story…</div>
+    <div class="loader-steps">
+      <div class="loader-step">▸ Finding what you already know…</div>
+      <div class="loader-step">▸ Measuring the real distance to your goal…</div>
+      <div class="loader-step">▸ Mapping a 90-day route…</div>
+      <div class="loader-step">▸ Writing your search string…</div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+
+    <!-- TRANSFERABLE GOLD -->
+    <div class="glass-card">
+      <div class="section-header">
+        <div class="section-icon">✦</div>
+        <div>
+          <div class="section-title">What You Already Bring</div>
+          <div class="section-subtitle" id="competency-subtitle">From your resume, directly</div>
+        </div>
+      </div>
+      <div class="competency-grid" id="competency-grid"></div>
+    </div>
+
+    <!-- COMPATIBILITY METER -->
+    <div class="glass-card">
+      <div class="section-header">
+        <div class="section-icon">◎</div>
+        <div>
+          <div class="section-title">How Close Are You, Really?</div>
+          <div class="section-subtitle">Compatibility Score</div>
+        </div>
+      </div>
+      <div class="meter-layout">
+        <div class="meter-svg-wrap">
+          <svg id="compat-svg" width="200" height="200" viewBox="0 0 200 200">
+            <defs>
+              <linearGradient id="arcGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#FFB347"/>
+                <stop offset="100%" stop-color="#FFD580"/>
+              </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <!-- Track -->
+            <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12" stroke-dasharray="440" stroke-dashoffset="110" stroke-linecap="round" transform="rotate(135 100 100)"/>
+            <!-- Fill -->
+            <circle id="meter-arc" cx="100" cy="100" r="80" fill="none" stroke="url(#arcGrad)" stroke-width="12" stroke-dasharray="330" stroke-dashoffset="330" stroke-linecap="round" transform="rotate(135 100 100)" filter="url(#glow)" style="transition: stroke-dashoffset 1.5s cubic-bezier(0.23,1,0.32,1)"/>
+            <!-- Score text group - vertically centered -->
+            <text id="score-text" x="100" y="100" text-anchor="middle" dominant-baseline="central" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="48" fill="#e8edf2" letter-spacing="-1">0</text>
+            <text x="100" y="136" text-anchor="middle" dominant-baseline="central" font-family="'Courier New', monospace" font-size="13" font-weight="700" fill="#7a8898">/ 100</text>
+            <text id="score-label-text" x="100" y="155" text-anchor="middle" dominant-baseline="central" font-family="'Courier New', monospace" font-size="9" fill="#FFB347" letter-spacing="0.12em">LOADING</text>
+          </svg>
+          <div class="meter-score-label" id="meter-descriptor"></div>
+        </div>
+        <div class="meter-details" id="meter-bars"></div>
+      </div>
+    </div>
+
+    <!-- 90-DAY TIMELINE -->
+    <div class="glass-card timeline-card">
+      <div class="section-header">
+        <div class="section-icon">🧭</div>
+        <div>
+          <div class="section-title">Your 90-Day Route</div>
+          <div class="section-subtitle">One move per month — specific, not vague</div>
+        </div>
+      </div>
+      <div class="timeline" id="sprint-grid"></div>
+    </div>
+
+    <!-- SEARCH STRING -->
+    <div class="glass-card">
+      <div class="section-header">
+        <div class="section-icon">⌕</div>
+        <div>
+          <div class="section-title">How to Search for This Role</div>
+          <div class="section-subtitle">Drop this into LinkedIn, Handshake, or Indeed</div>
+        </div>
+      </div>
+      <div class="search-string-wrap">
+        <div class="search-string-box" id="search-string-box">—</div>
+        <button class="copy-btn" onclick="copySearch()">Copy</button>
+      </div>
+      <div class="search-platforms">
+        <span class="platform-chip">LinkedIn</span>
+        <span class="platform-chip">Handshake</span>
+        <span class="platform-chip">Indeed</span>
+        <span class="platform-chip">Glassdoor</span>
+        <span class="platform-chip">Wellfound</span>
+      </div>
+    </div>
+
+  </div><!-- /results -->
+
+</div><!-- /container -->
+
+<!-- DEEP DIVE PAYWALL MODAL -->
+<div class="modal-overlay" id="deepdive-modal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon">🔍</div>
+    <div class="modal-title">Deep Dive Insight</div>
+    <div class="modal-dimension-name" id="modal-dimension-name">Skills Overlap</div>
+    <div class="modal-desc">Get a personalized breakdown of exactly where you stand — pulled directly from your resume — with specific gaps, strengths, and what to do about each one.</div>
+    <div class="modal-features">
+      <div class="modal-feature"><span class="modal-feature-icon">◈</span><span>Line-by-line resume evidence for your score</span></div>
+      <div class="modal-feature"><span class="modal-feature-icon">◈</span><span>Specific skills missing vs. skills that already count</span></div>
+      <div class="modal-feature"><span class="modal-feature-icon">◈</span><span>A prioritized action list for this dimension only</span></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-primary" onclick="closeModal()">Got it — coming soon</button>
+    </div>
+    <div class="modal-fine-print">Deep insights are in development · Stay tuned</div>
+  </div>
+</div>
+
+<!-- FOOTER CTA -->
+<div class="footer-cta" id="footer-cta">
+  <div class="footer-cta-label">Your network is the next step —</div>
+  <button class="btn-whisperer" id="whisperer-btn" onclick="openWhisperer()">
+    <span>Ready to Network? Connect Now →</span>
+  </button>
+</div>
+
+<!-- PDF.js for client-side PDF parsing -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- mammoth.js for reliable DOCX parsing -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script>
+// Configure pdf.js worker — wait until library is confirmed loaded
+function setupPdfWorker() {
+  if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    // Suppress harmless warnings
+    const _warn = console.warn.bind(console);
+    console.warn = (...args) => {
+      const msg = String(args[0] || '');
+      if (msg.includes('fake worker') || msg.includes('Setting up fake') || msg.includes('TT: undefined function')) return;
+      _warn(...args);
+    };
+  }
+}
+setupPdfWorker();
+
+const ANTHROPIC_API = "https://api.anthropic.com/v1/messages";
+
+// ── ENVIRONMENT DETECTION ─────────────────────────────────────────
+// In the claude.ai sandbox: call Anthropic directly (auth is injected automatically)
+// On Netlify / any real host: route through /.netlify/functions/compass-proxy
+// which keeps your API key server-side and out of client code
+const IS_SANDBOX = window.location.hostname === 'claude.ai'
+  || window.location.hostname === ''
+  || window.location.protocol === 'blob:';
+
+const API_ENDPOINT = IS_SANDBOX
+  ? ANTHROPIC_API
+  : '/api/compass-proxy';
+let lastTargetField = "";
+let lastSearchString = "";
+let parsedResumeText = "";
+
+// ── RESUME UPLOAD & PARSING ──────────────────────────────────────
+
+const uploadZone = document.getElementById('upload-zone');
+const fileInput  = document.getElementById('resume-file');
+
+// Drag-and-drop
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) handleResumeFile(file);
+});
+
+// Explicit click → open file picker (belt-and-suspenders alongside the invisible input overlay)
+uploadZone.addEventListener('click', e => {
+  // Don't double-fire if the click came from the input itself
+  if (e.target === fileInput) return;
+  fileInput.click();
+});
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) handleResumeFile(fileInput.files[0]);
+});
+
+async function handleResumeFile(file) {
+  const maxMB = 10;
+  if (file.size > maxMB * 1024 * 1024) {
+    showError(`File too large. Please upload a resume under ${maxMB}MB.`);
+    return;
+  }
+
+  const ext = file.name.split('.').pop().toLowerCase();
+  const allowed = ['pdf', 'docx', 'txt', 'doc'];
+  if (!allowed.includes(ext)) {
+    showError(`Unsupported file type ".${ext}". Please upload a PDF, DOCX, or TXT file.`);
+    return;
+  }
+
+  hideError();
+  showParsedPill(file.name, '⟳ Parsing resume…');
+
+  try {
+    let text = '';
+
+    if (ext === 'pdf') {
+      text = await parsePDF(file);
+    } else if (ext === 'docx' || ext === 'doc') {
+      text = await parseDOCX(file);
+    } else {
+      text = await file.text();
+    }
+
+    const cleaned = text.replace(/\s+/g, ' ').trim();
+
+    if (!cleaned || cleaned.length < 100) {
+      throw new Error("Not enough text found. If this is a scanned PDF, try exporting as DOCX or copying your resume into a .txt file.");
+    }
+
+    parsedResumeText = cleaned;
+    const wordCount = parsedResumeText.split(/\s+/).length;
+    showParsedPill(file.name, `✦ ${wordCount} words extracted · Ready to simulate`);
+
+  } catch (err) {
+    clearResume();
+    showError('Resume upload failed: ' + (err.message || 'Unknown error. Try a .txt or .docx version.'));
+    console.error('[Compass] Resume parse error:', err);
+  }
+}
+
+async function parsePDF(file) {
+  if (typeof pdfjsLib === 'undefined') {
+    throw new Error("PDF parser not loaded yet. Wait a moment and try again, or upload a DOCX/TXT instead.");
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  let pdf;
+  try {
+    pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  } catch (e) {
+    throw new Error("Could not open PDF. It may be password-protected or corrupted. Try exporting as DOCX.");
+  }
+
+  let fullText = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    try {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      // Join items — preserve spacing between words
+      const pageText = content.items
+        .map(item => item.str)
+        .join(' ')
+        .replace(/\s+/g, ' ');
+      fullText += pageText + '\n';
+    } catch (pageErr) {
+      console.warn(`[Compass] Could not parse PDF page ${i}:`, pageErr);
+    }
+  }
+
+  if (!fullText.trim()) {
+    throw new Error("No text found in PDF — it may be a scanned image. Please export as DOCX or copy into a .txt file.");
+  }
+  return fullText;
+}
+
+async function parseDOCX(file) {
+  // Use mammoth.js for reliable DOCX extraction
+  if (typeof mammoth !== 'undefined') {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      if (result.value && result.value.trim().length > 50) {
+        return result.value;
+      }
+    } catch (e) {
+      console.warn('[Compass] mammoth failed, trying fallback:', e);
+    }
+  }
+
+  // Fallback: manual XML extraction from ZIP structure
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+
+    // DOCX is a ZIP — find word/document.xml by looking for its PK signature
+    const decoder = new TextDecoder('utf-8', { fatal: false, ignoreBOM: true });
+    const raw = decoder.decode(bytes);
+
+    // Find the document.xml content between w:body tags
+    const bodyMatch = raw.match(/<w:body[^>]*>([\s\S]*?)<\/w:body>/);
+    if (bodyMatch) {
+      const stripped = bodyMatch[1]
+        .replace(/<w:p[ >]/g, '\n<w:p>') // paragraph breaks
+        .replace(/<[^>]+>/g, '')           // strip all tags
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&apos;/g, "'")
+        .replace(/&quot;/g, '"')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (stripped.length > 50) return stripped;
+    }
+
+    // Last resort: strip everything
+    const stripped = raw
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/[^\x20-\x7E\n\r]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (stripped.length > 100) return stripped;
+    throw new Error("Could not extract text from DOCX.");
+
+  } catch (e) {
+    throw new Error("DOCX parsing failed. Please try saving as PDF or copying your resume into a .txt file.");
+  }
+}
+
+function showParsedPill(name, meta) {
+  document.getElementById('upload-zone').style.display = 'none';
+  const pill = document.getElementById('resume-parsed');
+  pill.classList.add('active');
+  document.getElementById('resume-name').textContent = name;
+  document.getElementById('resume-meta').textContent = meta;
+}
+
+function clearResume() {
+  parsedResumeText = '';
+  fileInput.value = '';
+  document.getElementById('upload-zone').style.display = '';
+  document.getElementById('resume-parsed').classList.remove('active');
+  document.getElementById('resume-name').textContent = '—';
+  document.getElementById('resume-meta').textContent = 'Ready';
+}
+
+// ── SIMULATION ───────────────────────────────────────────────────
+
+async function runSimulation() {
+  const role   = document.getElementById('current-role').value.trim();
+  const target = document.getElementById('target-field').value.trim();
+
+  if (!role || !target) {
+    showError("Please fill in your Current Role and Target Field.");
+    return;
+  }
+  if (!parsedResumeText) {
+    showError("Please upload your resume so we can parse your experience.");
+    return;
+  }
+
+  lastTargetField = target;
+  hideError();
+  showLoader();
+  hideResults();
+
+  // ── INPUT NORMALIZATION ─────────────────────────────────────────
+  // Expand known acronyms before anything hits the prompt
+  const ACRONYM_MAP = {
+    // HR / People
+    'HRBP': 'Human Resources Business Partner (HRBP)',
+    'CHRO': 'Chief Human Resources Officer (CHRO)',
+    'L&D': 'Learning and Development (L&D)',
+    'DEI': 'Diversity, Equity, and Inclusion (DEI)',
+    'TA': 'Talent Acquisition (TA)',
+    // Finance / Strategy
+    'FP&A': 'Financial Planning and Analysis (FP&A)',
+    'M&A': 'Mergers and Acquisitions (M&A)',
+    'PE': 'Private Equity (PE)',
+    'VC': 'Venture Capital (VC)',
+    'IB': 'Investment Banking (IB)',
+    'CF': 'Corporate Finance (CF)',
+    'CFA': 'Chartered Financial Analyst (CFA)',
+    'CPA': 'Certified Public Accountant (CPA)',
+    // Tech / Product
+    'PM': 'Product Manager (PM)',
+    'TPM': 'Technical Program Manager (TPM)',
+    'APM': 'Associate Product Manager (APM)',
+    'SWE': 'Software Engineer (SWE)',
+    'SRE': 'Site Reliability Engineer (SRE)',
+    'MLE': 'Machine Learning Engineer (MLE)',
+    'DS': 'Data Scientist (DS)',
+    'DA': 'Data Analyst (DA)',
+    'DE': 'Data Engineer (DE)',
+    'ML': 'Machine Learning (ML)',
+    'AI': 'Artificial Intelligence (AI)',
+    'NLP': 'Natural Language Processing (NLP)',
+    'CV': 'Computer Vision (CV)',
+    'UX': 'User Experience (UX)',
+    'UI': 'User Interface (UI)',
+    'UX/UI': 'User Experience / User Interface Design (UX/UI)',
+    'SaaS': 'Software as a Service (SaaS)',
+    'API': 'Application Programming Interface (API)',
+    'QA': 'Quality Assurance (QA)',
+    'DevOps': 'Development Operations (DevOps)',
+    'MLOps': 'Machine Learning Operations (MLOps)',
+    // Sales / Marketing / Ops
+    'BDR': 'Business Development Representative (BDR)',
+    'SDR': 'Sales Development Representative (SDR)',
+    'AE': 'Account Executive (AE)',
+    'CSM': 'Customer Success Manager (CSM)',
+    'GTM': 'Go-to-Market (GTM)',
+    'CRM': 'Customer Relationship Management (CRM)',
+    'SEO': 'Search Engine Optimization (SEO)',
+    'SEM': 'Search Engine Marketing (SEM)',
+    'CX': 'Customer Experience (CX)',
+    'B2B': 'Business-to-Business (B2B)',
+    'B2C': 'Business-to-Consumer (B2C)',
+    // Ops / Strategy
+    'PMO': 'Project Management Office (PMO)',
+    'OKR': 'Objectives and Key Results (OKR)',
+    'KPI': 'Key Performance Indicator (KPI)',
+    'COO': 'Chief Operating Officer (COO)',
+    'CFO': 'Chief Financial Officer (CFO)',
+    'CTO': 'Chief Technology Officer (CTO)',
+    'CMO': 'Chief Marketing Officer (CMO)',
+    'CEO': 'Chief Executive Officer (CEO)',
+    // Education / Nonprofit
+    'K-12': 'K-12 Education',
+    'IEP': 'Individualized Education Program (IEP)',
+    'LCSW': 'Licensed Clinical Social Worker (LCSW)',
+    'MFT': 'Marriage and Family Therapist (MFT)',
+    'NP': 'Nurse Practitioner (NP)',
+    'PA': 'Physician Assistant (PA)',
+    // General
+    'WFH': 'Work From Home / Remote Work',
+    'EOD': 'End of Day',
+    'POC': 'Point of Contact',
+  };
+
+  function expandAcronyms(text) {
+    if (!text) return text;
+    // Exact match first (whole word, case-insensitive)
+    let expanded = text;
+    for (const [acronym, full] of Object.entries(ACRONYM_MAP)) {
+      const regex = new RegExp(`\\b${acronym.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+      if (regex.test(expanded)) {
+        // Only expand if the full form isn't already present
+        if (!expanded.toLowerCase().includes(full.split('(')[0].toLowerCase().trim())) {
+          expanded = expanded.replace(regex, full);
+        }
+      }
+    }
+    return expanded;
+  }
+
+  // Normalize casing — title case for role/field inputs
+  function normalizeTitle(text) {
+    if (!text) return text;
+    // Expand acronyms first
+    const expanded = expandAcronyms(text.trim());
+    return expanded;
+  }
+
+  const normalizedRole = normalizeTitle(role);
+  const normalizedTarget = normalizeTitle(target);
+
+  // ── SECTOR REFRESH AT SIMULATION TIME ─────────────────────────
+  // Always re-fetch sector data right before building the prompt
+  // so we have the latest numbers regardless of debounce timing.
+  // Also detect from current role if target field doesn't match a sector.
+  const detectedFromTarget = detectSector(normalizedTarget);
+  const detectedFromRole   = detectSector(normalizedRole);
+  const activeSector = (detectedFromTarget && detectedFromTarget.key !== 'professional')
+    ? detectedFromTarget
+    : detectedFromRole || detectedFromTarget;
+
+  // Re-fetch sector data synchronously before prompt builds
+  await loadMarketPulse(normalizedTarget, activeSector);
+
+  // Truncate resume to ~3000 words to stay within token limits
+  const resumeSnippet = parsedResumeText.split(/\s+/).slice(0, 3000).join(' ');
+
+  // Note any acronym expansions that happened so Claude knows
+  const expansionNote = (normalizedRole !== role || normalizedTarget !== target)
+    ? `\nINPUT NORMALIZATION: User entered "${role}" → "${normalizedRole}" and "${target}" → "${normalizedTarget}". Analyze using the expanded forms.\n`
+    : '';
+
+  // Inject live FRED market context if available
+  const marketBlock = liveMarketContext
+    ? `\nLAYER 0 — LIVE MARKET CONTEXT (FRED API, real-time):\n${liveMarketContext}\nUse this to calibrate urgency in the sprint plan and inform the Whisperer strategy.\n`
+    : '';
+
+  const prompt = `${marketBlock}${expansionNote}You are a Strategic Career Navigator — a career intelligence engine that cross-references O*NET occupational data with 2025-2026 labor market trend signals to produce precise, actionable career transition analysis.
+
+LAYER 1A: O*NET BASELINE KNOWLEDGE (Static Reference)
+You have internalized the O*NET Database structure. For any occupation, you know:
+- SKILLS rated on Importance (IM) scale 1-5. Skills rated 3.5+ are "Core." Skills rated 4.0+ are "Critical."
+- TECHNOLOGY SKILLS flagged as "Hot Technology" (emerging/high-value) or "In Demand" (commonly required)
+- CORE WORK ACTIVITIES: The primary tasks performed in the role
+
+For the target field "${normalizedTarget}", apply your O*NET knowledge to identify which skills are Critical vs. Core, which tech tools are Hot vs. In Demand, and which work activities are central to the role.
+
+LAYER 1B: O*NET REPORTED JOB TITLES (Title Disambiguation Layer)
+You also have access to the O*NET Sample of Reported Job Titles — 7,953 real-world job titles mapped to 907 O*NET occupational codes. This tells you what people actually call these jobs in the real world vs. what O*NET labels them canonically.
+
+Use this layer for TWO purposes:
+1. TARGET FIELD DISAMBIGUATION: When the user says "${normalizedTarget}", map it to the most likely O*NET occupation code(s) using real-world title variants. Example: "Product Manager" maps to Marketing Managers (11-2021.00) in O*NET. "Data Analyst" maps to 19-3022.00 (Survey Researchers) or 15-2051.01 (Business Intelligence Analysts). Use the correct O*NET profile for your analysis.
+2. SEARCH STRING ENRICHMENT: When generating the Boolean search string, use the full set of real-world title variants for that O*NET code — not just the canonical title. A user targeting "Data Science" should get a search string that includes "Data Scientist," "Machine Learning Engineer," "AI Analyst," etc. — the variants people actually post and search.
+
+Key title mappings to know:
+- "Product Manager" → Marketing Managers (11-2021.00)
+- "Business Analyst" → Management Analysts (13-1111.00) or Business Intelligence Analysts (15-2051.01)
+- "Financial Analyst" → Financial and Investment Analysts (13-2051.00)
+- "Data Analyst/Scientist" → Survey Researchers (19-3022.00), Business Intelligence Analysts (15-2051.01), Data Scientists (15-2051.00)
+- "HR/Human Resources" → HR Specialists (13-1071.00) or HR Managers (11-3121.00)
+- "Marketing Coordinator/Manager" → Marketing Managers (11-2021.00)
+- "Project Manager" → varies by industry; IT PM = 15-1299.09
+- "UX/UI Designer" → Web Developers and Digital Designers (15-1257.00)
+- "Operations Analyst" → Management Analysts (13-1111.00) or Logistics Analysts
+- "Recruiter/Talent Acquisition" → HR Specialists (13-1071.00)
+- "Content/Social Media" → Writers and Authors (27-3043.00) or Search Marketing Strategists (13-1161.01)
+
+LAYER 1C: SALARY & MARKET HEALTH DATA (2025-2026, 90,000 records — AI/ML/Data/SWE roles)
+This is real compensation and risk data from global job records. Use it to:
+- Give the user a concrete salary anchor for their target field
+- Factor automation risk and job security into your compatibility assessment
+- Calibrate the "Velocity Readiness" dimension score
+- Inform the sprint plan with real urgency (high layoff risk = faster action needed)
+
+NOTE: This dataset covers AI/ML/Data Science/Software Engineering roles only. For other fields, use your training knowledge for salary estimates and note it's approximated.
+
+AI/ML/DATA SCIENCE SALARY DATA (2025-2026):
+Format: Role | Level → Global Median | USA Median | AutoRisk/100 | CareerGrowth/100 | Security/100 | LayoffRisk(0-1)
+
+AI Engineer | Entry → $64,952 global | $82,509 USA | AutoRisk:51 | Growth:57 | Security:61 | Layoff:0.38
+AI Engineer | Mid → $81,904 global | $110,427 USA | AutoRisk:51 | Growth:58 | Security:75 | Layoff:0.18
+AI Engineer | Senior → $109,235 global | $147,091 USA | AutoRisk:51 | Growth:57 | Security:82 | Layoff:0.08
+AI Engineer | Lead → $150,216 global | $195,025 USA | AutoRisk:51 | Growth:58 | Security:82 | Layoff:0.08
+Computer Vision Engineer | Entry → $66,915 global | $88,349 USA | AutoRisk:48 | Growth:56 | Security:62 | Layoff:0.38
+Computer Vision Engineer | Mid → $83,624 global | $114,015 USA | AutoRisk:51 | Growth:57 | Security:75 | Layoff:0.18
+Computer Vision Engineer | Senior → $113,948 global | $150,176 USA | AutoRisk:50 | Growth:57 | Security:83 | Layoff:0.08
+Computer Vision Engineer | Lead → $154,176 global | $204,426 USA | AutoRisk:51 | Growth:58 | Security:83 | Layoff:0.08
+Data Analyst | Entry → $45,285 global | $58,317 USA | AutoRisk:51 | Growth:58 | Security:62 | Layoff:0.38
+Data Analyst | Mid → $57,593 global | $78,526 USA | AutoRisk:50 | Growth:56 | Security:76 | Layoff:0.18
+Data Analyst | Senior → $76,804 global | $100,628 USA | AutoRisk:50 | Growth:57 | Security:82 | Layoff:0.08
+Data Analyst | Lead → $105,654 global | $139,430 USA | AutoRisk:51 | Growth:57 | Security:82 | Layoff:0.09
+Data Scientist | Entry → $61,099 global | $84,124 USA | AutoRisk:52 | Growth:56 | Security:62 | Layoff:0.38
+Data Scientist | Mid → $77,794 global | $105,886 USA | AutoRisk:52 | Growth:57 | Security:76 | Layoff:0.18
+Data Scientist | Senior → $104,403 global | $131,747 USA | AutoRisk:50 | Growth:57 | Security:82 | Layoff:0.08
+Data Scientist | Lead → $143,583 global | $195,627 USA | AutoRisk:51 | Growth:58 | Security:83 | Layoff:0.08
+Machine Learning Engineer | Entry → $66,261 global | $87,913 USA | AutoRisk:50 | Growth:56 | Security:61 | Layoff:0.38
+Machine Learning Engineer | Mid → $85,697 global | $115,275 USA | AutoRisk:49 | Growth:57 | Security:75 | Layoff:0.18
+Machine Learning Engineer | Senior → $115,740 global | $147,053 USA | AutoRisk:51 | Growth:57 | Security:83 | Layoff:0.08
+Machine Learning Engineer | Lead → $154,955 global | $210,565 USA | AutoRisk:50 | Growth:56 | Security:83 | Layoff:0.08
+NLP Engineer | Entry → $65,504 global | $88,625 USA | AutoRisk:49 | Growth:57 | Security:62 | Layoff:0.38
+NLP Engineer | Mid → $82,789 global | $112,091 USA | AutoRisk:50 | Growth:57 | Security:76 | Layoff:0.18
+NLP Engineer | Senior → $111,307 global | $137,756 USA | AutoRisk:50 | Growth:57 | Security:82 | Layoff:0.08
+NLP Engineer | Lead → $152,299 global | $201,495 USA | AutoRisk:50 | Growth:58 | Security:82 | Layoff:0.08
+Research Scientist | Entry → $72,051 global | $97,574 USA | AutoRisk:50 | Growth:57 | Security:62 | Layoff:0.38
+Research Scientist | Mid → $91,922 global | $122,961 USA | AutoRisk:51 | Growth:57 | Security:75 | Layoff:0.18
+Research Scientist | Senior → $121,760 global | $171,128 USA | AutoRisk:50 | Growth:57 | Security:83 | Layoff:0.08
+Research Scientist | Lead → $167,406 global | $228,600 USA | AutoRisk:51 | Growth:58 | Security:82 | Layoff:0.08
+Software Engineer AI | Entry → $62,808 global | $85,081 USA | AutoRisk:53 | Growth:57 | Security:61 | Layoff:0.38
+Software Engineer AI | Mid → $80,821 global | $108,303 USA | AutoRisk:52 | Growth:57 | Security:76 | Layoff:0.18
+Software Engineer AI | Senior → $106,889 global | $141,064 USA | AutoRisk:50 | Growth:57 | Security:82 | Layoff:0.08
+Software Engineer AI | Lead → $146,496 global | $201,830 USA | AutoRisk:50 | Growth:57 | Security:82 | Layoff:0.08
+
+Key signals: Work Mode is evenly split Remote/Hybrid/Onsite (33% each). Education requirements are flat across all credential types — a bootcamp grad has the same salary trajectory as a PhD in this dataset. Hottest specializations by skill demand: Forecasting > LLM > MLOps > Generative AI > NLP. USA salaries stable $119k–$125k median 2020–2026 — no compression or spike.
+
+LAYER 2: 2026 TREND SIGNAL OVERRIDES (Dynamic Layer)
+These OVERRIDE O*NET static ratings where conflicts exist:
+
+WEF Future of Jobs 2025 — AUTOMATION/DECLINING (flag as "Fading Signal" if O*NET still rates Important):
+- Routine data entry, basic bookkeeping, repetitive customer service, standard data analysis without interpretation
+
+WEF Future of Jobs 2025 — SURGING SKILLS (add to Month 01 as "High-Velocity Advantage" if absent from resume):
+- AI Orchestration and Prompt Engineering (fastest growing globally)
+- Human-AI Collaboration and AI literacy
+- Green skills (2x growth rate)
+- Data literacy and statistical reasoning
+
+LinkedIn Skills Signal 2025: Workers matched by skills qualify for 3x more roles. AI literacy + people skills = fastest reemployment. Adding 10+ skills cuts employment gap by 1 month.
+
+LinkedIn Talent Velocity 2026: 90% of CPOs say teams will organize around skills not titles. Top human skills at velocity-leader orgs: Building Trust (5.5x), Influencing Others (4.3x), Intercultural Skills (3.5x), Interpersonal Leadership (3.5x), Operational Excellence (3.0x). Velocity leaders 2.1x more likely to develop AI literacy.
+
+NACE Job Outlook 2025: Hiring up 7.3%. Top resume attributes: Problem-solving (88.3%), Teamwork (81%), Written Communication (77.1%), Initiative (73.7%). Biggest gaps: Critical Thinking wanted by 96.1% but only 55.9% of grads demonstrate it; Communication wanted by 96.1% but only 53.5% demonstrate it.
+
+LAYER 3: CONFLICT RESOLUTION RULES
+- FADING SIGNAL: If O*NET rates a skill Important but WEF/LinkedIn shows it automating/declining, label "Fading Signal." Do NOT recommend building it.
+- HIGH-VELOCITY ADVANTAGE: If 2026 reports identify a surging skill absent from resume, add to Month 01.
+- Trust hierarchy: 2026 reports > 2025 reports > O*NET static data.
+- Field Override: Use "${normalizedTarget}"-specific O*NET profile, not generic averages.
+
+LAYER 4: COMPATIBILITY SCORE FORMULA (40/40/20)
+Calculate 0-100 score using EXACT weighting:
+
+TECH SKILLS (40% weight): Score based on how many Hot Technology and In Demand tools for "${normalizedTarget}" appear in resume. Bonus for AI/automation tools present; penalty for over-reliance on fading tools.
+
+CORE WORK ACTIVITIES (40% weight): Score based on how many primary work activities for "${normalizedTarget}" (per O*NET) are evidenced in resume. Weight AI-augmented activities more heavily.
+
+INDUSTRY PROXIMITY (20% weight): Score based on adjacency of "${normalizedRole}" to "${normalizedTarget}":
+- Same industry, different function = 80-90
+- Adjacent industry, similar function = 60-75
+- Different industry, transferable function = 40-60
+- Different industry, different function = 20-40
+
+FINAL SCORE = (TechSkills × 0.40) + (CoreActivities × 0.40) + (IndustryProximity × 0.20)
+
+Labels: 75-100 = Strong Match, 55-74 = Competitive, 35-54 = Developing, 0-34 = Emerging
+
+USER PROFILE:
+- Current Role/Major: "${normalizedRole}"
+- Target Career Field: "${normalizedTarget}"
+- Resume: """
+${resumeSnippet}
+"""
+
+Apply all four layers. Be specific, honest, and direct.
+
+Respond ONLY with valid JSON (no markdown, no code blocks, no preamble):
+
+{
+  "competencies": [
+    {
+      "label": "2-3 word category. Append (Fading Signal) only if automation risk is confirmed.",
+      "title": "Specific competency this hiring manager would recognize (3-5 words)",
+      "description": "One sentence max 20 words tied to resume evidence. Plain language only."
+    },
+    { "label": "...", "title": "...", "description": "..." },
+    { "label": "...", "title": "...", "description": "..." }
+  ],
+  "compatibility": {
+    "score": 0,
+    "label": "Emerging or Developing or Competitive or Strong Match",
+    "descriptor": "One honest plain-language sentence about fit. No source names or data citations.",
+    "salary_anchor": "Entry-level median: ~$XX,XXX (USA) · ~$XX,XXX (global)",
+    "sources_used": "Comma-separated list of data sources used. For footnote display only.",
+    "dimensions": [
+      { "name": "Tech Skills (O*NET x Trend)", "value": 0 },
+      { "name": "Core Work Activities", "value": 0 },
+      { "name": "Industry Proximity", "value": 0 },
+      { "name": "Velocity Readiness", "value": 0 }
+    ]
+  },
+  "sprint": {
+    "month1": {
+      "type": "The Missing Tool",
+      "action": "Exact tool or cert. Prefix HIGH-VELOCITY ADVANTAGE: if it is an AI skill absent from resume.",
+      "why": "One sentence max 20 words. What this unlocks — no report citations."
+    },
+    "month2": {
+      "type": "The Proof Project",
+      "action": "One specific portfolio piece a hiring manager in this field would value.",
+      "why": "One sentence max 20 words on why this closes the most common entry gap."
+    },
+    "month3": {
+      "type": "The Whisperer Strategy",
+      "action": "Exact role title of the person to contact for entry into this field.",
+      "why": "One sentence max 20 words on why this person opens the door."
+    }
+  },
+  "searchString": "(Title Variant 1 OR Title Variant 2 OR Title Variant 3) AND (Key Skill OR Tool Name)"
+}`;
+
+  try {
+    const payload = {
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 2000,
+      messages: [{ role: "user", content: prompt }]
+    };
+
+    // In sandbox: Anthropic injects auth headers automatically — send bare
+    // On Netlify: proxy handles auth server-side — send JSON body only
+    const response = await fetch(API_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error?.message || ("API error " + response.status));
+    }
+
+    const data = await response.json();
+    const raw = data.content?.[0]?.text || "";
+
+    // Strip any markdown fences
+    const clean = raw.replace(/```json|```/gi, "").trim();
+    const parsed = JSON.parse(clean);
+
+    hideLoader();
+    renderResults(parsed);
+
+  } catch (err) {
+    hideLoader();
+    showError("Simulation error: " + (err.message || "Unexpected issue. Please try again."));
+  }
+}
+
+function renderResults(d) {
+  // -- Competencies --
+  const cGrid = document.getElementById('competency-grid');
+  const count = d.competencies.length;
+  const countWord = ['Zero','One','Two','Three','Four','Five'][count] || count;
+  document.getElementById('competency-subtitle').textContent =
+    `${countWord} thing${count !== 1 ? 's' : ''} on your resume that translate directly`;
+
+  cGrid.innerHTML = d.competencies.map((c, i) => `
+    <div class="competency-card" style="animation-delay:${i*0.1}s">
+      <div class="comp-label">${escHtml(c.label)}</div>
+      <div class="comp-title">${escHtml(c.title)}</div>
+      <div class="comp-desc">${escHtml(c.description)}</div>
+    </div>
+  `).join('');
+
+  // Needle glow — fires when Transferable Gold is identified
+  const compassEl = document.querySelector('.compass-icon');
+  if (compassEl) {
+    compassEl.classList.add('gold-glow');
+    setTimeout(() => compassEl.classList.remove('gold-glow'), 4200);
+  }
+
+  // -- Meter --
+  const score = Math.min(100, Math.max(0, d.compatibility.score));
+  // Arc: 330 total dasharray units = 100%
+  const offset = 330 - (score / 100) * 330;
+  setTimeout(() => {
+    document.getElementById('meter-arc').style.strokeDashoffset = offset;
+    // Animate number
+    animateNumber('score-text', 0, score, 1400);
+  }, 200);
+
+  document.getElementById('score-label-text').textContent = d.compatibility.label.toUpperCase();
+  document.getElementById('meter-descriptor').textContent = d.compatibility.descriptor;
+
+  // Salary anchor
+  if (d.compatibility.salary_anchor) {
+    let salEl = document.getElementById('salary-anchor');
+    if (!salEl) {
+      salEl = document.createElement('div');
+      salEl.id = 'salary-anchor';
+      salEl.style.cssText = 'margin-top:10px;font-family:var(--mono);font-size:10.5px;color:var(--text-secondary);text-align:center;letter-spacing:0.06em;line-height:1.5;';
+      document.getElementById('meter-descriptor').after(salEl);
+    }
+    salEl.innerHTML = `💰 ${escHtml(d.compatibility.salary_anchor)}`;
+  }
+
+  const barsEl = document.getElementById('meter-bars');
+  const tooltipCopy = {
+    "Tech Skills (O*NET x Trend)":  { title: "Tech Skills (O*NET × Trend)", desc: "How many Hot Technology and In-Demand tools for this field appear in your resume, adjusted for 2026 automation signals. High-Velocity tools (AI, prompt engineering) are weighted more heavily." },
+    "Core Work Activities":          { title: "Core Work Activities", desc: "How many of this field's primary O*NET-defined work activities are evidenced in your resume — either directly or inferred from similar experience." },
+    "Industry Proximity":            { title: "Industry Proximity", desc: "How adjacent your current role or major is to typical entry paths for this field. Same industry, different function scores highest; different industry with transferable function scores mid-range." },
+    "Velocity Readiness":            { title: "Velocity Readiness", desc: "A bonus dimension from 2026 trend data — how ready you are for AI-era hiring. Scores your AI literacy, human skills like trust-building and influence, and adaptability signals." }
+  };
+  barsEl.innerHTML = d.compatibility.dimensions.map(dim => {
+    const tip = tooltipCopy[dim.name] || { title: dim.name, desc: "A measure of your readiness for this career transition." };
+    return `
+    <div class="meter-bar-row">
+      <div class="tooltip-box"><strong>${escHtml(tip.title)}</strong>${escHtml(tip.desc)}</div>
+      <div class="meter-bar-label">
+        <span style="display:flex;align-items:center;gap:0">
+          ${escHtml(dim.name)}<span class="tooltip-icon">?</span>
+        </span>
+        <span>${dim.value}%</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="transform:scaleX(0)" data-val="${dim.value / 100}"></div>
+      </div>
+      <button class="deep-dive-link" onclick="openModal('${escHtml(dim.name)}')">◈ Deeper insight →</button>
+    </div>`;
+  }).join('');
+
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill').forEach(el => {
+      el.style.transform = `scaleX(${el.dataset.val})`;
+    });
+  }, 400);
+
+  // Sources footnote — small print below meter
+  if (d.compatibility.sources_used) {
+    let fnEl = document.getElementById('sources-footnote');
+    if (!fnEl) {
+      fnEl = document.createElement('div');
+      fnEl.id = 'sources-footnote';
+      fnEl.className = 'sources-footnote';
+      fnEl.title = 'Data sources powering this analysis';
+      barsEl.after(fnEl);
+    }
+    fnEl.innerHTML = `<span>◈ Sources:</span>${escHtml(d.compatibility.sources_used)}`;
+  }
+
+  // -- Timeline --
+  const s = d.sprint;
+  const sprintData = [
+    { month: 'Month 01', stage: 'The Base',    icon: '⚒', color: '#FFB347', ...s.month1 },
+    { month: 'Month 02', stage: 'The Ascent',  icon: '📐', color: '#FFD580', ...s.month2 },
+    { month: 'Month 03', stage: 'The Summit',  icon: '🧭', color: '#FFF0C0', ...s.month3 }
+  ];
+  document.getElementById('sprint-grid').innerHTML = sprintData.map((m, i) => `
+    <div class="timeline-node" style="animation-delay:${0.1 + i * 0.15}s">
+      <div class="tl-left">
+        <div class="tl-waypoint" style="--wp-color:${m.color}">
+          <span class="tl-waypoint-icon">${m.icon}</span>
+        </div>
+        ${i < 2 ? '<div class="tl-line"></div>' : ''}
+      </div>
+      <div class="tl-content">
+        <div class="tl-month-label" style="color:${m.color}">${m.month}</div>
+        <div class="tl-stage">${escHtml(m.stage)}</div>
+        <div class="tl-type">${escHtml(m.type)}</div>
+        <div class="tl-action">${escHtml(m.action)}</div>
+        <div class="tl-why">${escHtml(m.why)}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // -- Search String --
+  lastSearchString = d.searchString;
+  document.getElementById('search-string-box').textContent = d.searchString;
+
+  showResults();
+  setTimeout(showFooter, 800);
+}
+
+function animateNumber(id, from, to, duration) {
+  const el = document.getElementById(id);
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(from + (to - from) * ease);
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function copySearch() {
+  navigator.clipboard.writeText(lastSearchString).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✓ Copied';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+function openWhisperer() {
+  const target = lastTargetField || "your target field";
+  const searchUrl = `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(lastTargetField)}&network=["S","O"]`;
+  window.open(searchUrl, '_blank');
+}
+
+function showLoader() {
+  document.getElementById('loader').classList.add('active');
+  document.getElementById('simulate-btn').classList.add('loading');
+  document.getElementById('simulate-btn').textContent = '⟳ Reading your story…';
+}
+
+function hideLoader() {
+  document.getElementById('loader').classList.remove('active');
+  document.getElementById('simulate-btn').classList.remove('loading');
+  document.getElementById('simulate-btn').textContent = 'Find My Path →';
+}
+
+function showResults() { document.getElementById('results').classList.add('active'); }
+function hideResults() { document.getElementById('results').classList.remove('active'); }
+function showFooter() { document.getElementById('footer-cta').classList.add('visible'); }
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = '⚠ ' + msg;
+  el.classList.add('active');
+}
+function hideError() { document.getElementById('error-msg').classList.remove('active'); }
+
+function escHtml(str) {
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
+// ── DEEP DIVE MODAL ──────────────────────────────────────────────
+
+function openModal(dimensionName) {
+  document.getElementById('modal-dimension-name').textContent = dimensionName;
+  document.getElementById('deepdive-modal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('deepdive-modal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// Close on backdrop click
+document.getElementById('deepdive-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Auth stubs — swap these for real auth (Supabase, Firebase, Clerk, etc.) when ready
+function handleModalSignup() {
+  // TODO: replace with real signup flow / account creation
+  alert('Account creation coming soon! For now, this is where your auth layer plugs in.');
+}
+
+function handleModalLogin() {
+  // TODO: replace with real login flow
+  alert('Sign-in coming soon! This is where your auth layer plugs in.');
+}
+
+// Allow Enter key to submit from text inputs
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement.tagName === 'INPUT') {
+    runSimulation();
+  }
+});
+
+// ── FRED LIVE MARKET SIGNAL ──────────────────────────────────────
+const FRED_API_KEY = '0f629a233f4af6f1906326c49c5668da';
+
+// Live market context injected into Claude prompt
+let liveMarketContext = '';
+
+// ── SECTOR SERIES MAP ─────────────────────────────────────────────
+// Maps each sector to its FRED series for job openings and wages.
+// Used to look up field-specific data after the user enters a target.
+const SECTOR_SERIES = {
+  tech: {
+    label: 'Tech / Software / Data',
+    openings: 'JTS540099000000000JOL',
+    wages:    'CES5000000003',
+    employment: 'USINFO',
+    fields: ['software', 'data', 'machine learning', 'ai ', 'artificial intelligence',
+             'developer', 'engineer', 'devops', 'cloud', 'cybersecurity', 'it ',
+             'information technology', 'computer', 'nlp', 'mlops', 'sre', 'swe',
+             'product manager', 'product management', 'ux', 'ui ', 'web developer',
+             'frontend', 'backend', 'full stack', 'fullstack', 'mobile developer',
+             'android', 'ios developer', 'data engineer', 'data analyst', 'bi analyst',
+             'business intelligence', 'tableau', 'power bi', 'python developer',
+             'java developer', 'systems analyst', 'it analyst', 'network engineer',
+             'database admin', 'dba', 'scrum master', 'agile coach', 'solutions architect',
+             'cloud engineer', 'platform engineer', 'qa engineer', 'test engineer',
+             'technical writer', 'it support', 'help desk', 'it manager']
+  },
+  finance: {
+    label: 'Finance / Accounting / Banking',
+    openings: 'JTS510000000000000JOL',
+    wages:    'CES5500000003',
+    employment: 'USFIRE',
+    fields: ['finance', 'financial', 'accounting', 'accountant', 'banking', 'bank',
+             'investment', 'portfolio', 'equity', 'trading', 'wealth', 'insurance',
+             'fintech', 'cpa', 'cfa', 'fp&a', 'audit', 'auditor', 'tax', 'controller',
+             'financial planning', 'financial analyst', 'private equity', 'venture',
+             'actuary', 'underwriter', 'credit analyst', 'loan officer', 'mortgage',
+             'compliance officer', 'risk analyst', 'budget analyst', 'bookkeeper',
+             'payroll', 'treasurer', 'cfo', 'revenue cycle', 'billing specialist',
+             'claims adjuster', 'financial advisor', 'wealth manager', 'broker']
+  },
+  professional: {
+    label: 'Consulting / Business / Operations',
+    openings: 'JTS600000000000000JOL',
+    wages:    'CES6000000003',
+    employment: 'USPBS',
+    fields: ['consulting', 'consultant', 'business analyst', 'operations', 'strategy',
+             'management', 'project manager', 'program manager', 'supply chain',
+             'logistics', 'hr ', 'human resources', 'hrbp', 'talent', 'recruiting',
+             'recruiter', 'marketing', 'advertising', 'pr ', 'public relations',
+             'sales', 'account executive', 'bdr', 'sdr', 'csm', 'customer success',
+             'account manager', 'business development', 'growth', 'brand manager',
+             'product marketing', 'demand generation', 'event planner', 'procurement',
+             'vendor manager', 'office manager', 'executive assistant', 'paralegal',
+             'legal assistant', 'contract manager', 'quality manager', 'process analyst',
+             'change management', 'organizational development', 'workforce planning',
+             'benefits administrator', 'compensation analyst', 'training coordinator',
+             'l&d', 'learning and development', 'dei', 'diversity', 'inclusion']
+  },
+  healthcare: {
+    label: 'Healthcare / Life Sciences',
+    openings: 'JTS6200000000000JOL',
+    wages:    'CES6500000003',
+    employment: 'USEHS',
+    fields: ['healthcare', 'health care', 'medical', 'clinical', 'hospital', 'nurse',
+             'nursing', 'physician', 'doctor', 'pharmacy', 'pharma', 'biotech',
+             'life sciences', 'public health', 'epidemiology', 'therapy', 'therapist',
+             'social work', 'counseling', 'mental health', 'lcsw', 'mft', 'np ', 'pa ',
+             // CNA and direct care roles
+             'certified nursing', 'cna', 'nursing assistant', 'patient care',
+             'patient care technician', 'pct', 'medical assistant', 'ma ',
+             'home health', 'home care', 'caregiver', 'care aide', 'care assistant',
+             'personal care', 'direct care', 'direct support', 'dsp ',
+             // Emergency / allied health
+             'emt', 'paramedic', 'emergency medical', 'first responder',
+             'surgical tech', 'surgical technician', 'sterile processing',
+             'phlebotomist', 'phlebotomy', 'lab technician', 'medical lab',
+             'radiology', 'radiologic', 'x-ray tech', 'mri tech', 'ct tech',
+             'ultrasound', 'sonographer', 'respiratory therapist', 'respiratory',
+             'physical therapy', 'physical therapist', 'occupational therapy',
+             'occupational therapist', 'speech language', 'slp', 'audiologist',
+             // Dental / vision
+             'dental', 'dental assistant', 'dental hygienist', 'optometrist',
+             'optician', 'optical',
+             // Long-term care
+             'long term care', 'assisted living', 'skilled nursing', 'snf',
+             'memory care', 'hospice', 'palliative', 'dialysis',
+             // Admin / ops side of healthcare
+             'health informatics', 'medical billing', 'medical coding', 'icd',
+             'health administration', 'hospital administration', 'clinic manager',
+             'care coordinator', 'case manager', 'patient navigator',
+             'community health', 'health coach', 'wellness coordinator',
+             // Advanced clinical
+             'registered nurse', 'rn ', 'lpn', 'lvn', 'crna', 'aprn', 'md ',
+             'physician assistant', 'nurse practitioner', 'anesthesiologist',
+             'surgeon', 'psychiatrist', 'psychologist', 'neurologist']
+  },
+  education: {
+    label: 'Education / Nonprofit / Government',
+    openings: 'JTS610000000000000JOL',
+    wages:    'CES6500000003',
+    employment: 'USEHS',
+    fields: ['education', 'teaching', 'teacher', 'professor', 'academic', 'university',
+             'school', 'k-12', 'curriculum', 'instructional', 'nonprofit', 'non-profit',
+             'ngo', 'policy', 'government', 'public sector', 'federal', 'state agency',
+             'social services', 'community', 'advocacy', 'foundation', 'grant',
+             'paraprofessional', 'paraeducator', 'teaching assistant', 'tutor',
+             'school counselor', 'guidance counselor', 'special education',
+             'sped', 'iep', 'early childhood', 'preschool', 'childcare',
+             'daycare', 'after school', 'youth program', 'camp counselor',
+             'library', 'librarian', 'archivist', 'museum', 'curator',
+             'program coordinator', 'program manager nonprofit', 'case worker',
+             'probation officer', 'correctional', 'law enforcement', 'police',
+             'firefighter', 'emergency management', 'city planner', 'urban planning']
+  },
+  creative: {
+    label: 'Creative / Media / Communications',
+    openings: 'JTS600000000000000JOL',
+    wages:    'CES6000000003',
+    employment: 'USPBS',
+    fields: ['design', 'designer', 'creative', 'content', 'writing', 'writer',
+             'journalism', 'media', 'communications', 'social media', 'brand',
+             'copywriting', 'video', 'film', 'photography', 'art director',
+             'graphic design', 'animation', 'ux design', 'product design',
+             'illustrator', 'motion graphics', 'visual designer', 'creative director',
+             'editor', 'reporter', 'broadcaster', 'podcast', 'producer',
+             'public affairs', 'speechwriter', 'grant writer', 'technical writer',
+             'seo', 'sem', 'digital marketing', 'email marketing', 'influencer',
+             'community manager', 'social media manager', 'content strategist',
+             'marketing coordinator', 'marketing specialist']
+  }
+};
+
+// Macro-level series always fetched regardless of field
+const MACRO_SERIES = [
+  { id: 'UNRATE',      label: 'Unemployment',   unit: '%',    decimals: 1, direction: 'lower_better' },
+  { id: 'JTSJOL',      label: 'Job Openings',   unit: 'M',    decimals: 2, scale: 1/1000, direction: 'higher_better' },
+  { id: 'LNS14027659', label: "Bach+ Unemp",    unit: '%',    decimals: 1, direction: 'lower_better' },
+  { id: 'CES6000000003', label: 'Prof Wages',   unit: '$/hr', decimals: 2, direction: 'higher_better' },
+];
+
+// ── FIELD DETECTION ───────────────────────────────────────────────
+function detectSector(targetField) {
+  if (!targetField) return null;
+  const lower = targetField.toLowerCase();
+  for (const [key, sector] of Object.entries(SECTOR_SERIES)) {
+    if (sector.fields.some(f => lower.includes(f))) {
+      return { key, ...sector };
+    }
+  }
+  // Default to professional services if no match
+  return { key: 'professional', ...SECTOR_SERIES.professional };
+}
+
+// ── MILO INSIGHT LOGIC ────────────────────────────────────────────
+function getMiloInsight(macro, sector, sectorData) {
+  const rate = macro['UNRATE'];
+  const gradUnemp = macro['LNS14027659'];
+  const openings = macro['JTSJOL'];
+
+  const sectorOpenings = sectorData?.openings;
+  const sectorWages    = sectorData?.wages;
+
+  // Sector-specific signals take priority
+  if (sectorOpenings !== undefined) {
+    if (sectorOpenings < 100) {
+      return sector
+        ? sector.label + ' hiring is tightening — referral outreach in Month 03 is critical right now.'
+        : 'Hiring is tightening — referral outreach in Month 03 is critical right now.';
+    }
+    if (sectorOpenings > 300) {
+      return sector
+        ? sector.label + ' has strong open roles — skills-first applications are converting well.'
+        : 'Plenty of open roles — skills-first applications are converting well.';
+    }
+  }
+
+  // Fall back to macro signals
+  if (rate !== undefined) {
+    if (rate > 5.0) return 'Market friction is high — prioritize referral paths in Month 03 over cold outreach.';
+    if (rate < 3.8 && openings && openings > 8.0) return 'Strong candidate market — companies are competing for talent. Negotiate.';
+  }
+  if (gradUnemp !== undefined && gradUnemp > 5.5) {
+    return 'Entry-level competition is elevated — a portfolio proof piece in Month 02 is non-negotiable.';
+  }
+  return 'Market is stable. Steady execution on the 90-day route beats timing the market.';
+}
+
+// ── FETCH HELPER ──────────────────────────────────────────────────
+async function fetchFredSeries(seriesId) {
+  const url = 'https://api.stlouisfed.org/fred/series/observations'
+    + '?series_id=' + seriesId
+    + '&api_key=' + FRED_API_KEY
+    + '&file_type=json&sort_order=desc&limit=3';
+  
+  let res;
+  try {
+    res = await fetch(url);
+  } catch(e) {
+    throw new Error('Network error fetching ' + seriesId + ': ' + e.message);
+  }
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error('FRED ' + seriesId + ' returned ' + res.status + ': ' + body.slice(0, 100));
+  }
+
+  const data = await res.json();
+  const obs = (data.observations || []).filter(o => o.value !== '.' && o.value !== '');
+  if (!obs.length) throw new Error('No observations for ' + seriesId);
+  return parseFloat(obs[0].value);
+}
+
+// ── CHIP BUILDER ──────────────────────────────────────────────────
+function buildPulseChip(label, value, unit, decimals, scale, direction) {
+  const scaled = scale ? value * scale : value;
+  const formatted = scaled.toFixed(decimals);
+  const display = formatted + unit;
+
+  let chipClass = 'pulse-chip';
+  if (unit === '%') {
+    chipClass += direction === 'lower_better'
+      ? (scaled > 4.5 ? ' signal-alert' : scaled < 3.5 ? ' signal-cool' : ' signal-warm')
+      : (scaled > 4.5 ? ' signal-cool' : ' signal-warm');
+  } else if (direction === 'higher_better') {
+    chipClass += ' signal-cool';
+  }
+  return '<span class="' + chipClass + '"><span class="pulse-dot"></span>' + label + ': ' + display + '</span>';
+}
+
+// ── MAIN LOADER ───────────────────────────────────────────────────
+// Called once on load (macro only), and again after user enters target field
+async function loadMarketPulse(targetField, forceSector) {
+  const bar       = document.getElementById('market-pulse');
+  const loadingEl = document.getElementById('pulse-loading');
+
+  if (!bar || !loadingEl) return;
+
+  // claude.ai sandbox blocks all external fetches except api.anthropic.com
+  // Show a clean static status instead of spinning forever
+  if (IS_SANDBOX) {
+    bar.innerHTML =
+      '<span class="pulse-label">Market Signal</span>' +
+      '<span class="pulse-chip signal-warm"><span class="pulse-dot"></span>Live data active on deploy</span>' +
+      '<span class="pulse-divider"></span>' +
+      '<span class="pulse-chip"><span class="pulse-dot"></span>Salary + O*NET data loaded</span>' +
+      '<span class="pulse-milo-insight active" id="milo-insight">"Running in sandbox — FRED activates on Netlify"</span>';
+    bar.classList.add('loaded');
+
+    // Still build a static market context for the prompt
+    liveMarketContext = 'MARKET CONTEXT: Running in claude.ai sandbox — live FRED data unavailable. ' +
+      'Use embedded salary dataset and O*NET data for market calibration. ' +
+      'Assume current US labor market conditions are stable (unemployment ~4%, tech sector active).';
+    return;
+  }
+
+  if (FRED_API_KEY === 'YOUR_FRED_API_KEY_HERE') {
+    loadingEl.textContent = '◈ Add your FRED API key to enable live market signals';
+    return;
+  }
+
+  // Show fetching state
+  loadingEl.style.display = '';
+  loadingEl.textContent = '⟳ Fetching live data…';
+
+  try {
+    // Fetch all macro series
+    const macro = {};
+    await Promise.allSettled(
+      MACRO_SERIES.map(async s => {
+        try {
+          macro[s.id] = await fetchFredSeries(s.id);
+        } catch(e) {
+          console.warn('[FRED] Failed:', s.id, e.message);
+        }
+      })
+    );
+
+    // Detect sector
+    let sector = forceSector || null;
+    if (!sector) {
+      const inputVal = targetField || (document.getElementById('target-field') || {}).value || '';
+      if (inputVal) sector = detectSector(inputVal);
+    }
+
+    // Fetch sector series
+    const sectorData = {};
+    if (sector) {
+      await Promise.allSettled([
+        fetchFredSeries(sector.openings).then(v => { sectorData.openings = v; }).catch(e => console.warn('[FRED] Sector openings failed:', e.message)),
+        fetchFredSeries(sector.wages).then(v => { sectorData.wages = v; }).catch(e => console.warn('[FRED] Sector wages failed:', e.message)),
+      ]);
+    }
+
+    // Build chip HTML strings
+    const chipParts = [];
+
+    // Macro chips
+    for (const s of MACRO_SERIES) {
+      if (macro[s.id] === undefined) continue;
+      const scaled = s.scale ? macro[s.id] * s.scale : macro[s.id];
+      const val = scaled.toFixed(s.decimals) + s.unit;
+      let cls = 'pulse-chip';
+      if (s.unit === '%' && s.direction === 'lower_better') {
+        cls += scaled > 4.5 ? ' signal-alert' : scaled < 3.5 ? ' signal-cool' : ' signal-warm';
+      } else if (s.direction === 'higher_better') {
+        cls += ' signal-cool';
+      }
+      chipParts.push('<span class="' + cls + '"><span class="pulse-dot"></span>' + s.label + ': ' + val + '</span>');
+    }
+
+    // Sector chips
+    if (sector) {
+      const sectorName = sector.label.split('/')[0].trim();
+      if (sectorData.openings !== undefined) {
+        chipParts.push('<span class="pulse-chip signal-cool"><span class="pulse-dot"></span>' + sectorName + ' Openings: ' + sectorData.openings.toFixed(0) + 'k</span>');
+      }
+      if (sectorData.wages !== undefined) {
+        chipParts.push('<span class="pulse-chip signal-cool"><span class="pulse-dot"></span>' + sectorName + ' Wages: $' + sectorData.wages.toFixed(2) + '/hr</span>');
+      }
+    }
+
+    if (chipParts.length === 0) {
+      loadingEl.textContent = '◈ Live signal offline — static data active';
+      return;
+    }
+
+    // Milo insight
+    const insight = getMiloInsight(macro, sector, sectorData);
+
+    // Render everything at once — replace bar innerHTML cleanly
+    const labelText = sector ? sector.label + ' Signal' : 'Live Signal';
+    bar.innerHTML =
+      '<span class="pulse-label">' + labelText + '</span>' +
+      chipParts.join('<span class="pulse-divider"></span>') +
+      '<span class="pulse-milo-insight' + (insight ? ' active' : '') + '" id="milo-insight">' +
+      (insight ? '"' + insight + '"' : '') + '</span>';
+
+    bar.classList.add('loaded');
+
+    // Build prompt context
+    const macroParts = MACRO_SERIES
+      .filter(s => macro[s.id] !== undefined)
+      .map(s => {
+        const scaled = s.scale ? macro[s.id] * s.scale : macro[s.id];
+        return s.label + ': ' + scaled.toFixed(s.decimals) + s.unit;
+      });
+
+    const sectorParts = [];
+    if (sector && sectorData.openings !== undefined) {
+      sectorParts.push(sector.label + ' Job Openings: ' + sectorData.openings.toFixed(0) + 'k');
+    }
+    if (sector && sectorData.wages !== undefined) {
+      sectorParts.push(sector.label + ' Avg Wage: $' + sectorData.wages.toFixed(2) + '/hr');
+    }
+
+    liveMarketContext = 'LIVE LABOR MARKET (FRED, ' + new Date().toLocaleDateString() + '): '
+      + macroParts.join(' | ')
+      + (sectorParts.length ? ' | SECTOR — ' + sectorParts.join(' | ') : '')
+      + (insight ? '. Signal: ' + insight : '');
+
+  } catch (err) {
+    console.warn('[Compass] FRED fatal error:', err);
+    loadingEl.textContent = '◈ Live signal offline — static data active';
+  }
+}
+
+// Fire on load with no target field (macro only)
+loadMarketPulse(null);
+
+// Re-fire when user finishes typing target field — updates sector chips + prompt context
+(function wireSectorRefresh() {
+  const targetInput = document.getElementById('target-field');
+  if (!targetInput) return;
+  let debounceTimer;
+  targetInput.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      if (targetInput.value.trim().length > 3) {
+        loadMarketPulse(targetInput.value.trim());
+      }
+    }, 800);
+  });
+})();
+</script>
+</body>
+</html>
