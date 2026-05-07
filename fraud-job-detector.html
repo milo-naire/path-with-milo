@@ -1245,42 +1245,161 @@ function clearInput() {
 }
 let approvedEmployers = new Set();
 
-// This function pulls the data from your file into the browser's memory
 async function loadSentry() {
-    try {
-        const response = await fetch('./employername.json');
-        const data = await response.json();
-        
-        // Use bracket notation ["Employer Name"] to handle the space
-        approvedEmployers = new Set(data.map(item => item["Employer Name"].toUpperCase()));
-        
-        console.log("Sentry Active: " + approvedEmployers.size + " records loaded.");
-    } catch (error) {
-        console.error("Sentry failed to load list:", error);
-    }
+  try {
+    const response = await fetch('./employername.json');
+    const data = await response.json();
+    approvedEmployers = new Set(data.map(item => item["Employer Name"].toUpperCase()));
+    console.log("Sentry Active: " + approvedEmployers.size + " records loaded.");
+  } catch (error) {
+    console.error("Sentry failed to load list:", error);
+  }
 }
 
-// Call it immediately so it's ready when the student clicks 'Analyze'
 loadSentry();
+
 async function analyze() {
-    const text = document.getElementById('jobInput').value.trim();
-    // Use the ID of whatever field the user types the Company Name into
-    const companyInput = document.getElementById('employerNameInput')?.value.trim().toUpperCase();
+  const text = document.getElementById('jobInput').value.trim();
+  const jobTitle = document.getElementById('jobTitle').value.trim();
+  if (!text) return;
 
-    if (!text) return;
+  // ── GATEKEEPER CHECK ──────────────────────────────────────────────────────
+  const combinedText = (jobTitle + ' ' + text).toUpperCase();
+  let matchedEmployer = null;
+  for (const employer of approvedEmployers) {
+    if (combinedText.includes(employer)) {
+      matchedEmployer = employer;
+      break;
+    }
+  }
 
-    // THE GATEKEEPER CHECK
-    if (companyInput && approvedEmployers.has(companyInput)) {
-        document.getElementById('result').innerHTML = `
-            <div style="padding: 20px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px;">
-                <h3 style="color: #155724; margin-top: 0;">✅ Verified Rutgers Partner</h3>
-                <p style="color: #155724;">${companyInput} is a pre-approved employer in our system. No forensic audit is required.</p>
-            </div>
-        `;
-        return; // Stops the AI call and saves you $0.02
+  if (matchedEmployer) {
+    const displayName = matchedEmployer.charAt(0) + matchedEmployer.slice(1).toLowerCase();
+    document.getElementById('verdictCard').className = 'verdict-card legit';
+    document.getElementById('verdictIcon').textContent = '🛡️';
+    document.getElementById('verdictTitle').textContent = 'LEGITIMATE';
+    document.getElementById('verdictSubtitle').textContent = 'Pre-approved employer on file.';
+    document.getElementById('scoreBadge').textContent = '0/100';
+    document.getElementById('scoreBadge').className = 'score-badge';
+    document.getElementById('scoreLabel').textContent = '0 / 100';
+    document.getElementById('confidenceFill').style.width = '2%';
+    document.getElementById('verdictSummary').textContent = displayName + ' is a verified employer in your approved partners database. No forensic audit required — API call skipped.';
+    document.getElementById('redFlags').innerHTML = '<li class="empty-flags">No red flags — pre-approved employer.</li>';
+    document.getElementById('greenFlags').innerHTML = '<li><span class="flag-dot"></span><span>Listed in approved employer database</span></li>';
+    document.getElementById('signalRows').innerHTML = '';
+    document.getElementById('recommendationText').textContent = 'This employer is pre-approved. You may proceed with the posting review.';
+    document.getElementById('companyInfo').style.display = 'none';
+    document.getElementById('ciSalary').style.display = 'none';
+    document.getElementById('betterPath').style.display = 'none';
+    document.getElementById('dataAuditPanel').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+
+  // ── PROCEED TO FORENSIC AUDIT ─────────────────────────────────────────────
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  document.getElementById('thinking').style.display = 'flex';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+
+  const investigationSteps = [
+    { label: 'Reading the job posting',        detail: 'Pulling apart the text for company name, pay, requirements...' },
+    { label: 'Searching for the company',       detail: "Looking up the company's real website and careers page..." },
+    { label: 'Checking if the role is listed',  detail: "Comparing the posting to what's actually on their site..." },
+    { label: 'Scoring fraud signals',           detail: 'Running all filters and calculating your risk score...' }
+  ];
+
+  function renderProgress(step, detail) {
+    const container = document.getElementById('progressSteps');
+    container.innerHTML = investigationSteps.map((s, i) => {
+      const isDone = i < step;
+      const isActive = i === step;
+      const cls = isDone ? 'done' : isActive ? 'active' : '';
+      const icon = isDone ? '✓' : String(i + 1);
+      return '<div class="progress-step ' + cls + '">' +
+        '<div class="step-icon">' + icon + '</div>' +
+        '<span>' + s.label + '</span></div>';
+    }).join('');
+    document.getElementById('thinkingDetail').textContent = detail || investigationSteps[Math.min(step, investigationSteps.length - 1)].detail;
+  }
+
+  renderProgress(0, investigationSteps[0].detail);
+
+  try {
+    let messages = [{
+      role: 'user',
+      content: (jobTitle ? 'Job Title: ' + jobTitle + '\n\n' : '') +
+        `Before scoring, extract the company name. Use web_search to find "[company] careers" and "[company] jobs". Check: (1) does the company have a real careers page, (2) is this role listed. If no careers page or role not found, increase fraudRiskScore by 40 (cap 100). Note findings in redFlags or greenFlags. If no company name, note as red flag.\n\nJob posting:\n\n` + text
+    }];
+
+    let finalText = null;
+    let searchCount = 0;
+
+    while (!finalText) {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4000,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          system: SYSTEM_PROMPT + "\n\nCRITICAL: If research is done, return ONLY the JSON object. No preamble.",
+          messages
+        })
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
+        throw new Error(errMsg);
+      }
+
+      const responseContent = data.content || [];
+      const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
+      const textBlock = responseContent.find(b => b.type === 'text');
+
+      const trimmedContent = responseContent.filter(b => b.type === 'tool_use' || b.type === 'text');
+      messages.push({ role: 'assistant', content: trimmedContent });
+
+      if (toolUseBlock) {
+        searchCount++;
+        const currentStep = Math.min(searchCount, 2);
+        renderProgress(currentStep, investigationSteps[currentStep].detail);
+        messages.push({
+          role: 'user',
+          content: [{
+            type: 'tool_result',
+            tool_use_id: toolUseBlock.id,
+            content: 'Search results successfully retrieved. Please provide the final forensic analysis JSON.'
+          }]
+        });
+      } else if (textBlock) {
+        renderProgress(3, investigationSteps[3].detail);
+        finalText = textBlock.text;
+      } else {
+        throw new Error('Investigator timed out. Please try again.');
+      }
     }
 
-    // ... your existing Cloudflare/Claude fetch code starts here ...
+    function extractJSON(str) {
+      const start = str.indexOf('{');
+      const end = str.lastIndexOf('}');
+      if (start === -1) throw new Error('No valid analysis data found.');
+      return JSON.parse(str.substring(start, end + 1).replace(/,\s*([\]}])/g, '$1'));
+    }
+
+    const parsed = extractJSON(finalText);
+    renderResults(parsed);
+
+  } catch (err) {
+    document.getElementById('errorBox').textContent = 'Analysis failed — please try again. ' + (err.message || '');
+    document.getElementById('errorBox').style.display = 'block';
+  } finally {
+    document.getElementById('thinking').style.display = 'none';
+    btn.disabled = false;
+  }
 }
 
   // 2. PROCEED TO FORENSIC AUDIT
