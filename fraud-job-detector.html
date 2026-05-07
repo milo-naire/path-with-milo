@@ -1297,11 +1297,11 @@ async function analyze() {
     document.getElementById('scoreBadge').className = 'score-badge';
     document.getElementById('scoreLabel').textContent = '95 / 100 Legitimacy';
     setTimeout(() => { document.getElementById('confidenceFill').style.width = '95%'; }, 100);
-    document.getElementById('verdictSummary').textContent = 'This company is an approved employer on Handshake as vetted by Rutgers University — Career Exploration and Success. You are safe to apply.';
+    document.getElementById('verdictSummary').textContent = 'This employer has been approved on Handshake by Rutgers University-New Brunswick Career Exploration and Success. You are safe to apply.';
     document.getElementById('redFlags').innerHTML = '<li class="empty-flags">No red flags — pre-approved Handshake partner.</li>';
-    document.getElementById('greenFlags').innerHTML = '<li><span class="flag-dot"></span><span>Verified approved employer — vetted by Rutgers University Career Exploration and Success</span></li><li><span class="flag-dot"></span><span>Listed in official Handshake approved employer database</span></li>';
-    document.getElementById('signalRows').innerHTML = '';
-    document.getElementById('recommendationText').textContent = 'This employer is pre-approved and has been vetted by Rutgers University Career Exploration and Success. No further review required — you may proceed with approval.';
+    document.getElementById('greenFlags').innerHTML = '<li><span class="flag-dot"></span><span>Verified approved employer — vetted by Rutgers University-New Brunswick Career Exploration and Success</span></li><li><span class="flag-dot"></span><span>Listed in official Handshake approved employer database</span></li>';
+    document.getElementById('signalRows').innerHTML = '<div style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:rgba(111,207,138,0.06);border:1px solid rgba(111,207,138,0.2);border-radius:10px;"><span style="font-size:1.4rem;flex-shrink:0;">🛡️</span><span style="font-size:0.82rem;color:var(--green);line-height:1.5;">This employer has been approved by Rutgers University-New Brunswick Career Exploration and Success. You are safe to apply.</span></div>';
+    document.getElementById('recommendationText').textContent = 'This employer is pre-approved and has been vetted by Rutgers University- New Brunswick Career Exploration and Success. No further review required — you may proceed with approval.';
     document.getElementById('companyInfo').style.display = 'none';
     document.getElementById('ciSalary').style.display = 'none';
     document.getElementById('betterPath').style.display = 'none';
@@ -1344,8 +1344,14 @@ async function analyze() {
     );
   }
   searchLog.innerHTML = '';
-  searchLog.style.display = 'none';
+  searchLog.style.display = 'block';
+  const _initLine = document.createElement('div');
+  _initLine.style.cssText = 'color:var(--muted);margin-bottom:2px;';
+  _initLine.textContent = '→  Initializing analysis...';
+  searchLog.appendChild(_initLine);
 
+  function addSearchLog(query) {
+    const line = document.createElement('div');
   function addSearchLog(query) {
     searchLog.style.display = 'block';
     const line = document.createElement('div');
@@ -1370,6 +1376,19 @@ async function analyze() {
   }
 
   renderProgress(0, investigationSteps[0].detail);
+
+  // Track the highest step reached so we never go backwards
+  let currentStep = 0;
+  const progressTimers = [];
+  function safeRenderProgress(step, detail) {
+    if (step > currentStep) {
+      currentStep = step;
+      renderProgress(step, detail);
+    }
+  }
+  // Auto-advance through steps during slow API waits so the indicator never appears frozen
+  progressTimers.push(setTimeout(() => safeRenderProgress(1, investigationSteps[1].detail), 2500));
+  progressTimers.push(setTimeout(() => safeRenderProgress(2, investigationSteps[2].detail), 10000));
 
   try {
     let messages = [{
@@ -1414,9 +1433,9 @@ async function analyze() {
 
         // Advance progress steps
         if (searchCount === 1) {
-          renderProgress(1, investigationSteps[1].detail);
+          safeRenderProgress(1, investigationSteps[1].detail);
         } else if (searchCount >= 2) {
-          renderProgress(2, investigationSteps[2].detail);
+          safeRenderProgress(2, investigationSteps[2].detail);
         }
 
         // Append assistant turn (only tool_use + text blocks to keep context lean)
@@ -1434,7 +1453,7 @@ async function analyze() {
         });
 
       } else if (textBlock) {
-        renderProgress(3, investigationSteps[3].detail);
+        safeRenderProgress(3, investigationSteps[3].detail);
         finalText = textBlock.text;
       } else {
         throw new Error('Investigator timed out. Please try again.');
@@ -1456,6 +1475,7 @@ async function analyze() {
     document.getElementById('errorBox').textContent = 'Analysis failed — please try again. ' + (err.message || '');
     document.getElementById('errorBox').style.display = 'block';
   } finally {
+    progressTimers.forEach(t => clearTimeout(t));
     document.getElementById('thinking').style.display = 'none';
     btn.disabled = false;
   }
