@@ -1,19 +1,17 @@
-# JobGuard — Netlify Deployment
+# JobGuard — Cloudflare Pages Deployment
 
 ## File Structure
 ```
 /
 ├── fraud-job-detector.html      ← Main app (rename to index.html)
-├── netlify.toml                 ← Netlify config
-└── netlify/
-    └── functions/
+|-----  functions/
         └── analyze.js           ← API proxy function
 ```
 
 ## Deploy Steps
 
 1. **Rename the HTML file**
-   Rename `fraud-job-detector.html` → `index.html` so Netlify serves it at the root.
+   Rename `fraud-job-detector.html` → `index.html` 
 
 2. **Push to GitHub**
    Create a repo with the structure above and push all files.
