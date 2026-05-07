@@ -1249,12 +1249,10 @@ let approvedEmployers = new Set();
 async function loadSentry() {
     try {
         const response = await fetch('./employername.json');
-        if (!response.ok) throw new Error('Network response was not ok');
-        
         const data = await response.json();
-        // We use a Set because searching 160k names is instant
-        // .toUpperCase() ensures "Google" matches "google" or "GOOGLE"
-        approvedEmployers = new Set(data.map(name => name.toUpperCase()));
+        
+        // Use bracket notation ["Employer Name"] to handle the space
+        approvedEmployers = new Set(data.map(item => item["Employer Name"].toUpperCase()));
         
         console.log("Sentry Active: " + approvedEmployers.size + " records loaded.");
     } catch (error) {
