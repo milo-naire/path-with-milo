@@ -1243,25 +1243,47 @@ function clearInput() {
   document.getElementById('errorBox').style.display = 'none';
   document.getElementById('jobInput').focus();
 }
+let approvedEmployers = new Set();
 
+// This function pulls the data from your file into the browser's memory
+async function loadSentry() {
+    try {
+        const response = await fetch('./employername.json');
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        // We use a Set because searching 160k names is instant
+        // .toUpperCase() ensures "Google" matches "google" or "GOOGLE"
+        approvedEmployers = new Set(data.map(name => name.toUpperCase()));
+        
+        console.log("Sentry Active: " + approvedEmployers.size + " records loaded.");
+    } catch (error) {
+        console.error("Sentry failed to load list:", error);
+    }
+}
+
+// Call it immediately so it's ready when the student clicks 'Analyze'
+loadSentry();
 async function analyze() {
-  const text = document.getElementById('jobInput').value.trim();
-  const employerName = document.getElementById('employerNameInput')?.value.trim(); // Make sure you have an ID for the company name
-  
-  if (!text) return;
+    const text = document.getElementById('jobInput').value.trim();
+    // Use the ID of whatever field the user types the Company Name into
+    const companyInput = document.getElementById('employerNameInput')?.value.trim().toUpperCase();
 
-  // 1. THE GATEKEEPER
-  // Check the 160k list before doing anything else
-  if (employerName && approvedEmployers.has(employerName)) {
-      // Update your UI to show it's a verified partner
-      document.getElementById('result').innerHTML = `
-        <div style="color: green; font-weight: bold;">
-          Verified Rutgers Partner: ${employerName}
-        </div>
-        <p>This employer is pre-approved in our system. No forensic audit required.</p>
-      `;
-      return; // This stops the function so the API call never happens
-  }
+    if (!text) return;
+
+    // THE GATEKEEPER CHECK
+    if (companyInput && approvedEmployers.has(companyInput)) {
+        document.getElementById('result').innerHTML = `
+            <div style="padding: 20px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px;">
+                <h3 style="color: #155724; margin-top: 0;">✅ Verified Rutgers Partner</h3>
+                <p style="color: #155724;">${companyInput} is a pre-approved employer in our system. No forensic audit is required.</p>
+            </div>
+        `;
+        return; // Stops the AI call and saves you $0.02
+    }
+
+    // ... your existing Cloudflare/Claude fetch code starts here ...
+}
 
   // 2. PROCEED TO FORENSIC AUDIT
   // The code only reaches this point if the name WASN'T in the list
