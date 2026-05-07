@@ -1246,8 +1246,27 @@ function clearInput() {
 
 async function analyze() {
   const text = document.getElementById('jobInput').value.trim();
+  const employerName = document.getElementById('employerNameInput')?.value.trim(); // Make sure you have an ID for the company name
+  
   if (!text) return;
+
+  // 1. THE GATEKEEPER
+  // Check the 160k list before doing anything else
+  if (employerName && approvedEmployers.has(employerName)) {
+      // Update your UI to show it's a verified partner
+      document.getElementById('result').innerHTML = `
+        <div style="color: green; font-weight: bold;">
+          Verified Rutgers Partner: ${employerName}
+        </div>
+        <p>This employer is pre-approved in our system. No forensic audit required.</p>
+      `;
+      return; // This stops the function so the API call never happens
+  }
+
+  // 2. PROCEED TO FORENSIC AUDIT
+  // The code only reaches this point if the name WASN'T in the list
   const jobTitle = document.getElementById('jobTitle').value.trim();
+  // ... your existing fetch('/api/analyze') logic goes here
 
   const btn = document.getElementById('analyzeBtn');
   btn.disabled = true;
