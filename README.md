@@ -34,6 +34,4 @@ The Netlify function receives the request, adds your secret API key, and forward
 it to Anthropic's API server-to-server. Your API key is never exposed to the browser.
 
 ## Cost
-Netlify's free tier includes 125,000 function invocations/month — more than enough
-for personal or small-group use. Each analysis = ~2-3 function calls (one per
-web search + one for the final response).
+
