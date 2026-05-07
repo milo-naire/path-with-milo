@@ -1264,10 +1264,10 @@ async function analyze() {
   if (!text) return;
 
   // ── GATEKEEPER CHECK ──────────────────────────────────────────────────────
-  const combinedText = (jobTitle + ' ' + text).toUpperCase();
-  let matchedEmployer = null;
-  for (const employer of approvedEmployers) {
-    if (combinedText.includes(employer)) {
+const titleUpper = jobTitle.toUpperCase();
+let matchedEmployer = null;
+for (const employer of approvedEmployers) {
+  if (titleUpper === employer || titleUpper.includes(employer)) {
       matchedEmployer = employer;
       break;
     }
@@ -1297,19 +1297,6 @@ async function analyze() {
     return;
   }
 
-  // ── PROCEED TO FORENSIC AUDIT ─────────────────────────────────────────────
-  const btn = document.getElementById('analyzeBtn');
-  btn.disabled = true;
-  document.getElementById('thinking').style.display = 'flex';
-  document.getElementById('results').style.display = 'none';
-  document.getElementById('errorBox').style.display = 'none';
-
-  const investigationSteps = [
-    { label: 'Reading the job posting',        detail: 'Pulling apart the text for company name, pay, requirements...' },
-    { label: 'Searching for the company',       detail: "Looking up the company's real website and careers page..." },
-    { label: 'Checking if the role is listed',  detail: "Comparing the posting to what's actually on their site..." },
-    { label: 'Scoring fraud signals',           detail: 'Running all filters and calculating your risk score...' }
-  ];
 
   function renderProgress(step, detail) {
     const container = document.getElementById('progressSteps');
