@@ -1350,11 +1350,9 @@ async function analyze() {
   _initLine.textContent = '→  Initializing analysis...';
   searchLog.appendChild(_initLine);
 
+
   function addSearchLog(query) {
-    const line = document.createElement('div');
-  function addSearchLog(query) {
-    searchLog.style.display = 'block';
-    const line = document.createElement('div');
+   const line = document.createElement('div');
     line.style.cssText = 'color:var(--amber);margin-bottom:2px;';
     line.textContent = '⌕  ' + query;
     searchLog.appendChild(line);
