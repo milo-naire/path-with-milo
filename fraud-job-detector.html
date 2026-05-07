@@ -1242,81 +1242,12 @@ function clearInput() {
   document.getElementById('results').style.display = 'none';
   document.getElementById('errorBox').style.display = 'none';
   document.getElementById('jobInput').focus();
-}
-let approvedEmployers = new Set();
-
-async function loadSentry() {
-  try {
-    const response = await fetch('./employername.json');
-    const data = await response.json();
-    // Filter out non-strings (some entries are numbers) before uppercasing
-    approvedEmployers = new Set(
-      data.filter(item => typeof item === 'string').map(item => item.toUpperCase().trim())
-    );
-    console.log("Sentry Active: " + approvedEmployers.size + " employers loaded.");
-  } catch (error) {
-    console.error("Sentry failed to load:", error);
-  }
-}
-
-loadSentry();
 
 async function analyze() {
   const text = document.getElementById('jobInput').value.trim();
   const jobTitle = document.getElementById('jobTitle').value.trim();
   if (!text) return;
 
-  // ── GATEKEEPER CHECK ──────────────────────────────────────────────────────
-  // Check jobTitle field first (exact match), then scan posting text for employer names
-  const titleUpper = jobTitle.toUpperCase().trim();
-  let matchedEmployer = null;
-
-  // First: exact match on the title field
-  if (titleUpper && approvedEmployers.has(titleUpper)) {
-    matchedEmployer = titleUpper;
-  }
-
-  // Second: check if any approved employer name appears in the job posting text
-  if (!matchedEmployer) {
-    const textUpper = text.toUpperCase();
-    for (const employer of approvedEmployers) {
-      if (employer.length > 4 && textUpper.includes(employer)) {
-        matchedEmployer = employer;
-        break;
-      }
-    }
-  }
-
-  if (matchedEmployer) {
-    const displayName = matchedEmployer.charAt(0) + matchedEmployer.slice(1).toLowerCase();
-    document.getElementById('verdictCard').className = 'verdict-card legit';
-    document.getElementById('verdictIcon').textContent = '🛡️';
-    document.getElementById('verdictTitle').textContent = 'LEGITIMATE';
-    document.getElementById('verdictSubtitle').textContent = 'Verified Handshake partner — approved by Rutgers University.';
-    document.getElementById('scoreBadge').textContent = '95/100';
-    document.getElementById('scoreBadge').className = 'score-badge';
-    document.getElementById('scoreLabel').textContent = '95 / 100 Legitimacy';
-    setTimeout(() => { document.getElementById('confidenceFill').style.width = '95%'; }, 100);
-    document.getElementById('verdictSummary').textContent = 'This employer has been approved on Handshake by Rutgers University-New Brunswick Career Exploration and Success. You are safe to apply.';
-    document.getElementById('redFlags').innerHTML = '<li class="empty-flags">No red flags — pre-approved Handshake partner.</li>';
-    document.getElementById('greenFlags').innerHTML = '<li><span class="flag-dot"></span><span>Verified approved employer — vetted by Rutgers University-New Brunswick Career Exploration and Success</span></li><li><span class="flag-dot"></span><span>Listed in official Handshake approved employer database</span></li>';
-    document.getElementById('signalRows').innerHTML = '<div style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:rgba(111,207,138,0.06);border:1px solid rgba(111,207,138,0.2);border-radius:10px;"><span style="font-size:1.4rem;flex-shrink:0;">🛡️</span><span style="font-size:0.82rem;color:var(--green);line-height:1.5;">This employer has been approved by Rutgers University-New Brunswick Career Exploration and Success. You are safe to apply.</span></div>';
-    document.getElementById('recommendationText').textContent = 'This employer is pre-approved and has been vetted by Rutgers University- New Brunswick Career Exploration and Success. No further review required — you may proceed with approval.';
-    document.getElementById('companyInfo').style.display = 'none';
-    document.getElementById('ciSalary').style.display = 'none';
-    document.getElementById('betterPath').style.display = 'none';
-    document.getElementById('dataAuditPanel').style.display = 'none';
-    document.getElementById('results').style.display = 'block';
-    setTimeout(() => {
-      const ring = document.getElementById('compassRing');
-      ring.classList.remove('glow');
-      void ring.offsetWidth;
-      ring.classList.add('glow');
-      ring.addEventListener('animationend', () => ring.classList.remove('glow'), { once: true });
-    }, 200);
-    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    return;
-  }
 
   // ── FORENSIC AUDIT ────────────────────────────────────────────────────────
   const btn = document.getElementById('analyzeBtn');
