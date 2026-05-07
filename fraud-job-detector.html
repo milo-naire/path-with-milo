@@ -1249,10 +1249,13 @@ async function loadSentry() {
   try {
     const response = await fetch('./employername.json');
     const data = await response.json();
-    approvedEmployers = new Set(data.map(item => item["Employer Name"].toUpperCase()));
-    console.log("Sentry Active: " + approvedEmployers.size + " records loaded.");
+    // Filter out non-strings (some entries are numbers) before uppercasing
+    approvedEmployers = new Set(
+      data.filter(item => typeof item === 'string').map(item => item.toUpperCase().trim())
+    );
+    console.log("Sentry Active: " + approvedEmployers.size + " employers loaded.");
   } catch (error) {
-    console.error("Sentry failed to load list:", error);
+    console.error("Sentry failed to load:", error);
   }
 }
 
@@ -1264,12 +1267,23 @@ async function analyze() {
   if (!text) return;
 
   // ── GATEKEEPER CHECK ──────────────────────────────────────────────────────
-const titleUpper = jobTitle.toUpperCase();
-let matchedEmployer = null;
-for (const employer of approvedEmployers) {
-  if (titleUpper === employer || titleUpper.includes(employer)) {
-      matchedEmployer = employer;
-      break;
+  // Check jobTitle field first (exact match), then scan posting text for employer names
+  const titleUpper = jobTitle.toUpperCase().trim();
+  let matchedEmployer = null;
+
+  // First: exact match on the title field
+  if (titleUpper && approvedEmployers.has(titleUpper)) {
+    matchedEmployer = titleUpper;
+  }
+
+  // Second: check if any approved employer name appears in the job posting text
+  if (!matchedEmployer) {
+    const textUpper = text.toUpperCase();
+    for (const employer of approvedEmployers) {
+      if (employer.length > 4 && textUpper.includes(employer)) {
+        matchedEmployer = employer;
+        break;
+      }
     }
   }
 
@@ -1278,25 +1292,68 @@ for (const employer of approvedEmployers) {
     document.getElementById('verdictCard').className = 'verdict-card legit';
     document.getElementById('verdictIcon').textContent = '🛡️';
     document.getElementById('verdictTitle').textContent = 'LEGITIMATE';
-    document.getElementById('verdictSubtitle').textContent = 'Pre-approved employer on file.';
-    document.getElementById('scoreBadge').textContent = '0/100';
+    document.getElementById('verdictSubtitle').textContent = 'Verified Handshake partner — approved by Rutgers University.';
+    document.getElementById('scoreBadge').textContent = '95/100';
     document.getElementById('scoreBadge').className = 'score-badge';
-    document.getElementById('scoreLabel').textContent = '0 / 100';
-    document.getElementById('confidenceFill').style.width = '2%';
-    document.getElementById('verdictSummary').textContent = displayName + ' is a verified employer in your approved partners database. No forensic audit required — API call skipped.';
-    document.getElementById('redFlags').innerHTML = '<li class="empty-flags">No red flags — pre-approved employer.</li>';
-    document.getElementById('greenFlags').innerHTML = '<li><span class="flag-dot"></span><span>Listed in approved employer database</span></li>';
+    document.getElementById('scoreLabel').textContent = '95 / 100 Legitimacy';
+    setTimeout(() => { document.getElementById('confidenceFill').style.width = '95%'; }, 100);
+    document.getElementById('verdictSummary').textContent = 'This company is an approved employer on Handshake as vetted by Rutgers University — Career Exploration and Success. You are safe to apply.';
+    document.getElementById('redFlags').innerHTML = '<li class="empty-flags">No red flags — pre-approved Handshake partner.</li>';
+    document.getElementById('greenFlags').innerHTML = '<li><span class="flag-dot"></span><span>Verified approved employer — vetted by Rutgers University Career Exploration and Success</span></li><li><span class="flag-dot"></span><span>Listed in official Handshake approved employer database</span></li>';
     document.getElementById('signalRows').innerHTML = '';
-    document.getElementById('recommendationText').textContent = 'This employer is pre-approved. You may proceed with the posting review.';
+    document.getElementById('recommendationText').textContent = 'This employer is pre-approved and has been vetted by Rutgers University Career Exploration and Success. No further review required — you may proceed with approval.';
     document.getElementById('companyInfo').style.display = 'none';
     document.getElementById('ciSalary').style.display = 'none';
     document.getElementById('betterPath').style.display = 'none';
     document.getElementById('dataAuditPanel').style.display = 'none';
     document.getElementById('results').style.display = 'block';
+    setTimeout(() => {
+      const ring = document.getElementById('compassRing');
+      ring.classList.remove('glow');
+      void ring.offsetWidth;
+      ring.classList.add('glow');
+      ring.addEventListener('animationend', () => ring.classList.remove('glow'), { once: true });
+    }, 200);
     document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
     return;
   }
 
+  // ── FORENSIC AUDIT ────────────────────────────────────────────────────────
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  document.getElementById('thinking').style.display = 'flex';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+
+  const investigationSteps = [
+    { label: 'Reading the job posting',       detail: 'Extracting company name, pay, requirements...' },
+    { label: 'Searching for the company',      detail: "Looking up the company's website and careers page..." },
+    { label: 'Checking if the role is listed', detail: "Verifying the role against their official listings..." },
+    { label: 'Scoring fraud signals',          detail: 'Running all filters and calculating your risk score...' }
+  ];
+
+  // Search history log element (add to thinking div if not present)
+  let searchLog = document.getElementById('searchLog');
+  if (!searchLog) {
+    searchLog = document.createElement('div');
+    searchLog.id = 'searchLog';
+    searchLog.style.cssText = 'margin-top:10px;padding:10px 14px;background:#0C0B0A;border:1px solid var(--border);border-radius:10px;font-size:0.68rem;font-family:monospace;max-height:80px;overflow-y:auto;display:none;';
+    document.querySelector('.thinking-progress').insertBefore(
+      searchLog,
+      document.querySelector('.progress-current')
+    );
+  }
+  searchLog.innerHTML = '';
+  searchLog.style.display = 'none';
+
+  function addSearchLog(query) {
+    searchLog.style.display = 'block';
+    const line = document.createElement('div');
+    line.style.cssText = 'color:var(--amber);margin-bottom:2px;';
+    line.textContent = '⌕  ' + query;
+    searchLog.appendChild(line);
+    searchLog.scrollTop = searchLog.scrollHeight;
+  }
 
   function renderProgress(step, detail) {
     const container = document.getElementById('progressSteps');
@@ -1318,7 +1375,7 @@ for (const employer of approvedEmployers) {
     let messages = [{
       role: 'user',
       content: (jobTitle ? 'Job Title: ' + jobTitle + '\n\n' : '') +
-        `Before scoring, extract the company name. Use web_search to find "[company] careers" and "[company] jobs". Check: (1) does the company have a real careers page, (2) is this role listed. If no careers page or role not found, increase fraudRiskScore by 40 (cap 100). Note findings in redFlags or greenFlags. If no company name, note as red flag.\n\nJob posting:\n\n` + text
+        'Before scoring, extract the company name. Use web_search to find "[company] careers" and "[company] jobs". Check: (1) does the company have a real careers page, (2) is this role listed. If no careers page or role not found, increase fraudRiskScore by 40 (cap 100). Note findings in redFlags or greenFlags. If no company name, note as red flag.\n\nJob posting:\n\n' + text
     }];
 
     let finalText = null;
@@ -1332,7 +1389,7 @@ for (const employer of approvedEmployers) {
           model: 'claude-sonnet-4-20250514',
           max_tokens: 4000,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-          system: SYSTEM_PROMPT + "\n\nCRITICAL: If research is done, return ONLY the JSON object. No preamble.",
+          system: SYSTEM_PROMPT + '\n\nCRITICAL: When research is done, return ONLY the JSON object. No preamble.',
           messages
         })
       });
@@ -1347,21 +1404,35 @@ for (const employer of approvedEmployers) {
       const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
       const textBlock = responseContent.find(b => b.type === 'text');
 
-      const trimmedContent = responseContent.filter(b => b.type === 'tool_use' || b.type === 'text');
-      messages.push({ role: 'assistant', content: trimmedContent });
-
       if (toolUseBlock) {
         searchCount++;
-        const currentStep = Math.min(searchCount, 2);
-        renderProgress(currentStep, investigationSteps[currentStep].detail);
+
+        // Show the actual search query in the log
+        if (toolUseBlock.input && toolUseBlock.input.query) {
+          addSearchLog(toolUseBlock.input.query);
+        }
+
+        // Advance progress steps
+        if (searchCount === 1) {
+          renderProgress(1, investigationSteps[1].detail);
+        } else if (searchCount >= 2) {
+          renderProgress(2, investigationSteps[2].detail);
+        }
+
+        // Append assistant turn (only tool_use + text blocks to keep context lean)
+        const trimmed = responseContent.filter(b => b.type === 'tool_use' || b.type === 'text');
+        messages.push({ role: 'assistant', content: trimmed });
+
+        // Send tool_result back — required by Anthropic API
         messages.push({
           role: 'user',
           content: [{
             type: 'tool_result',
             tool_use_id: toolUseBlock.id,
-            content: 'Search results successfully retrieved. Please provide the final forensic analysis JSON.'
+            content: 'Search completed. Continue analysis.'
           }]
         });
+
       } else if (textBlock) {
         renderProgress(3, investigationSteps[3].detail);
         finalText = textBlock.text;
@@ -1378,263 +1449,7 @@ for (const employer of approvedEmployers) {
     }
 
     const parsed = extractJSON(finalText);
-    renderResults(parsed);
-
-  } catch (err) {
-    document.getElementById('errorBox').textContent = 'Analysis failed — please try again. ' + (err.message || '');
-    document.getElementById('errorBox').style.display = 'block';
-  } finally {
-    document.getElementById('thinking').style.display = 'none';
-    btn.disabled = false;
-  }
-}
-
-  // 2. PROCEED TO FORENSIC AUDIT
-  // The code only reaches this point if the name WASN'T in the list
-  const jobTitle = document.getElementById('jobTitle').value.trim();
-  // ... your existing fetch('/api/analyze') logic goes here
-
-  const btn = document.getElementById('analyzeBtn');
-  btn.disabled = true;
-  document.getElementById('thinking').style.display = 'flex';
-  document.getElementById('results').style.display = 'none';
-  document.getElementById('errorBox').style.display = 'none';
-
-  const investigationSteps = [
-    { label: 'Reading the job posting',        detail: 'Pulling apart the text for company name, pay, requirements...' },
-    { label: 'Searching for the company',       detail: "Looking up the company's real website and careers page..." },
-    { label: 'Checking if the role is listed',  detail: "Comparing the posting to what's actually on their site..." },
-    { label: 'Scoring fraud signals',           detail: 'Running all filters and calculating your risk score...' }
-  ];
-
-  function renderProgress(step, detail) {
-    const container = document.getElementById('progressSteps');
-    container.innerHTML = investigationSteps.map((s, i) => {
-      const isDone = i < step;
-      const isActive = i === step;
-      const cls = isDone ? 'done' : isActive ? 'active' : '';
-      const icon = isDone ? '✓' : String(i + 1);
-      return '<div class="progress-step ' + cls + '">' +
-        '<div class="step-icon">' + icon + '</div>' +
-        '<span>' + s.label + '</span></div>';
-    }).join('');
-    document.getElementById('thinkingDetail').textContent = detail || investigationSteps[Math.min(step, investigationSteps.length - 1)].detail;
-  }
-
-  renderProgress(0, investigationSteps[0].detail);
-
-  const SYSTEM_PROMPT = `You are a cynical, experienced Fraud Investigator specializing in 2026 recruitment scams, ghost jobs, and task-based exploitation. Trained on two real-world datasets: 10,000 confirmed fake postings and a mixed dataset of 17,880 postings (866 fraudulent, 17,014 legitimate).
-
-YOUR MISSION: Protect vulnerable job seekers by DISPROVING legitimacy, not confirming it. Assume every posting is a scam until it passes forensic scrutiny.
-
-FILTER 1 — METADATA OVERRIDES:
-Apply +60 to fraudRiskScore if ANY present:
-• "Payment Unverified" + "$0 Spent" → 95% Task Scam indicator
-• Fixed price under $500 for 1-3 months skilled work → Free Labor fraud
-• Client account created within 48 hours
-• Budget "Fixed-price: Small" for roles requiring proven experience
-
-FILTER 2 — LINGUISTIC SCAM PATTERNS (2026):
-IMMEDIATE 100% RISK: Any mention of Telegram, WhatsApp, Signal, or Skype for interviews
-HIGH RISK: "Optimization tasks," "Daily data training," "Workbench activities," "Package handling"
-HIGH RISK: "Start immediately," "No interview required," "Urgent hiring" for high-skill roles
-HIGH RISK (20x more common in fraud): "Earn $X/week guaranteed," income promises
-
-FILTER 3 — REALITY CHECK MATH:
-Freelance market rates (USD 2026):
-• SEO/Content Writer: $25-75/hr; 1-3 month project = $3,000-15,000+
-• Web Developer (mid): $50-120/hr | Graphic Designer: $35-85/hr
-• Virtual Assistant: $15-40/hr | Social Media Manager: $25-60/hr
-Full-time annual (USD 2026):
-• Software Engineer (mid): $110k-160k | Marketing Manager: $65k-110k
-• Accountant: $55k-85k | Healthcare/Nurse: $60k-95k | Customer Service: $35k-55k
-FLAG: Budget less than 20% of market rate = CRITICAL fraud signal
-
-FILTER 4 — GHOST JOB DETECTION:
-Score 40-60 if: 100% generic JD with zero internal context, company had recent layoffs, no specific team/tool/project mentions
-DISTINGUISH: Generic JD from Fortune 500 = lazy HR (low risk). Generic JD from new account = fraud (high risk).
-
-LEGITIMACY REDUCERS (lower score 30-50pts if ALL true):
-• Verified Fortune 500 or established company with LinkedIn/website
-• Specific internal tools, proprietary software, or unique project context
-• On Upwork: 4.5+ stars AND $5,000+ spent → ignore "Unverified Payment"
-Also reduces score: company logo, detailed profile, 600+ char requirements, background check mentioned, Bachelor's+ required
-
-CAREERS PAGE (from web search):
-• Real careers page + role listed → no adjustment
-• Company exists but role not found → +40 fraudRiskScore
-• No careers page found → +40 fraudRiskScore
-• No company name → critical red flag
-
-SCORING THRESHOLDS:
-FRAUDULENT (70-100): 2+ critical signals OR income promise + missing identity + thin requirements
-SUSPICIOUS (35-69): 1 critical signal OR multiple moderate signals OR high-fraud industry + missing profile
-LEGITIMATE (0-34): Verified company, realistic pay, detailed requirements, role-appropriate credentials
-
-STATISTICAL BASELINES:
-• Missing company profile + no logo → 66% of fraud vs 12% legit
-• Entry-level req on professional role → 41% fraud vs 24% legit
-• High-fraud industries: Oil & Energy (18.4%), Accounting (9.6%), Healthcare (8.6%), Marketing (7.6%)
-
-DATA HARVEST AUDIT — run on every posting:
-
-STEP 1 — INTRUSIVE REQUESTS SCAN:
-Flag if the posting requests ANY of these at the application stage (before an offer):
-• SSN / Social Security Number
-• Passport number or copy
-• Driver's license number or copy
-• Bank account or routing numbers
-• Full date of birth (DOB) combined with address
-• Credit card or payment info
-• Government-issued ID uploads
-These are NEVER legitimate pre-offer requirements. Flag each one found.
-
-STEP 2 — APPLY METHOD / PHISHING CHECK:
-Analyze how the posting asks candidates to apply:
-• Verified ATS platforms (LOW RISK): Greenhouse, Lever, Workday, iCIMS, BambooHR, Taleo, SmartRecruiters, ADP, JazzHR, Jobvite, Rippling, Ashby
-• Google Forms / Typeform / Jotform (HIGH RISK): Never appropriate for job applications, especially from named companies
-• Personal email only (MEDIUM-HIGH RISK): No ATS = no accountability
-• WhatsApp/Telegram link (IMMEDIATE 100% RISK)
-• No apply method specified: note as missing
-LOGIC: If a company appears large/established but uses a Google Form to collect personal info → identityTheftRisk = 99
-
-STEP 3 — DATA HARVESTER DETECTION:
-Set dataHarvesterFlag = true if:
-• Asks for sensitive ID or financial data before an offer
-• Uses a Google Form or personal email AND requests personal data
-• Requests resume + photo + DOB + address simultaneously at application stage
-• The "job" has vague duties but detailed personal data collection requirements
-
-CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }. No text before or after.
-
-{
-  "verdict": "LEGITIMATE" | "SUSPICIOUS" | "FRAUDULENT",
-  "fraudRiskScore": number (0-100, applying all filter adjustments),
-  "confidence": number (0-100),
-  "summary": "2-3 sentences. Lead with bottom-line verdict. Be direct.",
-  "redFlags": ["cite specific text from posting"] (up to 6, [] if none),
-  "greenFlags": ["specific legitimacy signal with evidence"] (up to 6, [] if none),
-  "signals": [
-    {"name": "Compensation Claims", "score": 0-100},
-    {"name": "Company Legitimacy", "score": 0-100},
-    {"name": "Contact Info Quality", "score": 0-100},
-    {"name": "Language & Pressure", "score": 0-100},
-    {"name": "Personal Data Requests", "score": 0-100},
-    {"name": "Job Clarity & Realism", "score": 0-100}
-  ],
-  "salaryInPosting": "Salary mentioned in posting as short string, or 'Not mentioned'",
-  "marketRateShort": "2026 market rate — numbers and experience only (e.g. '$75,000-$95,000/yr · 2-4 yrs exp')",
-  "marketRateFineprint": "One sentence on required skills/education level",
-  "recommendation": "Direct actionable advice. If fraudulent: warn clearly. If suspicious: what to verify. If legitimate: confirm safe.",
-  "companyInfo": {
-    "show": boolean (true only if verdict is LEGITIMATE),
-    "website": "URL or null",
-    "careersPage": "URL or null",
-    "roleListed": boolean,
-    "glassdoor": "URL or null",
-    "linkedin": "URL or null",
-    "locations": ["City, State"] (up to 3, or [])
-  },
-  "betterPath": {
-    "show": boolean (true if SUSPICIOUS or FRAUDULENT, false if LEGITIMATE),
-    "realTitles": ["Title 1", "Title 2", "Title 3"] (3-4 real industry titles),
-    "vibeCheck": "One punchy sentence on why the posting was bad",
-    "marketRateShort": "Numbers and experience only (e.g. '$45,000-$65,000/yr · 1-3 yrs exp')",
-    "marketRateFineprint": "One sentence on skills/education required",
-    "companies": ["Company 1", "Company 2", "Company 3"],
-    "searchString": "Exact LinkedIn search string to copy-paste"
-  },
-  "dataAudit": {
-    "riskLevel": "SAFE" | "WARNING" | "DANGER",
-    "identityTheftRisk": number (0-100),
-    "intrusiveRequests": ["specific data point requested prematurely"] ([] if none — e.g. SSN, passport, bank details, DOB, home address at application stage),
-    "applyMethod": {
-      "type": "ATS" | "GOOGLE_FORM" | "TYPEFORM" | "EMAIL" | "EXTERNAL_UNKNOWN" | "NOT_SPECIFIED",
-      "url": "apply URL if present, else null",
-      "platform": "Name of ATS if identified (e.g. Greenhouse, Lever, Workday, iCIMS, BambooHR) or null",
-      "verdict": "One sentence assessment of the apply method"
-    },
-    "dataHarvesterFlag": boolean (true if posting appears designed to collect personal data rather than hire),
-    "validation": "One sentence: is this a data harvester? (e.g. 'This post is a Data Harvester disguised as a job listing.')",
-    "education": "One key fact about when employers legitimately need sensitive data (e.g. 'Employers only need your SSN after you sign an official offer letter — never during the application stage.')",
-    "action": "Specific instruction: what the user should or should not do with their personal data here"
-  }
-}`;
-
-  try {
-    let messages = [{
-      role: 'user',
-      content: (jobTitle ? 'Job Title: ' + jobTitle + '\n\n' : '') +
-        `Before scoring, extract the company name. Use web_search to find "[company] careers" and "[company] jobs". Check: (1) does the company have a real careers page, (2) is this role listed. If no careers page or role not found, increase fraudRiskScore by 40 (cap 100). Note findings in redFlags or greenFlags. If no company name, note as red flag.\n\nJob posting:\n\n` + text
-    }];
-
-    let step = 0;
-    let finalText = null;
-    let searchCount = 0;
-
-    renderProgress(0, investigationSteps[0].detail);
-
-    while (!finalText) {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 4000,
-          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-          system: SYSTEM_PROMPT + "\n\nCRITICAL: If research is done, return ONLY the JSON object. No preamble.",
-          messages
-        })
-      });
-
-      const data = await response.json();
-      if (data.error) {
-        const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
-        throw new Error(errMsg);
-      }
-
-      const responseContent = data.content || [];
-      const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
-      const textBlock = responseContent.find(b => b.type === 'text');
-
-      // Only keep tool_use and text blocks — drop search result content to save tokens
-      const trimmedContent = responseContent.map(b => {
-        if (b.type === 'tool_use') return b;
-        if (b.type === 'text') return b;
-        return null;
-      }).filter(Boolean);
-      messages.push({ role: 'assistant', content: trimmedContent });
-
-      if (toolUseBlock) {
-        searchCount++;
-        const currentStep = Math.min(searchCount, 2);
-        renderProgress(currentStep, investigationSteps[currentStep].detail);
-
-        // Must provide tool_result to satisfy API requirements
-        messages.push({
-          role: 'user',
-          content: [{
-            type: 'tool_result',
-            tool_use_id: toolUseBlock.id,
-            content: 'Search results successfully retrieved. Please provide the final forensic analysis JSON.'
-          }]
-        });
-      } else if (textBlock) {
-        renderProgress(3, investigationSteps[3].detail);
-        finalText = textBlock.text;
-      } else {
-        throw new Error('Investigator timed out. Please try again.');
-      }
-    }
-
-        function extractJSON(str) {
-      const start = str.indexOf('{');
-      const end = str.lastIndexOf('}');
-      if (start === -1) throw new Error('No valid analysis data found.');
-      return JSON.parse(str.substring(start, end + 1).replace(/,\s*([\]}])/g, '$1'));
-    }
-
-        const parsed = extractJSON(finalText);
+    if (searchLog) searchLog.style.display = 'none';
     renderResults(parsed);
 
   } catch (err) {
