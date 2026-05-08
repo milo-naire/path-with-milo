@@ -1313,6 +1313,19 @@
 <script>
 const API_URL = window.location.protocol === 'file:' ? 'http://localhost:8787/api/analyze' : '/api/analyze';
 
+// Approved unpaid employers — loaded from approved-employers.json at startup.
+// Source: Google Form export. Key name is the raw form question text.
+let approvedEmployers = [];
+fetch('/approved-employers.json')
+  .then(r => r.json())
+  .then(data => {
+    const KEY = 'Q8 - COMPANY/ORGANIZATION NAME:';
+    approvedEmployers = data
+      .map(e => (e[KEY] || '').trim())
+      .filter(name => name.length > 3 && name.toUpperCase() !== 'COMPANY/ORGANIZATION NAME:');
+  })
+  .catch(() => {}); // fail silently — list is supplemental, not required
+
 const SYSTEM_PROMPT = `You are a cynical, experienced Fraud Investigator specializing in 2026 recruitment scams, ghost jobs, and task-based exploitation. Trained on two real-world datasets: 10,000 confirmed fake postings and a mixed dataset of 17,880 postings (866 fraudulent, 17,014 legitimate).
 
 YOUR MISSION: Protect vulnerable job seekers by DISPROVING legitimacy, not confirming it. Assume every posting is a scam until it passes forensic scrutiny.
@@ -2108,7 +2121,9 @@ async function auditCompensation() {
         model: 'claude-sonnet-4-6',
         max_tokens: 4096,
         temperature: 0,
-        system: PAYAUDIT_PROMPT,
+        system: PAYAUDIT_PROMPT + (approvedEmployers.length
+          ? '\n\nAPPROVED UNPAID EMPLOYERS (pre-verified for-credit partners — treat these as COMPLIANT UNPAID if the posting is unpaid):\n' + approvedEmployers.join('\n')
+          : ''),
         messages: [{
           role: 'user',
           content: (jobTitle ? 'Job Title: ' + jobTitle + '\n\n' : '') +

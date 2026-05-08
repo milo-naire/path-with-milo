@@ -72,6 +72,9 @@ When editing the AI prompt, preserve this JSON schema — the frontend JS parses
 
 ## Changelog
 
+### 2026-05-08 (4)
+- **feat(fraud-job-detector.html):** PayAudit now loads `approved-employers.json` at page start and injects the list into the system prompt at audit time. Employers matching the list are treated as COMPLIANT UNPAID. JSON key is the raw Google Form question text (`Q8 - COMPANY/ORGANIZATION NAME:`); header/test rows are filtered out automatically.
+
 ### 2026-05-08 (3)
 - **fix(fraud-job-detector.html):** PayAudit UI fixes — purple border consistency across input card and all result panels in payaudit mode; fraud flags margin-top added to fix overlap with lump sum breakdown; example buttons hidden in payaudit mode; ⓘ hover tooltip added to mode switcher explaining the difference between JobSentry and PayAudit; PayAudit prompt updated with student audience detection (FLSA primary beneficiary test, student-friendly language in actionableNote, `isStudentPosting` JSON field)
 
