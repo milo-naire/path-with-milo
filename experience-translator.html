@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Experience Translator — Path with Milo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:wght@400;500&family=Sora:wght@100..800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0F0E0D;
+    --surface:   #1A1815;
+    --card:      #201E1B;
+    --border:    #34495E;
+    --amber:     #FFB347;
+    --amber-dim: #C8882A;
+    --amber-glow: rgba(255,179,71,0.18);
+    --red:       #E05C5C;
+    --green:     #88D4AB;
+    --teal:      #4ECDC4;
+    --blue:      #7EB8D4;
+    --text:      #EDE8E0;
+    --muted:     #7A7368;
+    --muted2:    #4A4640;
+    --serif:     'Sora', sans-serif;
+    --sans:      'Inter', system-ui, sans-serif;
+    --mono:      'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ── Header ─────────────────────────────────────────────── */
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 52px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo { display: flex; align-items: center; gap: 16px; }
+
+  .logo-icon {
+    width: 54px; height: 54px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  @keyframes icon-pulse {
+    0%, 100% { filter: drop-shadow(0 0 0px rgba(255,179,71,0)); }
+    50%       { filter: drop-shadow(0 0 10px rgba(255,179,71,0.65)); }
+  }
+  .logo-icon.glow svg { animation: icon-pulse 2s ease-in-out 3; }
+
+  .logo-text { display: flex; flex-direction: column; gap: 2px; }
+
+  .logo-name {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 2.1rem;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    line-height: 1;
+  }
+  .logo-name span { color: var(--amber); }
+
+  .logo-tag {
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+
+  .status-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,179,71,0.07);
+    border: 1px solid rgba(255,179,71,0.2);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-size: 0.68rem;
+    color: var(--amber);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 500;
+    align-self: flex-start;
+    margin-top: 6px;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--amber);
+    animation: pulse 2.5s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  /* ── Tagline ─────────────────────────────────────────────── */
+  .tagline {
+    background: linear-gradient(135deg, rgba(255,179,71,0.06), rgba(78,205,196,0.04));
+    border: 1px solid rgba(255,179,71,0.15);
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 28px;
+    font-size: 0.88rem;
+    color: #C0B8B0;
+    line-height: 1.7;
+  }
+  .tagline strong { color: var(--amber); font-weight: 600; }
+
+  /* ── Cards ───────────────────────────────────────────────── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .card-accent::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--amber), transparent);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .card-title {
+    font-family: var(--serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title-icon { font-size: 1rem; }
+
+  /* ── Input Mode Toggle ───────────────────────────────────── */
+  .mode-toggle {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 20px;
+    width: fit-content;
+  }
+
+  .mode-btn {
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.02em;
+  }
+
+  .mode-btn.active {
+    background: rgba(255,179,71,0.12);
+    color: var(--amber);
+  }
+
+  /* ── Field labels ────────────────────────────────────────── */
+  .field-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .optional-tag {
+    font-size: 0.52rem;
+    color: var(--muted);
+    background: var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .required-tag {
+    font-size: 0.52rem;
+    color: var(--amber);
+    background: rgba(255,179,71,0.1);
+    border-radius: 4px;
+    padding: 2px 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── Inputs ──────────────────────────────────────────────── */
+  textarea, input[type="text"] {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    line-height: 1.75;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  textarea { resize: vertical; }
+  textarea::placeholder, input[type="text"]::placeholder { color: var(--muted); font-size: 0.8rem; }
+  textarea:focus, input[type="text"]:focus {
+    border-color: var(--amber-dim);
+    box-shadow: 0 0 0 3px rgba(255,179,71,0.08);
+  }
+
+  .main-input { min-height: 200px; }
+  .jd-input   { min-height: 140px; }
+
+  /* ── File Upload Zone ────────────────────────────────────── */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 36px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--amber-dim);
+    background: rgba(255,179,71,0.04);
+  }
+  .upload-zone input { display: none; }
+  .upload-icon { font-size: 2rem; margin-bottom: 10px; opacity: 0.6; }
+  .upload-title { font-size: 0.9rem; color: var(--text); margin-bottom: 6px; font-weight: 500; }
+  .upload-sub { font-size: 0.72rem; color: var(--muted); line-height: 1.6; }
+  .upload-sub span { color: var(--amber); cursor: pointer; }
+
+  .upload-preview {
+    display: none;
+    background: var(--surface);
+    border: 1px solid rgba(136,212,171,0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    align-items: center;
+    gap: 14px;
+  }
+  .upload-preview.visible { display: flex; }
+  .upload-file-icon { font-size: 1.4rem; }
+  .upload-file-name { font-size: 0.82rem; color: var(--green); font-weight: 500; }
+  .upload-file-size { font-size: 0.68rem; color: var(--muted); }
+  .upload-remove {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .upload-remove:hover { border-color: var(--red); color: var(--red); }
+
+  /* ── Divider ─────────────────────────────────────────────── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 24px 0 20px;
+  }
+  .section-divider::before, .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .section-divider span {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ── Two-col grid ────────────────────────────────────────── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 560px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ── Buttons ─────────────────────────────────────────────── */
+  .btn-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  .clear-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    padding: 11px 18px;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .clear-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .translate-btn {
+    background: var(--amber);
+    border: none;
+    border-radius: 10px;
+    color: #1A1815;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 0.88rem;
+    padding: 11px 30px;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.03em;
+  }
+  .translate-btn:hover:not(:disabled) {
+    background: #FFC466;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(255,179,71,0.3);
+  }
+  .translate-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+  /* ── Examples ────────────────────────────────────────────── */
+  .examples-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  .examples-label { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.06em; }
+  .example-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 0.68rem;
+    padding: 5px 11px;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .example-btn:hover { border-color: var(--amber-dim); color: var(--amber); background: rgba(255,179,71,0.05); }
+
+  /* ── Progress / Thinking ─────────────────────────────────── */
+  #thinking {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+
+  .thinking-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 18px;
+    font-weight: 500;
+  }
+
+  .progress-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .progress-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.8rem;
+    color: var(--muted2);
+    transition: color 0.3s;
+  }
+  .progress-step.done { color: var(--green); }
+  .progress-step.active { color: var(--amber); }
+
+  .step-icon {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.62rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .progress-step.done .step-icon { background: rgba(136,212,171,0.12); }
+  .progress-step.active .step-icon { background: rgba(255,179,71,0.1); }
+
+  .thinking-current {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .thinking-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+  .thinking-bars span {
+    width: 3px;
+    background: var(--amber);
+    border-radius: 2px;
+    animation: bar-bounce 0.9s ease-in-out infinite;
+  }
+  .thinking-bars span:nth-child(2) { animation-delay: 0.15s; }
+  .thinking-bars span:nth-child(3) { animation-delay: 0.3s; }
+  .thinking-bars span:nth-child(4) { animation-delay: 0.45s; }
+  @keyframes bar-bounce {
+    0%, 100% { height: 4px; opacity: 0.5; }
+    50%       { height: 14px; opacity: 1; }
+  }
+
+  /* ── Error ───────────────────────────────────────────────── */
+  .error-box {
+    background: rgba(224,92,92,0.07);
+    border: 1px solid rgba(224,92,92,0.25);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 0.78rem;
+    color: #E07878;
+    margin-bottom: 20px;
+  }
+
+  /* ── Results ─────────────────────────────────────────────── */
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .results-title {
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .results-title span { color: var(--amber); }
+
+  .copy-all-btn {
+    background: rgba(255,179,71,0.1);
+    border: 1px solid rgba(255,179,71,0.25);
+    border-radius: 8px;
+    color: var(--amber);
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .copy-all-btn:hover { background: rgba(255,179,71,0.18); }
+
+  /* ── Bullet Cards ────────────────────────────────────────── */
+  .bullet-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .bullet-original {
+    padding: 14px 18px;
+    background: rgba(74,70,64,0.25);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .bullet-orig-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    white-space: nowrap;
+    margin-top: 2px;
+    min-width: 52px;
+  }
+
+  .bullet-orig-text {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .bullet-translated {
+    padding: 16px 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .bullet-trans-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--amber);
+    font-weight: 500;
+    white-space: nowrap;
+    margin-top: 2px;
+    min-width: 52px;
+  }
+
+  .bullet-trans-text {
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.7;
+    flex: 1;
+  }
+
+  .bullet-footer {
+    padding: 10px 18px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .skill-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .skill-pill {
+    font-size: 0.62rem;
+    background: rgba(78,205,196,0.08);
+    border: 1px solid rgba(78,205,196,0.2);
+    color: var(--teal);
+    border-radius: 999px;
+    padding: 3px 10px;
+    letter-spacing: 0.04em;
+  }
+
+  .copy-bullet-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 0.68rem;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .copy-bullet-btn:hover { border-color: var(--amber-dim); color: var(--amber); }
+  .copy-bullet-btn.copied { border-color: var(--green); color: var(--green); }
+
+  /* ── Power Skills ────────────────────────────────────────── */
+  .power-skills-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 20px;
+  }
+
+  .panel-title {
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+
+  .power-skill-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .power-skill-pill {
+    font-size: 0.78rem;
+    background: rgba(255,179,71,0.08);
+    border: 1px solid rgba(255,179,71,0.22);
+    color: var(--amber);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-weight: 500;
+  }
+
+  /* ── Summary ─────────────────────────────────────────────── */
+  .summary-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 20px;
+  }
+
+  .summary-text {
+    font-size: 0.87rem;
+    line-height: 1.85;
+    color: #C8C0B8;
+  }
+
+  .summary-copy-row {
+    margin-top: 14px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* ── ATS Panel ───────────────────────────────────────────── */
+  .ats-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 20px;
+  }
+
+  .ats-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .ats-score-badge {
+    font-family: var(--serif);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .ats-score-sub { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; text-align: right; }
+
+  .ats-bar-wrap {
+    margin-bottom: 18px;
+  }
+  .ats-bar-track {
+    height: 6px;
+    background: var(--surface);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .ats-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(90deg, var(--amber), var(--green));
+    width: 0%;
+  }
+
+  .ats-kw-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 560px) { .ats-kw-cols { grid-template-columns: 1fr; } }
+
+  .ats-kw-group { }
+  .ats-kw-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .ats-kw-label.matched  { color: var(--green); }
+  .ats-kw-label.injected { color: var(--amber); }
+  .ats-kw-label.missing  { color: var(--red);   }
+
+  .ats-kw-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ats-kw-pill {
+    font-size: 0.68rem;
+    border-radius: 6px;
+    padding: 4px 10px;
+  }
+  .ats-kw-pill.matched  { background: rgba(136,212,171,0.1); border: 1px solid rgba(136,212,171,0.25); color: var(--green); }
+  .ats-kw-pill.injected { background: rgba(255,179,71,0.08);  border: 1px solid rgba(255,179,71,0.2);  color: var(--amber); }
+  .ats-kw-pill.missing  { background: rgba(224,92,92,0.07);   border: 1px solid rgba(224,92,92,0.2);   color: var(--red);   }
+
+  .ats-tip {
+    font-size: 0.78rem;
+    line-height: 1.65;
+    color: var(--muted);
+    padding: 12px 16px;
+    background: rgba(255,179,71,0.04);
+    border: 1px solid rgba(255,179,71,0.1);
+    border-radius: 10px;
+  }
+  .ats-tip strong { color: var(--amber); }
+
+  /* ── Footer ──────────────────────────────────────────────── */
+  .footer-note {
+    text-align: center;
+    font-size: 0.63rem;
+    color: var(--muted);
+    margin-top: 48px;
+    letter-spacing: 0.06em;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon" id="logoIcon">
+        <svg width="54" height="54" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="1" width="52" height="52" rx="14" fill="#0C0B09" stroke="#FFB347" stroke-width="1.6"/>
+          <path d="M14 20h14M14 27h10M14 34h8" stroke="#FFB347" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M32 18l8 9-8 9" stroke="#FFB347" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M40 27H28" stroke="#FFB347" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div class="logo-name">Experience <span>Translator</span></div>
+        <div class="logo-tag">Resume Intelligence Engine · 2026</div>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      Ready
+    </div>
+  </header>
+
+  <!-- Tagline -->
+  <div class="tagline">
+    <strong>Your summer job is actually a goldmine of soft skills.</strong> Paste in what you actually did — we'll translate it into the corporate language hiring managers and ATS systems are looking for.
+    Optionally, target a specific role and company to get bullets tailored to pass their exact screening.
+  </div>
+
+  <!-- Input Card -->
+  <div class="card card-accent">
+
+    <!-- Mode Toggle -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="modePaste" onclick="setMode('paste')">Paste Bullets</button>
+      <button class="mode-btn" id="modeUpload" onclick="setMode('upload')">Upload Resume</button>
+    </div>
+
+    <!-- Paste Mode -->
+    <div id="pasteSection">
+      <div class="field-label">Your Job Responsibilities <span class="required-tag">required</span></div>
+      <textarea id="bulletInput" class="main-input"
+        placeholder="List what you actually did. One per line works great, or just paste it naturally.
+
+Examples:
+• Cleaned tables and took orders
+• Handled cash register and processed returns
+• Helped customers find products and answered questions
+• Trained new employees on register procedures
+• Counted inventory at end of shift"></textarea>
+      <div class="examples-row">
+        <span class="examples-label">Try an example:</span>
+        <button class="example-btn" onclick="loadExample('retail')">Retail / Cashier</button>
+        <button class="example-btn" onclick="loadExample('restaurant')">Restaurant / Server</button>
+        <button class="example-btn" onclick="loadExample('warehouse')">Warehouse / Logistics</button>
+      </div>
+    </div>
+
+    <!-- Upload Mode -->
+    <div id="uploadSection" style="display:none;">
+      <div class="field-label">Upload Resume <span class="required-tag">required</span></div>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"
+           ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="this.classList.remove('dragover')">
+        <input type="file" id="fileInput" accept=".pdf,.txt,.doc,.docx" onchange="handleFileSelect(event)">
+        <div class="upload-icon">📄</div>
+        <div class="upload-title">Drop your resume here</div>
+        <div class="upload-sub">PDF, TXT — or <span onclick="document.getElementById('fileInput').click()">click to browse</span><br>We'll extract your experience bullets automatically.</div>
+      </div>
+      <div class="upload-preview" id="uploadPreview">
+        <div class="upload-file-icon">📎</div>
+        <div>
+          <div class="upload-file-name" id="uploadFileName"></div>
+          <div class="upload-file-size" id="uploadFileSize"></div>
+        </div>
+        <button class="upload-remove" onclick="removeFile()">Remove</button>
+      </div>
+    </div>
+
+    <div class="section-divider"><span>Optional targeting</span></div>
+
+    <!-- Role context (what was the job?) -->
+    <div style="margin-bottom: 18px;">
+      <div class="field-label">Your Job Title / Context <span class="optional-tag">optional</span></div>
+      <input type="text" id="sourceRole" placeholder='e.g. "Cashier at Target" or "Server at Applebee\'s"' />
+    </div>
+
+    <!-- Target -->
+    <div class="two-col">
+      <div>
+        <div class="field-label">Target Job Title <span class="optional-tag">optional — for ATS tailoring</span></div>
+        <input type="text" id="targetRole" placeholder='e.g. "Marketing Coordinator"' />
+      </div>
+      <div>
+        <div class="field-label">Target Company <span class="optional-tag">optional</span></div>
+        <input type="text" id="targetCompany" placeholder='e.g. "Google" or "Nike"' />
+      </div>
+    </div>
+
+    <!-- Job Description paste -->
+    <div>
+      <div class="field-label">Job Description <span class="optional-tag">paste for ATS keyword matching</span></div>
+      <textarea id="jdInput" class="jd-input"
+        placeholder="Paste the full job description here. We'll extract the exact keywords their ATS is scanning for and weave them into your translated bullets..."></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="clear-btn" onclick="clearAll()">✕ Clear</button>
+      <button class="translate-btn" id="translateBtn" onclick="translate()">Translate My Experience →</button>
+    </div>
+  </div>
+
+  <!-- Thinking -->
+  <div id="thinking">
+    <div class="thinking-label">Translating your experience</div>
+    <div class="progress-steps" id="progressSteps"></div>
+    <div class="thinking-current">
+      <div class="thinking-bars"><span></span><span></span><span></span><span></span></div>
+      <span id="thinkingDetail">Starting translation...</span>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div id="errorBox" class="error-box" style="display:none;"></div>
+
+  <!-- Results -->
+  <div id="results" style="display:none;">
+
+    <div class="results-header">
+      <div class="results-title">Your <span>Translated</span> Bullets</div>
+      <button class="copy-all-btn" onclick="copyAll()">Copy All Bullets</button>
+    </div>
+
+    <!-- Bullet cards -->
+    <div id="bulletCards"></div>
+
+    <!-- Power Skills -->
+    <div class="power-skills-section" id="powerSkillsSection" style="display:none;">
+      <div class="panel-title">Core Competencies Identified</div>
+      <div class="power-skill-pills" id="powerSkillPills"></div>
+    </div>
+
+    <!-- Professional Summary -->
+    <div class="summary-section" id="summarySection" style="display:none;">
+      <div class="panel-title">Professional Summary</div>
+      <div class="summary-text" id="summaryText"></div>
+      <div class="summary-copy-row">
+        <button class="copy-bullet-btn" id="copySummaryBtn" onclick="copySummary()">Copy Summary</button>
+      </div>
+    </div>
+
+    <!-- ATS Panel -->
+    <div class="ats-panel" id="atsPanel" style="display:none;">
+      <div class="ats-header">
+        <div>
+          <div class="panel-title" style="margin-bottom:4px;">ATS Optimization Score</div>
+          <div style="font-size:0.75rem; color:var(--muted); line-height:1.5;">Based on keyword match against the provided job description.</div>
+        </div>
+        <div>
+          <div class="ats-score-badge" id="atsScoreNum">—</div>
+          <div class="ats-score-sub">/ 100</div>
+        </div>
+      </div>
+      <div class="ats-bar-wrap">
+        <div class="ats-bar-track"><div class="ats-bar-fill" id="atsBarFill"></div></div>
+      </div>
+      <div class="ats-kw-cols">
+        <div class="ats-kw-group">
+          <div class="ats-kw-label matched">Already In Your Bullets</div>
+          <div class="ats-kw-pills" id="atsMatched"></div>
+        </div>
+        <div class="ats-kw-group">
+          <div class="ats-kw-label injected">Woven In During Translation</div>
+          <div class="ats-kw-pills" id="atsInjected"></div>
+        </div>
+      </div>
+      <div class="ats-kw-group" id="atsMissingGroup" style="margin-bottom:16px;">
+        <div class="ats-kw-label missing">Keywords To Add Manually</div>
+        <div class="ats-kw-pills" id="atsMissing"></div>
+      </div>
+      <div class="ats-tip" id="atsTip"></div>
+    </div>
+
+  </div>
+
+  <div class="footer-note">
+    A PathAtlas Intelligence Agent · Translations are advisory — always review before submitting<br>
+    <a href="index.html" style="color:var(--muted); text-decoration:none;">← Back to Path with Milo</a>
+  </div>
+
+</div>
+<script>
+const SYSTEM_PROMPT = `You are an elite resume strategist and corporate language expert who specializes in translating everyday retail, service, and entry-level job experience into powerful, professional resume bullets.
+
+YOUR MISSION: Take real, honest work experience and elevate the language — not fabricate achievements. Preserve truth while translating it into vocabulary that corporate hiring managers and ATS systems respond to.
+
+TRANSLATION RULES:
+1. Use strong action verbs (Managed, Coordinated, Optimized, Streamlined, Facilitated, Led, Executed, Maintained, Ensured, Delivered, Collaborated, Drove, Implemented, Monitored)
+2. Quantify wherever plausible — use ranges or approximations if exact numbers aren't given ("50+ daily transactions", "team of 4–6", "15+ customer interactions per shift")
+3. Match the seniority language to the target role if provided — entry-level translation for an admin role differs from one for a project management role
+4. If a job description is provided, naturally weave in its exact ATS keywords and phrases into the translated bullets — do NOT force keywords that don't fit; only use ones that genuinely apply
+5. Each translated bullet: 1–2 lines, past tense, starts with action verb, no pronouns
+6. Do NOT invent skills, certifications, or tools the person never mentioned
+
+ATS KEYWORD STRATEGY (only applies when job description is provided):
+- Extract the top 12-15 keywords/phrases from the job description (skills, tools, competencies)
+- Identify which ones genuinely map to the person's experience
+- Weave matching keywords naturally into translated bullets
+- Note which keywords were already present, which you injected, and which are still missing
+
+CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }. No preamble, no markdown, no explanation.
+
+{
+  "bullets": [
+    {
+      "original": "exact original text from user",
+      "translated": "elevated corporate resume bullet",
+      "coreSkills": ["Skill 1", "Skill 2", "Skill 3"]
+    }
+  ],
+  "powerSkills": ["Top Skill 1", "Top Skill 2"] (up to 8 — the strongest transferable skills across all bullets),
+  "summary": "2-3 sentence professional summary paragraph written in third person that a recruiter could place at the top of the resume. Mention the target role if provided.",
+  "atsAnalysis": null OR (object below — ONLY if a job description was provided):
+  {
+    "score": number 0-100 (honest assessment of how well bullets now match JD keywords),
+    "matchedKeywords": ["kw1", "kw2"] (keywords that were already present in original bullets),
+    "injectedKeywords": ["kw1", "kw2"] (keywords you wove into translated bullets),
+    "missingKeywords": ["kw1", "kw2"] (important JD keywords that couldn't be naturally injected — user should address in cover letter or other resume sections),
+    "tip": "One specific sentence on the single most impactful thing the user can do to further improve their ATS score."
+  }
+}`;
+
+const EXAMPLES = {
+  retail: `• Cleaned tables and took orders
+• Handled cash register and processed returns
+• Helped customers find products and answered questions
+• Trained 2 new employees on register procedures
+• Counted inventory at end of shift
+• Stocked shelves and organized merchandise
+• Handled customer complaints and resolved issues`,
+
+  restaurant: `• Took food and drink orders from tables
+• Delivered food and checked on customer satisfaction
+• Worked with kitchen staff to make sure orders came out right
+• Handled cash and credit card payments at end of meals
+• Cleaned and reset tables between customers
+• Memorized menu items and daily specials
+• Covered other servers during busy shifts`,
+
+  warehouse: `• Picked and packed orders for shipping
+• Operated forklift and pallet jack to move inventory
+• Checked incoming shipments for damage or missing items
+• Scanned barcodes and updated inventory system
+• Helped load and unload delivery trucks
+• Followed safety protocols in the warehouse
+• Met daily productivity quotas`
+};
+
+let uploadedFileData = null; // { name, size, base64, type }
+let currentMode = 'paste';
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modePaste').classList.toggle('active', mode === 'paste');
+  document.getElementById('modeUpload').classList.toggle('active', mode === 'upload');
+  document.getElementById('pasteSection').style.display = mode === 'paste' ? 'block' : 'none';
+  document.getElementById('uploadSection').style.display = mode === 'upload' ? 'block' : 'none';
+}
+
+function loadExample(type) {
+  document.getElementById('bulletInput').value = EXAMPLES[type];
+  setMode('paste');
+}
+
+function clearAll() {
+  document.getElementById('bulletInput').value = '';
+  document.getElementById('sourceRole').value = '';
+  document.getElementById('targetRole').value = '';
+  document.getElementById('targetCompany').value = '';
+  document.getElementById('jdInput').value = '';
+  removeFile();
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+  setMode('paste');
+  document.getElementById('bulletInput').focus();
+}
+
+// ── File Handling ─────────────────────────────────────────────────────────────
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.add('dragover');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+}
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) processFile(file);
+}
+
+function processFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const result = e.target.result;
+    const base64 = result.split(',')[1];
+    uploadedFileData = {
+      name: file.name,
+      size: file.size,
+      base64,
+      type: file.type || 'application/octet-stream'
+    };
+    document.getElementById('uploadZone').style.display = 'none';
+    const preview = document.getElementById('uploadPreview');
+    preview.classList.add('visible');
+    document.getElementById('uploadFileName').textContent = file.name;
+    document.getElementById('uploadFileSize').textContent = formatBytes(file.size);
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeFile() {
+  uploadedFileData = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('uploadPreview').classList.remove('visible');
+}
+
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1048576).toFixed(1) + ' MB';
+}
+
+// ── Progress ──────────────────────────────────────────────────────────────────
+const STEPS = [
+  { label: 'Reading your experience',       detail: 'Parsing your responsibilities...' },
+  { label: 'Identifying transferable skills', detail: 'Mapping your real skills to corporate language...' },
+  { label: 'Translating bullets',            detail: 'Elevating each bullet to professional language...' },
+  { label: 'Optimizing for ATS',             detail: 'Matching keywords and calculating ATS score...' }
+];
+
+let currentStep = 0;
+const stepTimers = [];
+
+function renderProgress(step, detail) {
+  const container = document.getElementById('progressSteps');
+  container.innerHTML = STEPS.map((s, i) => {
+    const isDone   = i < step;
+    const isActive = i === step;
+    const cls  = isDone ? 'done' : isActive ? 'active' : '';
+    const icon = isDone ? '✓' : String(i + 1);
+    return `<div class="progress-step ${cls}">
+      <div class="step-icon">${icon}</div>
+      <span>${s.label}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('thinkingDetail').textContent = detail || STEPS[Math.min(step, STEPS.length - 1)].detail;
+}
+
+function safeProgress(step, detail) {
+  if (step > currentStep) {
+    currentStep = step;
+    renderProgress(step, detail);
+  }
+}
+
+// ── Main translate function ────────────────────────────────────────────────────
+async function translate() {
+  const bullets = document.getElementById('bulletInput').value.trim();
+  const sourceRole  = document.getElementById('sourceRole').value.trim();
+  const targetRole  = document.getElementById('targetRole').value.trim();
+  const targetCompany = document.getElementById('targetCompany').value.trim();
+  const jd = document.getElementById('jdInput').value.trim();
+
+  if (currentMode === 'paste' && !bullets) {
+    document.getElementById('bulletInput').focus();
+    return;
+  }
+  if (currentMode === 'upload' && !uploadedFileData) return;
+
+  const btn = document.getElementById('translateBtn');
+  btn.disabled = true;
+  document.getElementById('thinking').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+
+  currentStep = 0;
+  stepTimers.forEach(t => clearTimeout(t));
+  renderProgress(0, STEPS[0].detail);
+  stepTimers.push(setTimeout(() => safeProgress(1, STEPS[1].detail), 2800));
+  stepTimers.push(setTimeout(() => safeProgress(2, STEPS[2].detail), 5500));
+
+  // Build user message
+  let userContent = [];
+  let userText = '';
+
+  if (sourceRole) userText += `Source Role: ${sourceRole}\n`;
+  if (targetRole) userText += `Target Role: ${targetRole}\n`;
+  if (targetCompany) userText += `Target Company: ${targetCompany}\n`;
+
+  if (currentMode === 'upload' && uploadedFileData) {
+    if (userText) userText += '\n';
+    userText += 'I have uploaded my resume. Please extract all job responsibilities and experience bullets from it, then translate them.\n';
+    if (jd) userText += `\nJob Description to target:\n${jd}`;
+
+    userContent = [
+      { type: 'text', text: userText },
+      {
+        type: 'document',
+        source: {
+          type: 'base64',
+          media_type: uploadedFileData.type.includes('pdf') ? 'application/pdf' : 'text/plain',
+          data: uploadedFileData.base64
+        }
+      }
+    ];
+  } else {
+    userText += `\nMy Job Responsibilities:\n${bullets}`;
+    if (jd) userText += `\n\nJob Description to target:\n${jd}`;
+    userContent = userText;
+  }
+
+  try {
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4096,
+        temperature: 0.3,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: userContent }]
+      })
+    });
+
+    const data = await response.json();
+    if (data.error) {
+      const msg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
+      throw new Error(msg);
+    }
+
+    safeProgress(3, STEPS[3].detail);
+
+    const textBlocks = (data.content || []).filter(b => b.type === 'text' && b.text && b.text.trim());
+    if (!textBlocks.length) throw new Error('No response received. Please try again.');
+
+    const rawText = textBlocks[textBlocks.length - 1].text.trim();
+    const jsonStart = rawText.indexOf('{');
+    const jsonEnd   = rawText.lastIndexOf('}');
+    if (jsonStart === -1 || jsonEnd === -1) throw new Error('Unexpected response format. Please try again.');
+
+    const parsed = JSON.parse(rawText.slice(jsonStart, jsonEnd + 1));
+    renderResults(parsed);
+
+  } catch (err) {
+    const box = document.getElementById('errorBox');
+    box.textContent = '⚠ ' + err.message;
+    box.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    document.getElementById('thinking').style.display = 'none';
+    document.getElementById('logoIcon').classList.add('glow');
+    setTimeout(() => document.getElementById('logoIcon').classList.remove('glow'), 6000);
+  }
+}
+
+// ── Render Results ────────────────────────────────────────────────────────────
+function renderResults(data) {
+  const resultsEl = document.getElementById('results');
+
+  // Bullets
+  const cardsContainer = document.getElementById('bulletCards');
+  cardsContainer.innerHTML = '';
+  (data.bullets || []).forEach((b, i) => {
+    const skills = (b.coreSkills || []).map(s =>
+      `<span class="skill-pill">${escHtml(s)}</span>`
+    ).join('');
+    cardsContainer.innerHTML += `
+      <div class="bullet-card">
+        <div class="bullet-original">
+          <div class="bullet-orig-label">Original</div>
+          <div class="bullet-orig-text">${escHtml(b.original || '')}</div>
+        </div>
+        <div class="bullet-translated">
+          <div class="bullet-trans-label">Translated</div>
+          <div class="bullet-trans-text" id="bt-${i}">${escHtml(b.translated || '')}</div>
+        </div>
+        <div class="bullet-footer">
+          <div class="skill-pills">${skills}</div>
+          <button class="copy-bullet-btn" onclick="copyBullet(${i})">Copy</button>
+        </div>
+      </div>`;
+  });
+
+  // Power Skills
+  const pwSkills = data.powerSkills || [];
+  const pwSection = document.getElementById('powerSkillsSection');
+  if (pwSkills.length) {
+    document.getElementById('powerSkillPills').innerHTML = pwSkills.map(s =>
+      `<span class="power-skill-pill">${escHtml(s)}</span>`
+    ).join('');
+    pwSection.style.display = 'block';
+  } else {
+    pwSection.style.display = 'none';
+  }
+
+  // Summary
+  const summSection = document.getElementById('summarySection');
+  if (data.summary) {
+    document.getElementById('summaryText').textContent = data.summary;
+    summSection.style.display = 'block';
+  } else {
+    summSection.style.display = 'none';
+  }
+
+  // ATS
+  const atsPanel = document.getElementById('atsPanel');
+  if (data.atsAnalysis) {
+    const a = data.atsAnalysis;
+    document.getElementById('atsScoreNum').textContent = a.score ?? '—';
+    document.getElementById('atsScoreNum').style.color = atsColor(a.score);
+    setTimeout(() => {
+      document.getElementById('atsBarFill').style.width = (a.score ?? 0) + '%';
+    }, 100);
+
+    renderKwPills('atsMatched',  a.matchedKeywords  || [], 'matched');
+    renderKwPills('atsInjected', a.injectedKeywords || [], 'injected');
+    renderKwPills('atsMissing',  a.missingKeywords  || [], 'missing');
+
+    const missingGroup = document.getElementById('atsMissingGroup');
+    missingGroup.style.display = (a.missingKeywords && a.missingKeywords.length) ? 'block' : 'none';
+
+    const tipEl = document.getElementById('atsTip');
+    tipEl.innerHTML = a.tip ? '<strong>Tip:</strong> ' + escHtml(a.tip) : '';
+
+    atsPanel.style.display = 'block';
+  } else {
+    atsPanel.style.display = 'none';
+  }
+
+  resultsEl.style.display = 'block';
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderKwPills(containerId, keywords, cls) {
+  document.getElementById(containerId).innerHTML = keywords.map(k =>
+    `<span class="ats-kw-pill ${cls}">${escHtml(k)}</span>`
+  ).join('') || `<span style="font-size:0.7rem; color:var(--muted); font-style:italic;">None</span>`;
+}
+
+function atsColor(score) {
+  if (score >= 75) return 'var(--green)';
+  if (score >= 50) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+// ── Copy helpers ──────────────────────────────────────────────────────────────
+function copyBullet(index) {
+  const text = document.getElementById('bt-' + index).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btns = document.querySelectorAll('.copy-bullet-btn');
+    const btn = btns[index];
+    if (btn) {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    }
+  });
+}
+
+function copyAll() {
+  const cards = document.querySelectorAll('[id^="bt-"]');
+  const text = Array.from(cards).map(el => '• ' + el.textContent).join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-all-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy All Bullets', 2000);
+  });
+}
+
+function copySummary() {
+  const text = document.getElementById('summaryText').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copySummaryBtn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy Summary'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+</script>
+</body>
+</html>
