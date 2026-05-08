@@ -64,8 +64,16 @@ The fraud detector in `fraud-job-detector.html` sends a structured system prompt
 
 When editing the AI prompt, preserve this JSON schema — the frontend JS parses it directly by key name.
 
+## AI Prompt Structure (The Translator / Company Insider)
+
+`company-insider.html` sends a structured system prompt that enforces this JSON response schema: `companyName`, `roleFocus`, `overallVibe`, `vibeScore`, `oneLiner`, `theyVsReality`, `whatTheyCareAbout`, `interviewQuestions`, `redFlags`, `greenFlags`, `recentDevelopments`, `compensationIntel`, `insiderSummary`, `shouldApply`. The tool uses the same `web_search_20250305` beta and agentic loop as JobSentry. `overallVibe` is one of `THRIVING | MIXED | TROUBLED`. `shouldApply` is one of `APPLY | PROCEED WITH CAUTION | INVESTIGATE MORE`.
+
+When editing the AI prompt, preserve this JSON schema — the frontend JS parses it directly by key name.
+
 ## Changelog
 
 ### 2026-05-08
+- **feat(company-insider.html):** New tool — The Translator Machine. Input company name + optional role; Claude searches Glassdoor, Reddit, and recent news via web search and outputs a "Company Insider" cheat sheet with They Say vs. Reality decoder, culture signals, interview questions, red/green flags, recent developments, and compensation intel
+- **feat(index.html):** Added The Translator card to the hub grid
 - **fix(functions/api/analyze.js):** Worker now streams the raw Anthropic response text instead of re-parsing as JSON, preserving non-200 status codes; error responses now always include `Access-Control-Allow-Origin: *` so browser CORS checks don't swallow API error bodies
 - **fix(fraud-job-detector.html):** Updated model ID from `claude-sonnet-4-20250514` to `claude-sonnet-4-6` (correct current model identifier)
