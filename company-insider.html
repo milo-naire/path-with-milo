@@ -893,70 +893,52 @@
 <script>
 const API_URL = window.location.protocol === 'file:' ? 'http://localhost:8787/api/analyze' : '/api/analyze';
 
-const SYSTEM_PROMPT = `You are a career intelligence analyst who translates corporate PR speak into the unfiltered truth job seekers actually need. You research companies by searching Glassdoor reviews, Reddit threads, recent news, and public employee data.
+const SYSTEM_PROMPT = `OUTPUT FORMAT — THIS IS NON-NEGOTIABLE:
+Your response must be a single raw JSON object and nothing else. Begin your response with { and end with }. No prose before or after. No markdown. No code fences. No explanation. If you cannot find data for a field, use null — never omit the field.
 
-YOUR MISSION: Give job seekers the inside scoop on what a company is REALLY like — not the polished employer brand narrative.
+You are a career intelligence analyst who translates corporate PR speak into the unfiltered truth job seekers need. Research companies using web search, then populate the JSON schema below with your findings.
 
 RESEARCH APPROACH:
-1. Search Glassdoor for "[company] reviews" to find common themes in employee sentiment
-2. Search Reddit for "[company] work culture", "r/[company]", "[company] employee experience"
-3. Search recent news for "[company] layoffs", "[company] culture", "[company] leadership 2025 2026"
-4. If a role is specified, search "[company] [role] salary Glassdoor" and "[company] [role] interview"
+1. Search Glassdoor for "[company] reviews" — capture rating, review count, top recurring themes
+2. Search Reddit for "[company] work culture" and "r/[company]" — capture real employee sentiment
+3. Search "[company] 2025 2026 layoffs news culture" — capture recent developments
+4. If a role is given, search "[company] [role] salary" and "[company] [role] interview experience"
 
-ANALYSIS FRAMEWORK:
-- Corporate Speak Decoder: Find 3-4 things the company claims vs. what employees actually report
-- Culture Reality: What does the company genuinely optimize for? (growth, revenue, optics, innovation, etc.)
-- Interview Intelligence: Surface the questions candidates should ask based on what the data reveals
-- Red/Green flags: Specific, evidence-backed signals — not generic
-- Recent developments: News events that affect the candidate's decision (layoffs, funding, leadership changes, culture shifts)
-- Compensation: Real numbers from Glassdoor/LinkedIn where possible
+ANALYSIS RULES:
+- theyVsReality: find 3-4 specific claims the company makes (mission page, job ads, press) vs. what reviews show
+- whatTheyCareAbout: short, honest phrases — what the culture actually rewards (e.g. "Revenue targets", "Executive optics", "Speed over quality")
+- interviewQuestions: questions a candidate should ask, grounded in what the data reveals
+- redFlags / greenFlags: specific and evidence-backed, not generic
+- recentDevelopments: events from the last 12 months that affect a candidate's decision
+- If data is genuinely unavailable for a field, use null — do not fabricate
 
-TONE:
-- Direct and honest, never mean-spirited
-- Specific over generic — cite what the reviews actually say, not vague impressions
-- Actionable — every insight should help the candidate make a better decision or ask a better question
-- If data is limited, say so honestly rather than hallucinating
-
-CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }. No text before or after. No markdown code fences.
-
-JSON SCHEMA:
+JSON SCHEMA — fill every field:
 {
   "companyName": "Canonical company name",
-  "roleFocus": "Job title or null if not provided",
-  "overallVibe": "THRIVING" | "MIXED" | "TROUBLED",
-  "vibeScore": number between 0-100 (100 = exceptional place to work),
-  "oneLiner": "The punchline translation in one sentence — e.g. 'They say they're work-hard-play-hard, but the data says high burnout and median tenure under 2 years'",
+  "roleFocus": "Job title or null",
+  "overallVibe": "THRIVING",
+  "vibeScore": 72,
+  "oneLiner": "They say innovation-first, but reviews cite slow bureaucracy and reorg fatigue.",
   "theyVsReality": [
-    {
-      "topic": "Work-Life Balance",
-      "claim": "What the company publicly says or implies about this topic",
-      "reality": "What employees and data actually show"
-    }
+    { "topic": "Work-Life Balance", "claim": "What the company says", "reality": "What employees report" }
   ],
-  "whatTheyCareAbout": ["Array of 4-7 short phrases — what the culture actually optimizes for"],
+  "whatTheyCareAbout": ["Revenue targets", "Speed", "Executive visibility"],
   "interviewQuestions": [
-    {
-      "question": "Specific question to ask in the interview",
-      "why": "One sentence on what this surfaces based on the insider data"
-    }
+    { "question": "What does a typical on-call rotation look like for this team?", "why": "Reviews cite burnout — this surfaces whether the team is understaffed." }
   ],
-  "redFlags": ["Specific red flag with evidence (up to 6, [] if none)"],
-  "greenFlags": ["Specific green flag with evidence (up to 6, [] if none)"],
+  "redFlags": ["Specific red flag with source"],
+  "greenFlags": ["Specific green flag with source"],
   "recentDevelopments": [
-    {
-      "headline": "Brief headline of recent development",
-      "signal": "positive" | "negative" | "neutral",
-      "translation": "What this means for someone considering joining"
-    }
+    { "headline": "Company laid off 8% of workforce in Jan 2026", "signal": "negative", "translation": "What this means for a candidate joining now" }
   ],
   "compensationIntel": {
-    "glassdoorRating": "X.X / 5.0 or null if not found",
-    "reviewCount": "Approximate number like '2,400+' or null",
-    "typicalSalaryRange": "e.g. '$95k–$140k base' for the role, or general range if no role given, or null",
-    "benefitsVerdict": "One sentence on benefits quality"
+    "glassdoorRating": "3.8 / 5.0",
+    "reviewCount": "4,200+",
+    "typicalSalaryRange": "$110k–$145k base",
+    "benefitsVerdict": "Strong health benefits; equity below market."
   },
-  "insiderSummary": "2-4 sentence synthesis of everything — the definitive insider take",
-  "shouldApply": "APPLY" | "PROCEED WITH CAUTION" | "INVESTIGATE MORE"
+  "insiderSummary": "2-4 sentence synthesis.",
+  "shouldApply": "PROCEED WITH CAUTION"
 }`;
 
 function clearInput() {
@@ -1055,15 +1037,14 @@ async function analyze() {
   }, 3800);
 
   try {
-    const userPrompt = 'Research this company and produce a Company Insider Report.\n\n' +
-      'Company: ' + company + '\n' +
+    const userPrompt = 'Produce a Company Insider Report for: ' + company + '\n' +
       (role ? 'Role being considered: ' + role + '\n' : '') +
-      '\nSearch steps:\n' +
-      '1. Search Glassdoor for "' + company + ' reviews" — note rating, review count, top themes\n' +
-      '2. Search Reddit for "' + company + ' work culture" and "r/' + company.toLowerCase().replace(/\s+/g, '') + '" — note real employee sentiment\n' +
-      '3. Search recent news for "' + company + ' 2025 2026 layoffs culture leadership" — note key developments\n' +
-      (role ? '4. Search "' + company + ' ' + role + ' salary Glassdoor" and "' + company + ' ' + role + ' interview experience"\n' : '') +
-      '\nAfter research, return only the JSON report.';
+      '\nSearch for:\n' +
+      '1. "' + company + ' Glassdoor reviews" — rating, review count, top themes\n' +
+      '2. "' + company + ' work culture Reddit" — real employee sentiment\n' +
+      '3. "' + company + ' 2025 2026 layoffs news leadership" — recent developments\n' +
+      (role ? '4. "' + company + ' ' + role + ' salary" and "' + company + ' ' + role + ' interview"\n' : '') +
+      '\nWhen done, output the JSON object. Your entire response must start with { and end with }.';
 
     let messages = [{ role: 'user', content: userPrompt }];
     let finalText = null;
@@ -1142,12 +1123,40 @@ async function analyze() {
     function extractJSON(str) {
       const start = str.indexOf('{');
       const end = str.lastIndexOf('}');
-      if (start === -1) throw new Error('No report data found in response.');
+      if (start === -1) return null;
       return JSON.parse(str.substring(start, end + 1).replace(/,\s*([\]}])/g, '$1'));
     }
 
     clearInterval(statusTimer);
-    const parsed = extractJSON(finalText);
+    let parsed = extractJSON(finalText);
+
+    // Recovery: if Claude returned prose instead of JSON, make one more call
+    // asking it to reformat its own response as the required JSON object.
+    if (!parsed) {
+      safeRenderProgress(3, 'Reformatting response as JSON...');
+      const recoveryResponse = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 8192,
+          temperature: 0,
+          system: SYSTEM_PROMPT,
+          messages: [
+            { role: 'user', content: userPrompt },
+            { role: 'assistant', content: finalText },
+            { role: 'user', content: 'Your response was not valid JSON. Now output ONLY the JSON object from the schema — start with { and end with }. No other text.' }
+          ]
+        })
+      });
+      const recoveryData = await recoveryResponse.json();
+      if (recoveryData.error) throw new Error(recoveryData.error.message || JSON.stringify(recoveryData.error));
+      const recoveryBlocks = (recoveryData.content || []).filter(b => b.type === 'text' && b.text && b.text.trim());
+      const recoveryText = recoveryBlocks.length > 0 ? recoveryBlocks[recoveryBlocks.length - 1].text : '';
+      parsed = extractJSON(recoveryText);
+      if (!parsed) throw new Error('Could not extract a valid report. Please try again.');
+    }
+
     renderResults(parsed);
 
   } catch (err) {
