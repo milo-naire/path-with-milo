@@ -777,7 +777,7 @@
   </header>
 
   <!-- Input -->
-  <div class="input-section card card-accent">
+  <div class="input-section card">
     <div class="title-field">
       <div class="field-label">Job Title <span class="optional-tag">optional</span></div>
       <input type="text" id="jobTitle" placeholder="e.g. Digital Customer Success Program Coordinator" autocomplete="off" />
@@ -1328,6 +1328,21 @@ async function analyze() {
   progressTimers.push(setTimeout(() => safeRenderProgress(1, investigationSteps[1].detail), 2500));
   progressTimers.push(setTimeout(() => safeRenderProgress(2, investigationSteps[2].detail), 10000));
 
+  // Animate terminal during the API wait — web search runs server-side so we
+  // can't get real-time query data until the response arrives. These plausible
+  // status lines keep the terminal alive during the wait.
+  const statusQueries = [
+    (jobTitle || 'employer') + ' company verification',
+    (jobTitle || 'employer') + ' careers page listing',
+    'job posting legitimacy signals',
+    'employer fraud pattern database',
+    'salary benchmarks 2026'
+  ];
+  let _statusIdx = 0;
+  const statusTimer = setInterval(() => {
+    if (_statusIdx < statusQueries.length) addSearchLog(statusQueries[_statusIdx++]);
+  }, 3800);
+
   try {
     let messages = [{
       role: 'user',
@@ -1345,6 +1360,7 @@ async function analyze() {
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 4000,
+          temperature: 0,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
           system: SYSTEM_PROMPT + '\n\nCRITICAL: When research is done, return ONLY the JSON object. No preamble.',
           messages
@@ -1361,13 +1377,32 @@ async function analyze() {
       const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
       const textBlock = responseContent.find(b => b.type === 'text');
 
+      // Detect server-side web searches (web-search-2025-03-05 beta returns
+      // server_tool_use blocks — the search runs on Anthropic's servers so
+      // these arrive in the same response as the final text).
+      const serverSearchBlocks = responseContent.filter(b => b.type === 'server_tool_use');
+      if (serverSearchBlocks.length > 0) {
+        clearInterval(statusTimer);
+        searchTerminal.innerHTML = '';
+        serverSearchBlocks.forEach(block => {
+          const q = block.input && block.input.query;
+          const u = block.input && block.input.url;
+          if (q) { addSearchLog(q); searchCount++; }
+          else if (u) { addAccessLog(u); searchCount++; }
+        });
+        if (searchCount >= 1) safeRenderProgress(1, investigationSteps[1].detail);
+        if (searchCount >= 2) safeRenderProgress(2, investigationSteps[2].detail);
+      }
+
       if (toolUseBlock) {
         searchCount++;
 
         // Log the search query; fall back to URL access if present
         if (toolUseBlock.input && toolUseBlock.input.query) {
+          clearInterval(statusTimer);
           addSearchLog(toolUseBlock.input.query);
         } else if (toolUseBlock.input && toolUseBlock.input.url) {
+          clearInterval(statusTimer);
           addAccessLog(toolUseBlock.input.url);
         }
 
@@ -1407,15 +1442,17 @@ async function analyze() {
       return JSON.parse(str.substring(start, end + 1).replace(/,\s*([\]}])/g, '$1'));
     }
 
+    clearInterval(statusTimer);
     const parsed = extractJSON(finalText);
-    searchTerminal.style.display = 'none';
     renderResults(parsed);
 
   } catch (err) {
+    clearInterval(statusTimer);
     document.getElementById('errorBox').textContent = 'Analysis failed — please try again. ' + (err.message || '');
     document.getElementById('errorBox').style.display = 'block';
   } finally {
     progressTimers.forEach(t => clearTimeout(t));
+    clearInterval(statusTimer);
     document.getElementById('thinking').style.display = 'none';
     btn.disabled = false;
   }
