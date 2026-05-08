@@ -26,6 +26,9 @@
     --sans:       'Inter', system-ui, sans-serif;
     --mono:       'JetBrains Mono', 'Courier New', monospace;
     --muted-blue: #94A1B2;
+    --purple:      #9B6DFF;
+    --purple-dim:  #7C3AED;
+    --purple-glow: rgba(155,109,255,0.15);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -759,9 +762,149 @@
 
   /* ─── Footer ─────────────────────────────────────────────────────────── */
   .footer-note { text-align: center; font-size: 0.63rem; color: var(--muted); margin-top: 48px; letter-spacing: 0.06em; line-height: 2; }
+
+  /* ─── Input card accent — switches by mode ───────────────────────────── */
+  .input-section.card { overflow: hidden; }
+  .input-section.card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #D4882A, transparent);
+    border-radius: 16px 16px 0 0;
+  }
+  body[data-mode="payaudit"] .input-section.card::before {
+    background: linear-gradient(90deg, var(--purple), transparent);
+  }
+
+  /* ─── Mode Toggle ────────────────────────────────────────────────────── */
+  .mode-switcher {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 22px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mode-tab {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 7px 18px;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.02em;
+  }
+
+  .mode-tab[data-mode="jobsentry"].active {
+    border-color: #D4882A;
+    color: #D4882A;
+    background: rgba(212,136,42,0.08);
+  }
+
+  .mode-tab[data-mode="payaudit"]:hover,
+  .mode-tab[data-mode="payaudit"].active {
+    border-color: var(--purple);
+    color: var(--purple);
+    background: var(--purple-glow);
+  }
+
+  /* ─── Analyze button — PayAudit mode overrides ───────────────────────── */
+  body[data-mode="payaudit"] .analyze-btn {
+    background: var(--purple);
+    color: #fff;
+  }
+  body[data-mode="payaudit"] .analyze-btn:hover:not(:disabled) {
+    background: #A97FFF;
+    box-shadow: 0 6px 20px var(--purple-glow);
+    transform: translateY(-1px);
+  }
+  body[data-mode="payaudit"] textarea:focus,
+  body[data-mode="payaudit"] .title-field input:focus {
+    border-color: var(--purple-dim);
+    box-shadow: 0 0 0 3px rgba(155,109,255,0.08);
+  }
+
+  /* ─── Thinking bar / terminal — PayAudit mode ────────────────────────── */
+  body[data-mode="payaudit"] .thinking-bars span        { background: var(--purple); }
+  body[data-mode="payaudit"] .progress-step.active .step-icon { border-color: var(--purple); animation: step-pulse-purple 1.4s infinite; }
+  @keyframes step-pulse-purple {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(155,109,255,0.4); }
+    50%       { box-shadow: 0 0 0 5px rgba(155,109,255,0); }
+  }
+  body[data-mode="payaudit"] .search-terminal { border-color: var(--purple); }
+  body[data-mode="payaudit"] .log-line        { color: var(--purple); }
+  body[data-mode="payaudit"] .log-chev        { color: var(--purple); }
+
+  /* ─── PayAudit Verdict Card ──────────────────────────────────────────── */
+  .pa-verdict-card {
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .pa-verdict-card.fair       { background: rgba(111,207,138,0.06); border: 1px solid rgba(111,207,138,0.2); }
+  .pa-verdict-card.below      { background: rgba(255,179,71,0.06);  border: 1px solid rgba(255,179,71,0.22); }
+  .pa-verdict-card.exploit    { background: rgba(224,92,92,0.06);   border: 1px solid rgba(224,92,92,0.25); }
+  .pa-verdict-card.unpaid     { background: rgba(155,109,255,0.06); border: 1px solid rgba(155,109,255,0.22); }
+  .pa-verdict-card.commission { background: rgba(255,179,71,0.06);  border: 1px solid rgba(255,179,71,0.22); }
+  .pa-verdict-card.fraudulent { background: rgba(224,92,92,0.06);   border: 1px solid rgba(224,92,92,0.25); }
+
+  .pa-verdict-header { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+  .pa-verdict-icon   { font-size: 2rem; line-height: 1; flex-shrink: 0; }
+  .pa-verdict-title  { font-family: var(--serif); font-weight: 700; font-size: 1.7rem; letter-spacing: -0.01em; line-height: 1; }
+
+  .pa-verdict-card.fair       .pa-verdict-title { color: var(--green);  }
+  .pa-verdict-card.below      .pa-verdict-title { color: var(--amber);  }
+  .pa-verdict-card.exploit    .pa-verdict-title { color: var(--red);    }
+  .pa-verdict-card.unpaid     .pa-verdict-title { color: var(--purple); }
+  .pa-verdict-card.commission .pa-verdict-title { color: var(--amber);  }
+  .pa-verdict-card.fraudulent .pa-verdict-title { color: var(--red);    }
+
+  .pa-status-badge { font-family: var(--sans); font-weight: 600; font-size: 0.95rem; padding: 5px 14px; border-radius: 999px; margin-left: auto; }
+  .pa-verdict-card.fair       .pa-status-badge { background: rgba(111,207,138,0.12); color: var(--green);  }
+  .pa-verdict-card.below      .pa-status-badge { background: rgba(255,179,71,0.12);  color: var(--amber);  }
+  .pa-verdict-card.exploit    .pa-status-badge { background: rgba(224,92,92,0.12);   color: var(--red);    }
+  .pa-verdict-card.unpaid     .pa-status-badge { background: rgba(155,109,255,0.12); color: var(--purple); }
+  .pa-verdict-card.commission .pa-status-badge { background: rgba(255,179,71,0.12);  color: var(--amber);  }
+  .pa-verdict-card.fraudulent .pa-status-badge { background: rgba(224,92,92,0.12);   color: var(--red);    }
+
+  /* ─── PayAudit Math Breakdown Table ─────────────────────────────────── */
+  .pa-math-table { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+  .pa-math-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.78rem;
+    color: #B0A898;
+  }
+  .pa-math-row:last-child { border-bottom: none; }
+  .pa-math-row span:last-child { font-weight: 600; color: var(--text); }
+  .pa-math-result { background: rgba(155,109,255,0.06); }
+  .pa-math-result span:last-child { color: var(--purple); font-size: 0.95rem; }
+  .pa-math-comparison span:last-child { color: var(--muted); }
+  .pa-below-min { font-size: 0.68rem; color: var(--red); font-style: italic; margin-top: 10px; }
+
+  /* ─── PayAudit Nonprofit Note ────────────────────────────────────────── */
+  .pa-nonprofit-note {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 0.73rem;
+    color: var(--muted);
+    line-height: 1.6;
+    font-style: italic;
+  }
 </style>
 </head>
-<body>
+<body data-mode="jobsentry">
 <div class="container">
 
   <header>
@@ -788,6 +931,10 @@
 
   <!-- Input -->
   <div class="input-section card">
+    <div class="mode-switcher">
+      <button class="mode-tab active" id="tabJobSentry" data-mode="jobsentry" onclick="setMode('jobsentry')">🛡 JobSentry</button>
+      <button class="mode-tab" id="tabPayAudit" data-mode="payaudit" onclick="setMode('payaudit')">💰 Audit</button>
+    </div>
     <div class="title-field">
       <div class="field-label">Job Title <span class="optional-tag">optional</span></div>
       <input type="text" id="jobTitle" placeholder="e.g. Digital Customer Success Program Coordinator" autocomplete="off" />
@@ -803,7 +950,7 @@
       </div>
       <div class="btn-row">
         <button class="clear-btn" onclick="clearInput()">✕ Clear</button>
-        <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">Investigate →</button>
+        <button class="analyze-btn" id="analyzeBtn" onclick="runActiveMode()">Investigate →</button>
       </div>
     </div>
   </div>
@@ -1017,6 +1164,79 @@
     </div>
 
   </div><!-- #results -->
+
+  <!-- ── PayAudit Results ───────────────────────────────────────────────── -->
+  <div id="payauditResults" style="display:none;">
+
+    <!-- Pay Verdict -->
+    <div id="paVerdictCard" class="pa-verdict-card">
+      <div class="pa-verdict-header">
+        <div class="pa-verdict-icon" id="paIcon"></div>
+        <div>
+          <div class="pa-verdict-title" id="paVerdictTitle"></div>
+          <div class="verdict-sub" id="paVerdictSub"></div>
+        </div>
+        <div class="pa-status-badge" id="paStatusBadge"></div>
+      </div>
+      <div id="paMarketBarWrap" style="display:none;">
+        <div class="risk-bar-label"><span>Market Rate Alignment</span><span id="paMarketPct"></span></div>
+        <div class="risk-bar"><div class="risk-fill" id="paMarketFill" style="width:0%;background:var(--purple)"></div></div>
+      </div>
+      <div class="verdict-summary" id="paSummary"></div>
+    </div>
+
+    <!-- Rate vs Market -->
+    <div class="info-panel panel-accent-purple">
+      <div class="panel-header">
+        <div class="panel-title">💵 Rate Analysis</div>
+        <div class="panel-sub">Compensation breakdown against 2026 market standards.</div>
+      </div>
+      <div class="two-col">
+        <div class="data-card">
+          <div class="panel-label">Rate in Posting</div>
+          <div class="data-value" id="paRateValue" style="color:var(--purple)"></div>
+          <div class="data-sub" id="paRateAnalysis"></div>
+        </div>
+        <div class="data-card">
+          <div class="panel-label">2026 Market Rate</div>
+          <div class="data-value" id="paMarketRate" style="color:var(--purple)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mathematical Breakdown (lump sum only) -->
+    <div id="paMathPanel" class="info-panel panel-accent-purple" style="display:none;">
+      <div class="panel-header">
+        <div class="panel-title">🧮 Lump Sum Breakdown</div>
+        <div class="panel-sub">Calculated at a standard 10 hrs/week intern schedule — all amounts in USD.</div>
+      </div>
+      <div class="pa-math-table">
+        <div class="pa-math-row"><span>Lump Sum</span><span id="paMathLump"></span></div>
+        <div class="pa-math-row"><span>Period</span><span id="paMathPeriod"></span></div>
+        <div class="pa-math-row"><span>Hours / Week</span><span id="paMathHrsWk"></span></div>
+        <div class="pa-math-row"><span>Total Hours</span><span id="paMathTotal"></span></div>
+        <div class="pa-math-row pa-math-result"><span>Effective Hourly Rate</span><span id="paMathHourly"></span></div>
+        <div class="pa-math-row pa-math-comparison"><span>Federal Min. Wage (2026)</span><span id="paMathMinWage"></span></div>
+      </div>
+      <div class="pa-below-min" id="paMathWarning" style="display:none;"></div>
+    </div>
+
+    <!-- Fraud Flags (conditional) -->
+    <div id="paFraudPanel" style="display:none;margin-bottom:20px;">
+      <div class="flags-card red">
+        <div class="flags-card-title">🚨 Compensation Fraud Flags</div>
+        <ul class="flag-list" id="paFraudList"></ul>
+      </div>
+    </div>
+
+    <!-- Audit Verdict -->
+    <div class="recommendation">
+      <div class="rec-title" style="color:var(--purple)">Audit Verdict</div>
+      <div class="rec-body" id="paActionableNote"></div>
+      <div class="pa-nonprofit-note" id="paNonprofitNote" style="display:none;"></div>
+    </div>
+
+  </div><!-- #payauditResults -->
 
   <div class="footer-note">
     A PathAtlas Intelligence Agent · Analysis is advisory only<br>
@@ -1261,6 +1481,7 @@ function clearInput() {
   document.getElementById('jobTitle').value = '';
   document.getElementById('jobInput').value = '';
   document.getElementById('results').style.display = 'none';
+  document.getElementById('payauditResults').style.display = 'none';
   document.getElementById('errorBox').style.display = 'none';
   document.getElementById('jobInput').focus();
 }
@@ -1663,6 +1884,290 @@ function renderResults(data) {
   }, 100);
 
     document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ── Mode Toggle ─────────────────────────────────────────────────────────── */
+let currentMode = 'jobsentry';
+
+function setMode(mode) {
+  currentMode = mode;
+  document.body.setAttribute('data-mode', mode);
+  document.getElementById('tabJobSentry').classList.toggle('active', mode === 'jobsentry');
+  document.getElementById('tabPayAudit').classList.toggle('active', mode === 'payaudit');
+  const btn = document.getElementById('analyzeBtn');
+  btn.textContent = mode === 'payaudit' ? 'Audit →' : 'Investigate →';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('payauditResults').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+}
+
+function runActiveMode() {
+  if (currentMode === 'payaudit') auditCompensation();
+  else analyze();
+}
+
+/* ── PayAudit System Prompt ─────────────────────────────────────────────── */
+const PAYAUDIT_PROMPT = `You are a Compensation Compliance Auditor specializing in 2026 labor market standards. Protect job seekers by analyzing job listing compensation for legality, fairness, and fraud.
+
+STEP 1 — CLASSIFICATION:
+PAID: Explicit hourly wage, salary, or stipend is stated.
+UNPAID: Explicitly unpaid, volunteer, or for-credit only.
+COMMISSION: "Commission only," "unlimited earning potential," or "performance-based" without a stated base salary.
+
+STEP 2 — FORENSIC PAY CHECKS:
+1. Market Rate Check: Compare offered pay to 2026 market rates. Flag any PAID role under 20% of fair market value as EXPLOITATION RISK.
+2. The SEO/Task Scam: Flag "SEO work," "data entry," or "social media engagement" roles offering a lump sum that breaks down to below minimum wage.
+3. Identity for Pay: Mark FRAUDULENT if a listing requires bank account, SSN, or passport to "verify payroll" before a formal offer letter.
+
+STEP 3 — MATHEMATICAL BREAKDOWN (required for any lump sum pay):
+Calculate effective hourly: lump sum ÷ (hoursPerWeek × weeks).
+Standard schedule: 10 hrs/week. Semester = 16 weeks. Quarter = 12 weeks. "3 months" = 13 weeks.
+Minimum wage reference: $7.25/hr federal (2026).
+
+PAY VERDICT OPTIONS:
+FAIR MARKET PAID     — Pay is ≥80% of 2026 market rate
+BELOW MARKET PAID    — Pay is 20–79% of 2026 market rate
+EXPLOITATION RISK    — Pay is <20% of 2026 market rate
+COMPLIANT UNPAID     — Unpaid at a verifiable non-profit or accredited educational partner
+COMMISSION ONLY      — No base salary; pure commission
+FRAUDULENT           — Requires financial credentials before offer, or is a clear pay scam
+
+2026 MARKET RATES (USD/hr):
+Software Engineer entry: $32-50 | mid: $55-85
+Data Entry: $12-20 | SEO Specialist: $22-50
+Social Media Manager: $18-40 | Content Writer: $20-50
+Virtual Assistant: $12-25 | Graphic Designer: $18-45
+Marketing Coordinator: $18-30 | Customer Service: $15-25
+
+CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }. No text before or after.
+
+{
+  "payStatus": "PAID" | "UNPAID" | "COMMISSION",
+  "payVerdict": "FAIR MARKET PAID" | "BELOW MARKET PAID" | "EXPLOITATION RISK" | "COMPLIANT UNPAID" | "COMMISSION ONLY" | "FRAUDULENT",
+  "rate": "Exact dollar amount/range from posting, or 'Not mentioned'",
+  "rateAnalysis": "One sentence describing what the rate means in practice",
+  "marketRate2026": "2026 average for this role (numbers + experience level)",
+  "marketComparisonPct": number (0-200 where 100 = market rate) or null if unpaid/commission,
+  "mathematicalBreakdown": null | {
+    "lumpSum": "e.g. $500",
+    "period": "e.g. 1 semester (16 weeks)",
+    "hoursPerWeek": 10,
+    "totalHours": 160,
+    "estimatedHourly": "$3.13/hr",
+    "minimumWage2026": "$7.25/hr federal"
+  },
+  "fraudFlags": ["specific quoted text or behavior from posting"] ([] if none),
+  "actionableNote": "Direct 2-3 sentence advice for the job seeker",
+  "nonprofitNote": "For UNPAID: whether org appears to be 501(c)(3) or educational. For PAID: 'N/A'.",
+  "summary": "2-3 sentences leading with the verdict. Be direct and specific."
+}`;
+
+/* ── PayAudit Analysis ──────────────────────────────────────────────────── */
+async function auditCompensation() {
+  const text = document.getElementById('jobInput').value.trim();
+  const jobTitle = document.getElementById('jobTitle').value.trim();
+  if (!text) return;
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  document.getElementById('thinking').style.display = 'block';
+  document.getElementById('payauditResults').style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+
+  const auditSteps = [
+    { label: 'Reading compensation data',    detail: 'Extracting pay rate, structure, and terms...' },
+    { label: 'Comparing to market rates',    detail: 'Looking up 2026 benchmarks for this role...' },
+    { label: 'Running forensic pay checks',  detail: 'Checking for exploitation patterns and fraud...' },
+    { label: 'Issuing pay verdict',          detail: 'Calculating final compliance assessment...' }
+  ];
+
+  const searchTerminal = document.getElementById('searchTerminal');
+  searchTerminal.innerHTML = '';
+  searchTerminal.style.display = 'block';
+  const _initLine = document.createElement('span');
+  _initLine.className = 'log-line faded';
+  _initLine.textContent = '→  Initializing compensation audit...';
+  searchTerminal.appendChild(_initLine);
+
+  function _terminalLine(msg) {
+    searchTerminal.querySelectorAll('.log-line').forEach(l => l.classList.add('faded'));
+    const line = document.createElement('span');
+    line.className = 'log-line';
+    const chev = document.createElement('span');
+    chev.className = 'log-chev';
+    chev.textContent = '›';
+    line.appendChild(chev);
+    line.appendChild(document.createTextNode(' ' + msg));
+    searchTerminal.appendChild(line);
+    searchTerminal.scrollTop = searchTerminal.scrollHeight;
+  }
+
+  function renderAuditProgress(step, detail) {
+    const container = document.getElementById('progressSteps');
+    container.innerHTML = auditSteps.map((s, i) => {
+      const isDone = i < step, isActive = i === step;
+      const cls = isDone ? 'done' : isActive ? 'active' : '';
+      return '<div class="progress-step ' + cls + '">' +
+        '<div class="step-icon">' + (isDone ? '✓' : String(i + 1)) + '</div>' +
+        '<span>' + s.label + '</span></div>';
+    }).join('');
+    document.getElementById('thinkingDetail').textContent = detail || auditSteps[Math.min(step, auditSteps.length - 1)].detail;
+  }
+
+  renderAuditProgress(0, auditSteps[0].detail);
+  let currentStep = 0;
+  const timers = [];
+  function safeProgress(step, detail) {
+    if (step > currentStep) { currentStep = step; renderAuditProgress(step, detail); }
+  }
+  timers.push(setTimeout(() => safeProgress(1, auditSteps[1].detail), 1800));
+  timers.push(setTimeout(() => safeProgress(2, auditSteps[2].detail), 4500));
+
+  try {
+    _terminalLine('⌕ Parsing compensation structure...');
+
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4096,
+        temperature: 0,
+        system: PAYAUDIT_PROMPT,
+        messages: [{
+          role: 'user',
+          content: (jobTitle ? 'Job Title: ' + jobTitle + '\n\n' : '') +
+            'Audit the compensation in this job posting and return only the JSON object:\n\n' + text
+        }]
+      })
+    });
+
+    const data = await response.json();
+    if (data.error) {
+      const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
+      throw new Error(errMsg);
+    }
+
+    safeProgress(3, auditSteps[3].detail);
+    _terminalLine('⌕ Calculating pay compliance verdict...');
+
+    const textBlocks = (data.content || []).filter(b => b.type === 'text' && b.text && b.text.trim());
+    const finalText = textBlocks.length > 0 ? textBlocks[textBlocks.length - 1].text : null;
+    if (!finalText) throw new Error('No audit data returned. Please try again.');
+
+    function extractJSON(str) {
+      const start = str.indexOf('{'), end = str.lastIndexOf('}');
+      if (start === -1) throw new Error('No valid audit data found.');
+      return JSON.parse(str.substring(start, end + 1).replace(/,\s*([\]}])/g, '$1'));
+    }
+
+    renderPayAuditResults(extractJSON(finalText));
+
+  } catch (err) {
+    document.getElementById('errorBox').textContent = 'Audit failed — please try again. ' + (err.message || '');
+    document.getElementById('errorBox').style.display = 'block';
+  } finally {
+    timers.forEach(t => clearTimeout(t));
+    document.getElementById('thinking').style.display = 'none';
+    btn.disabled = false;
+  }
+}
+
+/* ── PayAudit Results Renderer ──────────────────────────────────────────── */
+function renderPayAuditResults(data) {
+  const classMap = {
+    'FAIR MARKET PAID':  'fair',
+    'BELOW MARKET PAID': 'below',
+    'EXPLOITATION RISK': 'exploit',
+    'COMPLIANT UNPAID':  'unpaid',
+    'COMMISSION ONLY':   'commission',
+    'FRAUDULENT':        'fraudulent'
+  };
+  const iconMap = {
+    'FAIR MARKET PAID':  '✅',
+    'BELOW MARKET PAID': '⚠️',
+    'EXPLOITATION RISK': '🚨',
+    'COMPLIANT UNPAID':  '📋',
+    'COMMISSION ONLY':   '📊',
+    'FRAUDULENT':        '🚨'
+  };
+
+  const vClass = classMap[data.payVerdict] || 'below';
+  document.getElementById('paVerdictCard').className = 'pa-verdict-card ' + vClass;
+  document.getElementById('paIcon').textContent       = iconMap[data.payVerdict] || '💰';
+  document.getElementById('paVerdictTitle').textContent = data.payVerdict || '';
+  document.getElementById('paVerdictSub').textContent   = data.rateAnalysis || '';
+  document.getElementById('paStatusBadge').textContent  = data.payStatus || '';
+  document.getElementById('paSummary').textContent      = data.summary || '';
+
+  // Market alignment bar — paid roles only
+  const pct = data.marketComparisonPct;
+  const barWrap = document.getElementById('paMarketBarWrap');
+  if (pct !== null && pct !== undefined && data.payStatus === 'PAID') {
+    const barColor = pct >= 80 ? 'var(--green)' : pct >= 20 ? 'var(--amber)' : 'var(--red)';
+    document.getElementById('paMarketPct').textContent = pct + '% of market';
+    document.getElementById('paMarketFill').style.background = barColor;
+    barWrap.style.display = 'block';
+    setTimeout(() => { document.getElementById('paMarketFill').style.width = Math.min(pct, 100) + '%'; }, 100);
+  } else {
+    barWrap.style.display = 'none';
+  }
+
+  // Rate analysis
+  document.getElementById('paRateValue').textContent    = data.rate || 'Not mentioned';
+  document.getElementById('paRateAnalysis').textContent = data.rateAnalysis || '';
+  document.getElementById('paMarketRate').textContent   = data.marketRate2026 || '';
+
+  // Mathematical breakdown (lump sum)
+  const mb = data.mathematicalBreakdown;
+  const mathPanel = document.getElementById('paMathPanel');
+  if (mb) {
+    document.getElementById('paMathLump').textContent    = mb.lumpSum || '';
+    document.getElementById('paMathPeriod').textContent  = mb.period || '';
+    document.getElementById('paMathHrsWk').textContent   = (mb.hoursPerWeek || 10) + ' hrs/week';
+    document.getElementById('paMathTotal').textContent   = (mb.totalHours || '') + ' hrs';
+    document.getElementById('paMathHourly').textContent  = mb.estimatedHourly || '';
+    document.getElementById('paMathMinWage').textContent = mb.minimumWage2026 || '$7.25/hr federal';
+    const hrNum  = parseFloat((mb.estimatedHourly   || '0').replace(/[^0-9.]/g, ''));
+    const minNum = parseFloat((mb.minimumWage2026   || '7.25').replace(/[^0-9.]/g, ''));
+    const warnEl = document.getElementById('paMathWarning');
+    if (hrNum > 0 && hrNum < minNum) {
+      warnEl.textContent = '⚠ Effective rate is below federal minimum wage';
+      warnEl.style.display = 'block';
+    } else {
+      warnEl.style.display = 'none';
+    }
+    mathPanel.style.display = 'block';
+  } else {
+    mathPanel.style.display = 'none';
+  }
+
+  // Fraud flags
+  const flags = data.fraudFlags || [];
+  const fraudPanel = document.getElementById('paFraudPanel');
+  if (flags.length) {
+    document.getElementById('paFraudList').innerHTML = flags.map(f =>
+      '<li><span class="flag-dot"></span><span>' + f + '</span></li>').join('');
+    fraudPanel.style.display = 'block';
+  } else {
+    fraudPanel.style.display = 'none';
+  }
+
+  // Actionable note + nonprofit note
+  document.getElementById('paActionableNote').textContent = data.actionableNote || '';
+  const npEl = document.getElementById('paNonprofitNote');
+  if (data.nonprofitNote && data.nonprofitNote !== 'N/A') {
+    npEl.textContent = data.nonprofitNote;
+    npEl.style.display = 'block';
+  } else {
+    npEl.style.display = 'none';
+  }
+
+  document.getElementById('payauditResults').style.display = 'block';
+  setTimeout(() => {
+    document.getElementById('payauditResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
 }
 
 </script>

@@ -72,6 +72,9 @@ When editing the AI prompt, preserve this JSON schema — the frontend JS parses
 
 ## Changelog
 
+### 2026-05-08 (2)
+- **feat(fraud-job-detector.html):** Added PayAudit — a second agent mode toggled by a mode switcher inside the input card. PayAudit analyzes job listing compensation against 2026 market rates, classifies pay as PAID/UNPAID/COMMISSION, issues a verdict (FAIR MARKET PAID / BELOW MARKET PAID / EXPLOITATION RISK / COMPLIANT UNPAID / COMMISSION ONLY / FRAUDULENT), performs lump-sum hourly math breakdown, flags identity-for-pay fraud, and checks nonprofit/educational legitimacy for unpaid roles. Visual branding: JobSentry mode shows amber/orange top accent; PayAudit mode shifts to deep purple (`--purple: #9B6DFF`) across the card accent, analyze button, progress steps, and search terminal. The "Audit" toggle button turns purple on hover/active.
+
 ### 2026-05-08
 - **feat(company-insider.html):** New tool — The Translator Machine. Input company name + optional role; Claude searches Glassdoor, Reddit, and recent news via web search and outputs a "Company Insider" cheat sheet with They Say vs. Reality decoder, culture signals, interview questions, red/green flags, recent developments, and compensation intel
 - **feat(index.html):** Added The Translator card to the hub grid
