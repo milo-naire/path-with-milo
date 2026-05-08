@@ -764,12 +764,14 @@
   .footer-note { text-align: center; font-size: 0.63rem; color: var(--muted); margin-top: 48px; letter-spacing: 0.06em; line-height: 2; }
 
   /* ─── Input card accent — switches by mode ───────────────────────────── */
-  .input-section.card { overflow: hidden; }
+  /* border-top-color transparent lets the ::before be the sole top edge,
+     keeping all four sides at 1px visual thickness. */
+  .input-section.card { border-top-color: transparent; }
   .input-section.card::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 2px;
+    height: 1px;
     background: linear-gradient(90deg, #D4882A, transparent);
     border-radius: 16px 16px 0 0;
   }
@@ -895,6 +897,80 @@
   /* ─── Hide examples in PayAudit mode ───────────────────────────────────*/
   body[data-mode="payaudit"] .examples { display: none; }
 
+  /* ─── Status pill — PayAudit color ──────────────────────────────────── */
+  body[data-mode="payaudit"] .status-pill {
+    background: rgba(155,109,255,0.07);
+    border-color: rgba(155,109,255,0.2);
+    color: var(--purple);
+  }
+  body[data-mode="payaudit"] .status-dot { background: var(--purple); }
+
+  /* ─── Tool Info Box ("What is X?") ──────────────────────────────────── */
+  .tool-info-box {
+    position: relative;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 0.65rem;
+    color: var(--muted);
+    cursor: help;
+    transition: border-color 0.18s, color 0.18s;
+    white-space: nowrap;
+    align-self: flex-end;
+  }
+  .tool-info-box:hover { border-color: #D4882A; color: var(--text); }
+  body[data-mode="payaudit"] .tool-info-box:hover { border-color: var(--purple); }
+  .tool-info-content {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #1E1C19;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 0.7rem;
+    line-height: 1.75;
+    color: #C0B8B0;
+    width: 260px;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    text-align: left;
+    cursor: default;
+  }
+  .tool-info-box:hover .tool-info-content { display: block; }
+  .tool-info-content::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    right: 14px;
+    border: 6px solid transparent;
+    border-bottom-color: #1E1C19;
+  }
+  .tool-info-content strong { color: var(--text); display: block; margin-bottom: 4px; }
+
+  /* ─── Rutgers compliance banner ──────────────────────────────────────── */
+  .rutgers-banner {
+    background: rgba(155,109,255,0.05);
+    border: 1px solid rgba(155,109,255,0.28);
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .rutgers-banner-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 1px; }
+  .rutgers-banner-title {
+    font-family: var(--serif);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--purple);
+    margin-bottom: 5px;
+  }
+  .rutgers-banner-body { font-size: 0.75rem; color: #C0B8B0; line-height: 1.7; }
+
   /* ─── Border consistency in PayAudit mode ───────────────────────────── */
   body[data-mode="payaudit"] .input-section.card {
     border-color: rgba(155,109,255,0.28);
@@ -969,22 +1045,30 @@
   <header>
     <div class="logo">
       <div class="shield-wrap" id="compassRing">
-        <svg width="54" height="58" viewBox="0 0 44 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M22 2L4 9V22C4 32.5 12 41.8 22 46C32 41.8 40 32.5 40 22V9L22 2Z"
+        <svg id="logoSvg" width="54" height="58" viewBox="0 0 44 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path id="svgShield" d="M22 2L4 9V22C4 32.5 12 41.8 22 46C32 41.8 40 32.5 40 22V9L22 2Z"
             fill="#0C0B09" stroke="#D4882A" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M22 10L10 15V22C10 28.8 15.2 35 22 38C28.8 35 34 28.8 34 22V15L22 10Z"
+          <path id="svgInner" d="M22 10L10 15V22C10 28.8 15.2 35 22 38C28.8 35 34 28.8 34 22V15L22 10Z"
             fill="rgba(212,136,42,0.07)"/>
-          <path d="M16 23L20 27L28 19" stroke="#D4882A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path id="svgCheck" d="M16 23L20 27L28 19" stroke="#D4882A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
       <div class="logo-text">
-        <div class="logo-name">Job<span>Sentry</span></div>
-        <div class="logo-tag">Career Integrity Investigator · 2026</div>
+        <div class="logo-name" id="logoName">Job<span style="color:#D4882A">Sentry</span></div>
+        <div class="logo-tag" id="logoTag">Career Integrity Investigator · 2026</div>
       </div>
     </div>
-    <div class="status-pill">
-      <div class="status-dot"></div>
-      Engine Online
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;margin-top:6px;">
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        Engine Online
+      </div>
+      <div class="tool-info-box" id="toolInfoBox">
+        <span id="toolInfoLabel">What is JobSentry?</span>
+        <div class="tool-info-content" id="toolInfoContent">
+          <strong>JobSentry</strong>Detects recruitment scams, ghost jobs, and fraud. Paste any job listing — it verifies the company via live web search, scores 6 fraud signals, and returns a LEGITIMATE / SUSPICIOUS / FRAUDULENT verdict with actionable guidance.
+        </div>
+      </div>
     </div>
   </header>
 
@@ -1249,6 +1333,15 @@
         <div class="risk-bar"><div class="risk-fill" id="paMarketFill" style="width:0%;background:var(--purple)"></div></div>
       </div>
       <div class="verdict-summary" id="paSummary"></div>
+    </div>
+
+    <!-- Rutgers Compliance Banner (shown only when employer matches approved list) -->
+    <div id="paRutgersBanner" class="rutgers-banner" style="display:none;">
+      <div class="rutgers-banner-icon">🎓</div>
+      <div>
+        <div class="rutgers-banner-title">Rutgers Credit-Eligible Employer</div>
+        <div class="rutgers-banner-body">This organization is compliant with the Rutgers Internship &amp; Co-Op Course. Students who are interested in this role may be eligible to receive course credit.</div>
+      </div>
     </div>
 
     <!-- Rate vs Market -->
@@ -1968,13 +2061,54 @@ function renderResults(data) {
 /* ── Mode Toggle ─────────────────────────────────────────────────────────── */
 let currentMode = 'jobsentry';
 
+const MODE_CONFIG = {
+  jobsentry: {
+    logoHTML:    'Job<span style="color:#D4882A">Sentry</span>',
+    logoTag:     'Career Integrity Investigator · 2026',
+    pageTitle:   'JobSentry — Career Integrity Investigator',
+    btnLabel:    'Investigate →',
+    strokeColor: '#D4882A',
+    fillColor:   'rgba(212,136,42,0.07)',
+    toolLabel:   'What is JobSentry?',
+    toolDesc:    '<strong>JobSentry</strong> detects recruitment scams, ghost jobs, and fraud. Paste any job listing — it verifies the company via live web search, scores 6 fraud signals, and returns a LEGITIMATE / SUSPICIOUS / FRAUDULENT verdict with actionable guidance.'
+  },
+  payaudit: {
+    logoHTML:    'Pay<span style="color:var(--purple)">Audit</span>',
+    logoTag:     'Compensation Compliance Auditor · 2026',
+    pageTitle:   'PayAudit — Compensation Compliance Auditor',
+    btnLabel:    'Audit →',
+    strokeColor: '#9B6DFF',
+    fillColor:   'rgba(155,109,255,0.07)',
+    toolLabel:   'What is PayAudit?',
+    toolDesc:    '<strong>PayAudit</strong> checks if a job\'s pay is fair and legal. It classifies compensation, runs the FLSA primary beneficiary test on unpaid roles, flags exploitation and pay fraud, and issues a compliance verdict against 2026 market rates.'
+  }
+};
+
 function setMode(mode) {
   currentMode = mode;
+  const cfg = MODE_CONFIG[mode];
   document.body.setAttribute('data-mode', mode);
+
+  // Tabs + button
   document.getElementById('tabJobSentry').classList.toggle('active', mode === 'jobsentry');
   document.getElementById('tabPayAudit').classList.toggle('active', mode === 'payaudit');
-  const btn = document.getElementById('analyzeBtn');
-  btn.textContent = mode === 'payaudit' ? 'Audit →' : 'Investigate →';
+  document.getElementById('analyzeBtn').textContent = cfg.btnLabel;
+
+  // Logo text + page title
+  document.getElementById('logoName').innerHTML = cfg.logoHTML;
+  document.getElementById('logoTag').textContent = cfg.logoTag;
+  document.title = cfg.pageTitle;
+
+  // Shield SVG colors
+  document.getElementById('svgShield').setAttribute('stroke', cfg.strokeColor);
+  document.getElementById('svgInner').setAttribute('fill', cfg.fillColor);
+  document.getElementById('svgCheck').setAttribute('stroke', cfg.strokeColor);
+
+  // Tool info box
+  document.getElementById('toolInfoLabel').textContent = cfg.toolLabel;
+  document.getElementById('toolInfoContent').innerHTML = cfg.toolDesc;
+
+  // Hide results on mode switch
   document.getElementById('results').style.display = 'none';
   document.getElementById('payauditResults').style.display = 'none';
   document.getElementById('errorBox').style.display = 'none';
@@ -2270,6 +2404,13 @@ function renderPayAuditResults(data) {
   } else {
     npEl.style.display = 'none';
   }
+
+  // Rutgers approved employer check — case-insensitive substring match
+  const postingText = document.getElementById('jobInput').value.toLowerCase();
+  const isApproved = approvedEmployers.some(name =>
+    name.length >= 5 && postingText.includes(name.toLowerCase())
+  );
+  document.getElementById('paRutgersBanner').style.display = isApproved ? 'flex' : 'none';
 
   document.getElementById('payauditResults').style.display = 'block';
   setTimeout(() => {
