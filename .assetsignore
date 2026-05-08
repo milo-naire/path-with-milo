@@ -1,0 +1,7 @@
+.git
+.claude
+.wrangler
+node_modules
+wrangler.toml
+CLAUDE.md
+*.dev.vars
