@@ -59,7 +59,7 @@
   .logo { display: flex; align-items: center; gap: 16px; }
 
   .shield-wrap {
-    width: 44px; height: 48px;
+    width: 54px; height: 58px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -67,8 +67,8 @@
   }
 
   @keyframes shield-glow {
-    0%, 100% { filter: drop-shadow(0 0 0px rgba(136,212,171,0)); }
-    50%       { filter: drop-shadow(0 0 8px rgba(136,212,171,0.7)); }
+    0%, 100% { filter: drop-shadow(0 0 0px rgba(255,179,71,0)); }
+    50%       { filter: drop-shadow(0 0 10px rgba(255,179,71,0.65)); }
   }
 
   .shield-wrap.glow svg { animation: shield-glow 2s ease-in-out 3; }
@@ -78,7 +78,7 @@
   .logo-name {
     font-family: var(--serif);
     font-weight: 700;
-    font-size: 1.75rem;
+    font-size: 2.1rem;
     letter-spacing: -0.01em;
     color: var(--text);
     line-height: 1;
@@ -87,7 +87,7 @@
   .logo-name span { color: var(--amber); }
 
   .logo-tag {
-    font-size: 0.65rem;
+    font-size: 0.72rem;
     color: var(--muted);
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -721,11 +721,10 @@
     font-size: 0.7rem;
     line-height: 1.75;
     max-height: 96px;
+    overflow-x: hidden;
     overflow-y: auto;
     margin-top: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
+    display: block;
     scrollbar-width: thin;
     scrollbar-color: rgba(255,179,71,0.3) transparent;
   }
@@ -734,12 +733,13 @@
   .search-terminal::-webkit-scrollbar-thumb { background: rgba(255,179,71,0.3); border-radius: 2px; }
 
   .log-line {
+    display: block;
     color: #FFB347;
     transition: color 0.5s ease;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    flex-shrink: 0;
+    margin-bottom: 1px;
   }
 
   .log-line.faded { color: var(--muted-blue); }
@@ -757,12 +757,12 @@
   <header>
     <div class="logo">
       <div class="shield-wrap" id="compassRing">
-        <svg width="44" height="48" viewBox="0 0 44 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="54" height="58" viewBox="0 0 44 48" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M22 2L4 9V22C4 32.5 12 41.8 22 46C32 41.8 40 32.5 40 22V9L22 2Z"
-            fill="#1A1815" stroke="#D46A6A" stroke-width="1.8" stroke-linejoin="round"/>
+            fill="#0C0B09" stroke="#FFB347" stroke-width="1.8" stroke-linejoin="round"/>
           <path d="M22 10L10 15V22C10 28.8 15.2 35 22 38C28.8 35 34 28.8 34 22V15L22 10Z"
-            fill="rgba(212,106,106,0.12)"/>
-          <path d="M16 23L20 27L28 19" stroke="#D46A6A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            fill="rgba(255,179,71,0.07)"/>
+          <path d="M16 23L20 27L28 19" stroke="#FFB347" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
       <div class="logo-text">
