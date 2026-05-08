@@ -1368,7 +1368,7 @@ async function analyze() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
-          max_tokens: 4000,
+          max_tokens: 8192,
           temperature: 0,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
           system: SYSTEM_PROMPT + '\n\nCRITICAL: When research is done, return ONLY the JSON object. No preamble.',
@@ -1384,7 +1384,11 @@ async function analyze() {
 
       const responseContent = data.content || [];
       const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
-      const textBlock = responseContent.find(b => b.type === 'text');
+      // Use the LAST non-empty text block — with web search beta, Claude may
+      // emit an early commentary block before the server_tool_use blocks,
+      // then the final JSON block at the end. find() would grab the wrong one.
+      const textBlocks = responseContent.filter(b => b.type === 'text' && b.text && b.text.trim());
+      const textBlock = textBlocks.length > 0 ? textBlocks[textBlocks.length - 1] : null;
 
       // Detect server-side web searches (web-search-2025-03-05 beta returns
       // server_tool_use blocks — the search runs on Anthropic's servers so
