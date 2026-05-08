@@ -875,7 +875,7 @@
     </div>
 
     <!-- Company Info (LEGITIMATE) -->
-    <div id="companyInfo" class="info-panel panel-accent-green" style="display:none;">
+    <div id="companyInfo" class="info-panel" style="display:none;">
       <div class="panel-header">
         <div class="panel-title">🏢 Company Verification</div>
         <div class="panel-sub">Cross-referenced against public records and official listings.</div>
@@ -918,7 +918,7 @@
     </div>
 
     <!-- Salary (LEGITIMATE) -->
-    <div id="ciSalary" class="info-panel panel-accent-green" style="display:none;">
+    <div id="ciSalary" class="info-panel" style="display:none;">
       <div class="panel-header">
         <div class="panel-title">💰 Salary Analysis</div>
         <div class="panel-sub">How this posting compares to 2026 market rates.</div>
@@ -937,7 +937,7 @@
     </div>
 
     <!-- Better Path (SUSPICIOUS/FRAUDULENT) -->
-    <div id="betterPath" class="info-panel panel-accent-amber" style="display:none;">
+    <div id="betterPath" class="info-panel" style="display:none;">
       <div class="panel-header">
         <div class="panel-title">🧭 Find the Real Version of This Job</div>
         <div class="panel-sub">You deserve better. Here's where to actually look.</div>
@@ -968,7 +968,7 @@
     </div>
 
     <!-- Data Audit -->
-    <div id="dataAuditPanel" class="info-panel panel-accent-purple" style="display:none;">
+    <div id="dataAuditPanel" class="info-panel" style="display:none;">
       <div class="panel-header">
         <div class="da-title-row">
           <div style="font-size:1.3rem;">🔍</div>
@@ -1019,7 +1019,7 @@
   </div><!-- #results -->
 
   <div class="footer-note">
-    Powered by Claude AI · Analysis is advisory only<br>
+    A PathAtlas Intelligence Agent · Analysis is advisory only<br>
     Verify independently before sharing personal information
   </div>
 
@@ -1530,10 +1530,10 @@ function renderResults(data) {
       const icon = document.getElementById(iconId);
       const link = document.getElementById(linkId);
       if (url) {
-        icon.className = 'ci-row-icon found'; icon.textContent = '✓';
+        icon.className = 'ci-icon found'; icon.textContent = '✓';
         link.href = url; link.textContent = url; link.className = 'ci-link';
       } else {
-        icon.className = 'ci-row-icon notfound'; icon.textContent = '✗';
+        icon.className = 'ci-icon notfound'; icon.textContent = '✗';
         link.href = '#'; link.textContent = 'Not found'; link.className = 'ci-link notfound';
       }
       if (listedId) {
