@@ -6,7 +6,7 @@
 <title>JobSentry — Career Integrity Investigator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Sora:wght@100..800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:wght@400;500&family=Sora:wght@100..800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg:       #0F0E0D;
@@ -22,8 +22,10 @@
     --text:     #EDE8E0;
     --muted:    #7A7368;
     --muted2:   #4A4640;
-    --serif:    'Sora', 'Montserrat', sans-serif;
-    --sans:     'Inter', system-ui, sans-serif;
+    --serif:      'Sora', 'Montserrat', sans-serif;
+    --sans:       'Inter', system-ui, sans-serif;
+    --mono:       'JetBrains Mono', 'Courier New', monospace;
+    --muted-blue: #94A1B2;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -709,6 +711,39 @@
   .da-vea-label  { font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
   .da-vea-text   { font-size: 0.78rem; line-height: 1.75; color: #C0B8B0; }
 
+  /* ─── Search Terminal ────────────────────────────────────────────────── */
+  .search-terminal {
+    background: #0C0B0A;
+    border: 1px solid #FFB347;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    line-height: 1.75;
+    max-height: 96px;
+    overflow-y: auto;
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,179,71,0.3) transparent;
+  }
+
+  .search-terminal::-webkit-scrollbar { width: 4px; }
+  .search-terminal::-webkit-scrollbar-thumb { background: rgba(255,179,71,0.3); border-radius: 2px; }
+
+  .log-line {
+    color: #FFB347;
+    transition: color 0.5s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+  }
+
+  .log-line.faded { color: var(--muted-blue); }
+
   /* ─── Error ──────────────────────────────────────────────────────────── */
   .error-box { background: rgba(224,92,92,0.07); border: 1px solid rgba(224,92,92,0.25); border-radius: 12px; padding: 14px 18px; font-size: 0.78rem; color: #E07878; margin-bottom: 20px; }
 
@@ -767,6 +802,7 @@
   <div id="thinking">
     <div class="thinking-progress">
       <div class="progress-steps" id="progressSteps"></div>
+      <div id="searchTerminal" class="search-terminal" style="display:none;"></div>
       <div class="progress-current">
         <div class="thinking-bars"><span></span><span></span><span></span><span></span></div>
         <span id="thinkingDetail">Starting investigation...</span>
@@ -1235,31 +1271,32 @@ async function analyze() {
     { label: 'Scoring fraud signals',          detail: 'Running all filters and calculating your risk score...' }
   ];
 
-  // Search history log element (add to thinking div if not present)
-  let searchLog = document.getElementById('searchLog');
-  if (!searchLog) {
-    searchLog = document.createElement('div');
-    searchLog.id = 'searchLog';
-    searchLog.style.cssText = 'margin-top:10px;padding:10px 14px;background:#0C0B0A;border:1px solid var(--border);border-radius:10px;font-size:0.68rem;font-family:monospace;max-height:80px;overflow-y:auto;display:none;';
-    document.querySelector('.thinking-progress').insertBefore(
-      searchLog,
-      document.querySelector('.progress-current')
-    );
-  }
-  searchLog.innerHTML = '';
-  searchLog.style.display = 'block';
-  const _initLine = document.createElement('div');
-  _initLine.style.cssText = 'color:var(--muted);margin-bottom:2px;';
-  _initLine.textContent = '→  Initializing analysis...';
-  searchLog.appendChild(_initLine);
-
+  // ── Search Terminal ────────────────────────────────────────────────────────
+  const searchTerminal = document.getElementById('searchTerminal');
+  searchTerminal.innerHTML = '';
+  searchTerminal.style.display = 'block';
+  const _initLine = document.createElement('span');
+  _initLine.className = 'log-line faded';
+  _initLine.textContent = '→  Initializing forensic investigation...';
+  searchTerminal.appendChild(_initLine);
 
   function addSearchLog(query) {
-   const line = document.createElement('div');
-    line.style.cssText = 'color:var(--amber);margin-bottom:2px;';
-    line.textContent = '⌕  ' + query;
-    searchLog.appendChild(line);
-    searchLog.scrollTop = searchLog.scrollHeight;
+    // Fade every line already in the terminal
+    searchTerminal.querySelectorAll('.log-line').forEach(l => l.classList.add('faded'));
+    const line = document.createElement('span');
+    line.className = 'log-line';
+    line.textContent = '⌕ Searching Atlas for: ' + query + '...';
+    searchTerminal.appendChild(line);
+    searchTerminal.scrollTop = searchTerminal.scrollHeight;
+  }
+
+  function addAccessLog(url) {
+    searchTerminal.querySelectorAll('.log-line').forEach(l => l.classList.add('faded'));
+    const line = document.createElement('span');
+    line.className = 'log-line';
+    line.textContent = '→ Accessing: ' + url;
+    searchTerminal.appendChild(line);
+    searchTerminal.scrollTop = searchTerminal.scrollHeight;
   }
 
   function renderProgress(step, detail) {
@@ -1327,9 +1364,11 @@ async function analyze() {
       if (toolUseBlock) {
         searchCount++;
 
-        // Show the actual search query in the log
+        // Log the search query; fall back to URL access if present
         if (toolUseBlock.input && toolUseBlock.input.query) {
           addSearchLog(toolUseBlock.input.query);
+        } else if (toolUseBlock.input && toolUseBlock.input.url) {
+          addAccessLog(toolUseBlock.input.url);
         }
 
         // Advance progress steps
@@ -1369,7 +1408,7 @@ async function analyze() {
     }
 
     const parsed = extractJSON(finalText);
-    if (searchLog) searchLog.style.display = 'none';
+    searchTerminal.style.display = 'none';
     renderResults(parsed);
 
   } catch (err) {
