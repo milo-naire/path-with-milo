@@ -72,6 +72,9 @@ When editing the AI prompt, preserve this JSON schema — the frontend JS parses
 
 ## Changelog
 
+### 2026-05-08 (5)
+- **feat(fraud-job-detector.html):** Added full DOL/court FLSA primary beneficiary test (all 7 factors + exempt-category footnotes) as a dedicated section in the PayAudit system prompt. Applied to every unpaid posting. Student-detected postings additionally score the posting against all 7 factors and report results in `nonprofitNote`.
+
 ### 2026-05-08 (4)
 - **feat(fraud-job-detector.html):** PayAudit now loads `approved-employers.json` at page start and injects the list into the system prompt at audit time. Employers matching the list are treated as COMPLIANT UNPAID. JSON key is the raw Google Form question text (`Q8 - COMPANY/ORGANIZATION NAME:`); header/test rows are filtered out automatically.
 
