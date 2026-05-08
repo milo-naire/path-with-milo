@@ -63,3 +63,9 @@ All pages share a unified visual language. Use these CSS variables — don't har
 The fraud detector in `fraud-job-detector.html` sends a structured system prompt to Claude that enforces a strict JSON response schema with these top-level keys: `verdict`, `fraudScore`, `redFlags`, `legitimacySignals`, `signalBreakdown`, `companyVerification`, `salaryAnalysis`, `dataPrivacyAudit`, and `betterPath`. The six signals in `signalBreakdown` are: Compensation Claims, Company Legitimacy, Contact Quality, Language & Pressure, Personal Data Requests, Job Clarity.
 
 When editing the AI prompt, preserve this JSON schema — the frontend JS parses it directly by key name.
+
+## Changelog
+
+### 2026-05-08
+- **fix(functions/api/analyze.js):** Worker now streams the raw Anthropic response text instead of re-parsing as JSON, preserving non-200 status codes; error responses now always include `Access-Control-Allow-Origin: *` so browser CORS checks don't swallow API error bodies
+- **fix(fraud-job-detector.html):** Updated model ID from `claude-sonnet-4-20250514` to `claude-sonnet-4-6` (correct current model identifier)
