@@ -892,6 +892,65 @@
   .pa-math-comparison span:last-child { color: var(--muted); }
   .pa-below-min { font-size: 0.68rem; color: var(--red); font-style: italic; margin-top: 10px; }
 
+  /* ─── Hide examples in PayAudit mode ───────────────────────────────────*/
+  body[data-mode="payaudit"] .examples { display: none; }
+
+  /* ─── Border consistency in PayAudit mode ───────────────────────────── */
+  body[data-mode="payaudit"] .input-section.card {
+    border-color: rgba(155,109,255,0.28);
+  }
+  body[data-mode="payaudit"] #payauditResults .info-panel,
+  body[data-mode="payaudit"] #payauditResults .recommendation,
+  body[data-mode="payaudit"] #payauditResults .flags-card {
+    border-color: rgba(155,109,255,0.28);
+  }
+
+  /* ─── Mode Info Tooltip ──────────────────────────────────────────────── */
+  .mode-info {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-left: 2px;
+  }
+  .mode-info-trigger {
+    font-size: 0.72rem;
+    color: var(--muted2);
+    cursor: help;
+    padding: 4px 6px;
+    border-radius: 50%;
+    transition: color 0.18s;
+    user-select: none;
+  }
+  .mode-info:hover .mode-info-trigger { color: var(--muted); }
+  .mode-info-tooltip {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    background: #1E1C19;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 0.7rem;
+    line-height: 1.7;
+    color: #C0B8B0;
+    width: 270px;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  .mode-info:hover .mode-info-tooltip { display: block; }
+  .mode-info-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 18px;
+    border: 6px solid transparent;
+    border-bottom-color: #1E1C19;
+  }
+  .mode-info-row { margin-bottom: 8px; }
+  .mode-info-row:last-child { margin-bottom: 0; }
+  .mode-info-row strong { display: block; margin-bottom: 2px; color: var(--text); }
+
   /* ─── PayAudit Nonprofit Note ────────────────────────────────────────── */
   .pa-nonprofit-note {
     margin-top: 12px;
@@ -934,6 +993,13 @@
     <div class="mode-switcher">
       <button class="mode-tab active" id="tabJobSentry" data-mode="jobsentry" onclick="setMode('jobsentry')">🛡 JobSentry</button>
       <button class="mode-tab" id="tabPayAudit" data-mode="payaudit" onclick="setMode('payaudit')">💰 Audit</button>
+      <div class="mode-info">
+        <span class="mode-info-trigger">ⓘ</span>
+        <div class="mode-info-tooltip">
+          <div class="mode-info-row"><strong>🛡 JobSentry</strong>Detects scams, ghost jobs, and recruitment fraud. Uses web search to verify companies and scores 6 fraud signals.</div>
+          <div class="mode-info-row"><strong>💰 PayAudit</strong>Analyzes pay against 2026 market rates. Flags below-market wages, exploitation patterns, lump-sum scams, and pay-related fraud.</div>
+        </div>
+      </div>
     </div>
     <div class="title-field">
       <div class="field-label">Job Title <span class="optional-tag">optional</span></div>
@@ -1222,7 +1288,7 @@
     </div>
 
     <!-- Fraud Flags (conditional) -->
-    <div id="paFraudPanel" style="display:none;margin-bottom:20px;">
+    <div id="paFraudPanel" style="display:none;margin-top:20px;">
       <div class="flags-card red">
         <div class="flags-card-title">🚨 Compensation Fraud Flags</div>
         <ul class="flag-list" id="paFraudList"></ul>
@@ -1939,6 +2005,13 @@ Social Media Manager: $18-40 | Content Writer: $20-50
 Virtual Assistant: $12-25 | Graphic Designer: $18-45
 Marketing Coordinator: $18-30 | Customer Service: $15-25
 
+STUDENT AUDIENCE DETECTION:
+If the posting mentions "students," "college," "university," "undergraduate," "grad student," "internship," "for credit," "academic year," "campus," or similar terms, set isStudentPosting to true and adjust your output:
+• Use plain, jargon-free language throughout. Explain what the pay means in real terms for someone early in their career.
+• Apply FLSA's 7-factor "primary beneficiary test": unpaid internships are only legal if the experience primarily benefits the intern (not the employer), closely mirrors an academic environment, and does not displace a regular employee.
+• In actionableNote, speak directly to a student. Tell them whether this opportunity is worth their time, what to ask the employer before accepting, and how it compares to paid alternatives.
+• In nonprofitNote, note whether the org qualifies under FLSA's educational exemption or is a recognized academic partner.
+
 CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }. No text before or after.
 
 {
@@ -1957,9 +2030,10 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
     "minimumWage2026": "$7.25/hr federal"
   },
   "fraudFlags": ["specific quoted text or behavior from posting"] ([] if none),
-  "actionableNote": "Direct 2-3 sentence advice for the job seeker",
-  "nonprofitNote": "For UNPAID: whether org appears to be 501(c)(3) or educational. For PAID: 'N/A'.",
-  "summary": "2-3 sentences leading with the verdict. Be direct and specific."
+  "actionableNote": "Direct 2-3 sentence advice. Use student-appropriate language if isStudentPosting is true.",
+  "nonprofitNote": "For UNPAID: whether org appears to be 501(c)(3), educational partner, or meets FLSA exemption. For PAID: 'N/A'.",
+  "isStudentPosting": boolean,
+  "summary": "2-3 sentences leading with the verdict. Match tone to audience (student vs. general job seeker)."
 }`;
 
 /* ── PayAudit Analysis ──────────────────────────────────────────────────── */

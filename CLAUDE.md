@@ -72,6 +72,9 @@ When editing the AI prompt, preserve this JSON schema — the frontend JS parses
 
 ## Changelog
 
+### 2026-05-08 (3)
+- **fix(fraud-job-detector.html):** PayAudit UI fixes — purple border consistency across input card and all result panels in payaudit mode; fraud flags margin-top added to fix overlap with lump sum breakdown; example buttons hidden in payaudit mode; ⓘ hover tooltip added to mode switcher explaining the difference between JobSentry and PayAudit; PayAudit prompt updated with student audience detection (FLSA primary beneficiary test, student-friendly language in actionableNote, `isStudentPosting` JSON field)
+
 ### 2026-05-08 (2)
 - **feat(fraud-job-detector.html):** Added PayAudit — a second agent mode toggled by a mode switcher inside the input card. PayAudit analyzes job listing compensation against 2026 market rates, classifies pay as PAID/UNPAID/COMMISSION, issues a verdict (FAIR MARKET PAID / BELOW MARKET PAID / EXPLOITATION RISK / COMPLIANT UNPAID / COMMISSION ONLY / FRAUDULENT), performs lump-sum hourly math breakdown, flags identity-for-pay fraud, and checks nonprofit/educational legitimacy for unpaid roles. Visual branding: JobSentry mode shows amber/orange top accent; PayAudit mode shifts to deep purple (`--purple: #9B6DFF`) across the card accent, analyze button, progress steps, and search terminal. The "Audit" toggle button turns purple on hover/active.
 
