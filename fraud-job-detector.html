@@ -894,8 +894,9 @@
   .pa-math-comparison span:last-child { color: var(--muted); }
   .pa-below-min { font-size: 0.68rem; color: var(--red); font-style: italic; margin-top: 10px; }
 
-  /* ─── Hide examples in PayAudit mode ───────────────────────────────────*/
+  /* ─── Hide examples in PayAudit mode; push buttons right ───────────────*/
   body[data-mode="payaudit"] .examples { display: none; }
+  body[data-mode="payaudit"] .input-actions { justify-content: flex-end; }
 
   /* ─── Status pill — PayAudit color ──────────────────────────────────── */
   body[data-mode="payaudit"] .status-pill {
@@ -911,13 +912,13 @@
     background: transparent;
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 5px 12px;
-    font-size: 0.65rem;
+    padding: 9px 18px;
+    font-size: 0.73rem;
     color: var(--muted);
     cursor: help;
     transition: border-color 0.18s, color 0.18s;
     white-space: nowrap;
-    align-self: flex-end;
+    min-width: max-content;
   }
   .tool-info-box:hover { border-color: #D4882A; color: var(--text); }
   body[data-mode="payaudit"] .tool-info-box:hover { border-color: var(--purple); }
