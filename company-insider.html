@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Translator Machine — Company Insider Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:wght@400;500&family=Sora:wght@100..800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0F0E0D;
+    --surface:  #1A1815;
+    --card:     #201E1B;
+    --border:   #34495E;
+    --amber:    #D4882A;
+    --amber-dim:#A86420;
+    --amber-glow: rgba(212,136,42,0.18);
+    --red:      #E05C5C;
+    --green:    #88D4AB;
+    --teal:     #4ECDC4;
+    --text:     #EDE8E0;
+    --muted:    #7A7368;
+    --muted2:   #4A4640;
+    --muted-blue: #94A1B2;
+    --serif:    'Sora', 'Montserrat', sans-serif;
+    --sans:     'Inter', system-ui, sans-serif;
+    --mono:     'JetBrains Mono', 'Courier New', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── Header ─────────────────────────────────────────────────────────── */
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 52px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo { display: flex; align-items: center; gap: 16px; }
+
+  .icon-wrap {
+    width: 54px; height: 54px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @keyframes icon-glow {
+    0%, 100% { filter: drop-shadow(0 0 0px rgba(212,136,42,0)); }
+    50%       { filter: drop-shadow(0 0 10px rgba(212,136,42,0.7)); }
+  }
+
+  .icon-wrap.glow svg { animation: icon-glow 2s ease-in-out 3; }
+
+  .logo-text { display: flex; flex-direction: column; gap: 2px; }
+
+  .logo-name {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 2.1rem;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .logo-name span { color: #D4882A; }
+
+  .logo-tag {
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(212,136,42,0.07);
+    border: 1px solid rgba(212,136,42,0.2);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-size: 0.68rem;
+    color: #D4882A;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 500;
+    align-self: flex-start;
+    margin-top: 6px;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #D4882A;
+    animation: pulse 2.5s infinite;
+  }
+
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  /* ─── Cards ──────────────────────────────────────────────────────────── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  /* ─── Input ──────────────────────────────────────────────────────────── */
+  .input-section { margin-bottom: 24px; }
+
+  .field-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .optional-tag {
+    font-size: 0.52rem;
+    color: var(--muted);
+    background: var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    text-transform: uppercase;
+    vertical-align: middle;
+    margin-left: 6px;
+    letter-spacing: 0.08em;
+  }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  @media (max-width: 540px) { .input-row { grid-template-columns: 1fr; } }
+
+  .input-field input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: var(--serif);
+    font-size: 1rem;
+    padding: 13px 16px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .input-field input::placeholder { color: var(--muted); font-family: var(--sans); font-size: 0.85rem; }
+  .input-field input:focus { border-color: var(--amber-dim); box-shadow: 0 0 0 3px rgba(212,136,42,0.08); }
+
+  .input-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 6px;
+    gap: 10px;
+  }
+
+  .clear-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    padding: 11px 18px;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .clear-btn:hover { border-color: var(--red); color: var(--red); background: rgba(224,92,92,0.06); }
+
+  .analyze-btn {
+    background: var(--amber);
+    border: none;
+    border-radius: 10px;
+    color: #1A1815;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 11px 28px;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.03em;
+  }
+
+  .analyze-btn:hover:not(:disabled) {
+    background: #E0952E;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(212,136,42,0.3);
+  }
+
+  .analyze-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+  /* ─── Thinking ───────────────────────────────────────────────────────── */
+  #thinking {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+  }
+
+  .thinking-layout { display: flex; gap: 24px; align-items: flex-start; }
+  .thinking-progress { display: flex; flex-direction: column; gap: 16px; flex-shrink: 0; }
+  .progress-steps { display: flex; flex-direction: column; gap: 8px; }
+
+  .progress-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    transition: color 0.3s;
+    font-weight: 400;
+  }
+
+  .progress-step.done   { color: var(--green); }
+  .progress-step.active { color: var(--text); font-weight: 500; }
+
+  .step-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    flex-shrink: 0;
+    transition: all 0.3s;
+  }
+
+  .progress-step.done   .step-icon { background: var(--green); border-color: var(--green); color: #0F0E0D; font-size: 0.65rem; }
+  .progress-step.active .step-icon { border-color: var(--amber); animation: step-pulse 1.4s infinite; }
+
+  @keyframes step-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(212,136,42,0.4); } 50% { box-shadow: 0 0 0 5px rgba(212,136,42,0); } }
+
+  .progress-current {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .thinking-bars { display: flex; gap: 3px; align-items: flex-end; height: 18px; flex-shrink: 0; }
+  .thinking-bars span { display: block; width: 3px; background: var(--amber); border-radius: 2px; animation: bar 0.9s ease-in-out infinite; }
+  .thinking-bars span:nth-child(2) { animation-delay: 0.15s; }
+  .thinking-bars span:nth-child(3) { animation-delay: 0.3s; }
+  .thinking-bars span:nth-child(4) { animation-delay: 0.45s; }
+  @keyframes bar { 0%, 100% { height: 4px; opacity: 0.35; } 50% { height: 16px; opacity: 1; } }
+
+  /* ─── Search Terminal ────────────────────────────────────────────────── */
+  .search-terminal {
+    background: #0C0B0A;
+    border: 1px solid #D4882A;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    line-height: 1.75;
+    flex: 1;
+    min-width: 0;
+    max-height: 160px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    display: block;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212,136,42,0.3) transparent;
+  }
+
+  .search-terminal::-webkit-scrollbar { width: 4px; }
+  .search-terminal::-webkit-scrollbar-thumb { background: rgba(212,136,42,0.3); border-radius: 2px; }
+
+  .log-line {
+    display: block;
+    color: #D4882A;
+    transition: color 0.5s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 1px;
+  }
+
+  .log-line.faded { color: var(--muted-blue); }
+  .log-chev { color: #D4882A; margin-right: 3px; font-size: 0.85rem; line-height: 1; }
+  .log-line.faded .log-chev { visibility: hidden; }
+
+  /* ─── Vibe Card ──────────────────────────────────────────────────────── */
+  .vibe-card {
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .vibe-card.thriving  { background: rgba(136,212,171,0.06); border: 1px solid rgba(136,212,171,0.22); }
+  .vibe-card.mixed     { background: rgba(212,136,42,0.06);  border: 1px solid rgba(212,136,42,0.22); }
+  .vibe-card.troubled  { background: rgba(224,92,92,0.06);   border: 1px solid rgba(224,92,92,0.25); }
+
+  .vibe-header { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+
+  .vibe-icon { font-size: 2rem; line-height: 1; flex-shrink: 0; }
+
+  .vibe-title {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 1.6rem;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+
+  .vibe-card.thriving .vibe-title { color: var(--green); }
+  .vibe-card.mixed    .vibe-title { color: #D4882A; }
+  .vibe-card.troubled .vibe-title { color: var(--red); }
+
+  .vibe-company {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 3px;
+    letter-spacing: 0.01em;
+  }
+
+  .vibe-badge {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 5px 14px;
+    border-radius: 999px;
+    margin-left: auto;
+  }
+
+  .thriving .vibe-badge { background: rgba(136,212,171,0.12); color: var(--green); }
+  .mixed    .vibe-badge { background: rgba(212,136,42,0.12);  color: #D4882A; }
+  .troubled .vibe-badge { background: rgba(224,92,92,0.12);   color: var(--red); }
+
+  .vibe-bar-wrap { margin-top: 4px; }
+  .vibe-bar-label { font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; display: flex; justify-content: space-between; }
+  .vibe-bar { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .vibe-fill { height: 100%; border-radius: 3px; transition: width 1.1s cubic-bezier(0.4,0,0.2,1); }
+  .thriving .vibe-fill { background: var(--green); }
+  .mixed    .vibe-fill { background: #D4882A; }
+  .troubled .vibe-fill { background: var(--red); }
+
+  .one-liner {
+    font-size: 0.87rem;
+    line-height: 1.75;
+    color: #C8C0B4;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    font-style: italic;
+  }
+
+  /* ─── They Say vs Reality ────────────────────────────────────────────── */
+  .tvr-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tvr-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #D4882A, transparent);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .section-title {
+    font-family: var(--serif);
+    font-size: 0.95rem;
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .section-sub {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .tvr-rows { display: flex; flex-direction: column; gap: 12px; }
+
+  .tvr-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .tvr-cell {
+    padding: 14px 16px;
+  }
+
+  .tvr-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .tvr-claim-label { color: var(--teal); }
+  .tvr-reality-label { color: var(--red); }
+
+  .tvr-text {
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: #C0B8B0;
+  }
+
+  .tvr-divider {
+    width: 1px;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .tvr-arrow {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 24px; height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: #D4882A;
+    margin: 0 -12px;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  .tvr-topic-tag {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin-bottom: 10px;
+    display: inline-block;
+  }
+
+  /* ─── Care About Pills ───────────────────────────────────────────────── */
+  .care-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .care-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+
+  .care-pill {
+    background: rgba(212,136,42,0.08);
+    border: 1px solid rgba(212,136,42,0.25);
+    color: #D4882A;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    padding: 7px 16px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  /* ─── Interview Questions ────────────────────────────────────────────── */
+  .interview-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .interview-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--green), transparent);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .iq-list { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+
+  .iq-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+
+  .iq-q {
+    font-size: 0.82rem;
+    color: var(--text);
+    font-weight: 500;
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+
+  .iq-q::before { content: '"'; color: var(--green); margin-right: 2px; }
+  .iq-q::after  { content: '"'; color: var(--green); margin-left: 2px; }
+
+  .iq-why {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .iq-why::before { content: '→ '; color: #D4882A; }
+
+  /* ─── Flags ──────────────────────────────────────────────────────────── */
+  .flags-section { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  @media (max-width: 580px) { .flags-section { grid-template-columns: 1fr; } }
+
+  .flags-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+  .flags-card-title { font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 14px; font-weight: 600; }
+  .flags-card.red   .flags-card-title { color: var(--red); }
+  .flags-card.green .flags-card-title { color: var(--green); }
+
+  .flag-list { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .flag-list li { font-size: 0.76rem; line-height: 1.55; color: #B0A898; display: flex; gap: 9px; align-items: flex-start; }
+  .flag-dot { flex-shrink: 0; margin-top: 6px; width: 5px; height: 5px; border-radius: 50%; }
+  .flags-card.red   .flag-dot { background: var(--red); }
+  .flags-card.green .flag-dot { background: var(--green); }
+  .empty-flags { font-size: 0.75rem; color: var(--muted); font-style: italic; }
+
+  /* ─── Recent Developments ────────────────────────────────────────────── */
+  .news-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .news-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+
+  .news-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .news-signal {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .news-signal.positive { background: rgba(136,212,171,0.1); color: var(--green); }
+  .news-signal.negative { background: rgba(224,92,92,0.1);   color: var(--red); }
+  .news-signal.neutral  { background: rgba(148,161,178,0.1); color: var(--muted-blue); }
+
+  .news-headline {
+    font-size: 0.8rem;
+    color: var(--text);
+    font-weight: 500;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .news-translation {
+    font-size: 0.7rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .news-translation::before { content: 'What it means: '; color: #D4882A; font-style: normal; }
+
+  /* ─── Comp Intel ─────────────────────────────────────────────────────── */
+  .comp-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .comp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+  @media (max-width: 580px) { .comp-grid { grid-template-columns: 1fr 1fr; } }
+
+  .comp-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 15px;
+  }
+
+  .comp-label { font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; font-weight: 500; }
+
+  .comp-value {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+
+  .comp-value.amber { color: #D4882A; }
+  .comp-value.green { color: var(--green); }
+
+  .comp-sub { font-size: 0.68rem; color: var(--muted); line-height: 1.5; }
+
+  /* ─── Insider Summary ────────────────────────────────────────────────── */
+  .summary-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .verdict-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    flex-wrap: wrap;
+  }
+
+  .verdict-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .verdict-chip {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 8px 20px;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .verdict-chip.apply   { background: rgba(136,212,171,0.12); color: var(--green); border: 1px solid rgba(136,212,171,0.25); }
+  .verdict-chip.caution { background: rgba(212,136,42,0.12);  color: #D4882A;      border: 1px solid rgba(212,136,42,0.25); }
+  .verdict-chip.warning { background: rgba(224,92,92,0.12);   color: var(--red);   border: 1px solid rgba(224,92,92,0.25); }
+
+  .summary-body {
+    font-size: 0.83rem;
+    line-height: 1.85;
+    color: #B8B0A4;
+    margin-top: 14px;
+  }
+
+  /* ─── Error ──────────────────────────────────────────────────────────── */
+  .error-box {
+    background: rgba(224,92,92,0.07);
+    border: 1px solid rgba(224,92,92,0.25);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 0.78rem;
+    color: #E07878;
+    margin-bottom: 20px;
+  }
+
+  /* ─── Footer ─────────────────────────────────────────────────────────── */
+  .footer-note {
+    text-align: center;
+    font-size: 0.63rem;
+    color: var(--muted);
+    margin-top: 48px;
+    letter-spacing: 0.06em;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">
+      <div class="icon-wrap" id="iconWrap">
+        <svg width="54" height="54" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Left speech bubble -->
+          <rect x="2" y="6" width="22" height="15" rx="5" fill="#0C0B09" stroke="#D4882A" stroke-width="1.6"/>
+          <path d="M8 21 L6 26 L13 21" fill="#0C0B09" stroke="#D4882A" stroke-width="1.6" stroke-linejoin="round"/>
+          <!-- Dots (corporate speak) -->
+          <circle cx="9"  cy="13.5" r="1.5" fill="#D4882A" opacity="0.5"/>
+          <circle cx="13" cy="13.5" r="1.5" fill="#D4882A" opacity="0.5"/>
+          <circle cx="17" cy="13.5" r="1.5" fill="#D4882A" opacity="0.5"/>
+          <!-- Arrow -->
+          <path d="M26 24 L36 24" stroke="#D4882A" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M33 21 L37 24 L33 27" stroke="#D4882A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Right speech bubble -->
+          <rect x="24" y="27" width="22" height="15" rx="5" fill="#0C0B09" stroke="#88D4AB" stroke-width="1.6"/>
+          <path d="M40 42 L42 47 L35 42" fill="#0C0B09" stroke="#88D4AB" stroke-width="1.6" stroke-linejoin="round"/>
+          <!-- Lines (plain talk) -->
+          <line x1="30" y1="32" x2="40" y2="32" stroke="#88D4AB" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
+          <line x1="30" y1="36" x2="37" y2="36" stroke="#88D4AB" stroke-width="1.4" stroke-linecap="round" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div class="logo-name">The <span>Translator</span></div>
+        <div class="logo-tag">Company Insider Report · 2026</div>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      Decoder Online
+    </div>
+  </header>
+
+  <!-- Input -->
+  <div class="input-section card">
+    <div class="input-row">
+      <div class="input-field">
+        <div class="field-label">Company Name</div>
+        <input type="text" id="companyInput" placeholder="e.g. Salesforce, HubSpot, OpenAI" autocomplete="off" />
+      </div>
+      <div class="input-field">
+        <div class="field-label">Job Title <span class="optional-tag">optional</span></div>
+        <input type="text" id="roleInput" placeholder="e.g. Account Executive, SWE II" autocomplete="off" />
+      </div>
+    </div>
+    <div class="input-actions">
+      <button class="clear-btn" onclick="clearInput()">✕ Clear</button>
+      <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">Decode This Company →</button>
+    </div>
+  </div>
+
+  <!-- Thinking -->
+  <div id="thinking">
+    <div class="thinking-layout">
+      <div class="thinking-progress">
+        <div class="progress-steps" id="progressSteps"></div>
+        <div class="progress-current">
+          <div class="thinking-bars"><span></span><span></span><span></span><span></span></div>
+          <span id="thinkingDetail">Starting research...</span>
+        </div>
+      </div>
+      <div id="searchTerminal" class="search-terminal" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div id="errorBox" class="error-box" style="display:none;"></div>
+
+  <div id="results" style="display:none;">
+
+    <!-- Vibe Card -->
+    <div id="vibeCard" class="vibe-card">
+      <div class="vibe-header">
+        <div class="vibe-icon" id="vibeIcon"></div>
+        <div>
+          <div class="vibe-title" id="vibeTitle"></div>
+          <div class="vibe-company" id="vibeCompany"></div>
+        </div>
+        <div class="vibe-badge" id="vibeBadge"></div>
+      </div>
+      <div class="vibe-bar-wrap">
+        <div class="vibe-bar-label"><span>Culture Score</span><span id="vibeScoreLabel"></span></div>
+        <div class="vibe-bar"><div class="vibe-fill" id="vibeFill" style="width:0%"></div></div>
+      </div>
+      <div class="one-liner" id="oneLiner"></div>
+    </div>
+
+    <!-- They Say vs Reality -->
+    <div class="tvr-section" id="tvrSection">
+      <div class="section-title">They Say vs. Reality</div>
+      <div class="section-sub">Corporate speak decoded using Glassdoor reviews, Reddit threads, and employee reports.</div>
+      <div class="tvr-rows" id="tvrRows"></div>
+    </div>
+
+    <!-- What They Actually Care About -->
+    <div class="care-section" id="careSection">
+      <div class="section-title">What They Actually Care About</div>
+      <div class="section-sub">Not what's in the mission statement — what the reviews and patterns reveal.</div>
+      <div class="care-pills" id="carePills"></div>
+    </div>
+
+    <!-- Interview Questions to Ask -->
+    <div class="interview-section" id="interviewSection">
+      <div class="section-title">Questions to Ask in Your Interview</div>
+      <div class="section-sub">Based on what the insider data reveals — surface the things they won't volunteer.</div>
+      <div class="iq-list" id="iqList"></div>
+    </div>
+
+    <!-- Red / Green Flags -->
+    <div class="flags-section">
+      <div class="flags-card red">
+        <div class="flags-card-title">⚠ Red Flags</div>
+        <ul class="flag-list" id="redFlags"></ul>
+      </div>
+      <div class="flags-card green">
+        <div class="flags-card-title">✓ Green Flags</div>
+        <ul class="flag-list" id="greenFlags"></ul>
+      </div>
+    </div>
+
+    <!-- Recent Developments -->
+    <div class="news-section" id="newsSection">
+      <div class="section-title">Recent Developments</div>
+      <div class="section-sub">What's happened at this company lately — and what it signals for you as a candidate.</div>
+      <div class="news-list" id="newsList"></div>
+    </div>
+
+    <!-- Comp Intel -->
+    <div class="comp-section" id="compSection">
+      <div class="section-title">Compensation Intelligence</div>
+      <div class="section-sub">Aggregated from Glassdoor, LinkedIn Salary, and public benchmarks.</div>
+      <div class="comp-grid" id="compGrid"></div>
+    </div>
+
+    <!-- Insider Summary + Verdict -->
+    <div class="summary-section">
+      <div class="section-title">The Insider Summary</div>
+      <div class="summary-body" id="insiderSummary"></div>
+      <div class="verdict-row">
+        <div class="verdict-label">Should You Apply?</div>
+        <div class="verdict-chip" id="verdictChip"></div>
+      </div>
+    </div>
+
+  </div><!-- #results -->
+
+  <div class="footer-note">
+    A PathAtlas Intelligence Agent · Powered by live web research<br>
+    Sources: Glassdoor · Reddit · News search · LinkedIn · Public records
+  </div>
+
+</div>
+<script>
+const API_URL = window.location.protocol === 'file:' ? 'http://localhost:8787/api/analyze' : '/api/analyze';
+
+const SYSTEM_PROMPT = `You are a career intelligence analyst who translates corporate PR speak into the unfiltered truth job seekers actually need. You research companies by searching Glassdoor reviews, Reddit threads, recent news, and public employee data.
+
+YOUR MISSION: Give job seekers the inside scoop on what a company is REALLY like — not the polished employer brand narrative.
+
+RESEARCH APPROACH:
+1. Search Glassdoor for "[company] reviews" to find common themes in employee sentiment
+2. Search Reddit for "[company] work culture", "r/[company]", "[company] employee experience"
+3. Search recent news for "[company] layoffs", "[company] culture", "[company] leadership 2025 2026"
+4. If a role is specified, search "[company] [role] salary Glassdoor" and "[company] [role] interview"
+
+ANALYSIS FRAMEWORK:
+- Corporate Speak Decoder: Find 3-4 things the company claims vs. what employees actually report
+- Culture Reality: What does the company genuinely optimize for? (growth, revenue, optics, innovation, etc.)
+- Interview Intelligence: Surface the questions candidates should ask based on what the data reveals
+- Red/Green flags: Specific, evidence-backed signals — not generic
+- Recent developments: News events that affect the candidate's decision (layoffs, funding, leadership changes, culture shifts)
+- Compensation: Real numbers from Glassdoor/LinkedIn where possible
+
+TONE:
+- Direct and honest, never mean-spirited
+- Specific over generic — cite what the reviews actually say, not vague impressions
+- Actionable — every insight should help the candidate make a better decision or ask a better question
+- If data is limited, say so honestly rather than hallucinating
+
+CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }. No text before or after. No markdown code fences.
+
+JSON SCHEMA:
+{
+  "companyName": "Canonical company name",
+  "roleFocus": "Job title or null if not provided",
+  "overallVibe": "THRIVING" | "MIXED" | "TROUBLED",
+  "vibeScore": number between 0-100 (100 = exceptional place to work),
+  "oneLiner": "The punchline translation in one sentence — e.g. 'They say they're work-hard-play-hard, but the data says high burnout and median tenure under 2 years'",
+  "theyVsReality": [
+    {
+      "topic": "Work-Life Balance",
+      "claim": "What the company publicly says or implies about this topic",
+      "reality": "What employees and data actually show"
+    }
+  ],
+  "whatTheyCareAbout": ["Array of 4-7 short phrases — what the culture actually optimizes for"],
+  "interviewQuestions": [
+    {
+      "question": "Specific question to ask in the interview",
+      "why": "One sentence on what this surfaces based on the insider data"
+    }
+  ],
+  "redFlags": ["Specific red flag with evidence (up to 6, [] if none)"],
+  "greenFlags": ["Specific green flag with evidence (up to 6, [] if none)"],
+  "recentDevelopments": [
+    {
+      "headline": "Brief headline of recent development",
+      "signal": "positive" | "negative" | "neutral",
+      "translation": "What this means for someone considering joining"
+    }
+  ],
+  "compensationIntel": {
+    "glassdoorRating": "X.X / 5.0 or null if not found",
+    "reviewCount": "Approximate number like '2,400+' or null",
+    "typicalSalaryRange": "e.g. '$95k–$140k base' for the role, or general range if no role given, or null",
+    "benefitsVerdict": "One sentence on benefits quality"
+  },
+  "insiderSummary": "2-4 sentence synthesis of everything — the definitive insider take",
+  "shouldApply": "APPLY" | "PROCEED WITH CAUTION" | "INVESTIGATE MORE"
+}`;
+
+function clearInput() {
+  document.getElementById('companyInput').value = '';
+  document.getElementById('roleInput').value = '';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('companyInput').focus();
+}
+
+const STEPS = [
+  { label: 'Looking up Glassdoor reviews',     detail: 'Searching for employee ratings and common themes...' },
+  { label: 'Scanning Reddit & employee forums', detail: 'Checking insider threads and culture discussions...' },
+  { label: 'Checking recent news',              detail: 'Reviewing layoffs, funding, leadership changes...' },
+  { label: 'Writing your cheat sheet',          detail: 'Translating corporate speak into the real picture...' }
+];
+
+function renderProgress(step, detail) {
+  const container = document.getElementById('progressSteps');
+  container.innerHTML = STEPS.map((s, i) => {
+    const isDone = i < step;
+    const isActive = i === step;
+    const cls = isDone ? 'done' : isActive ? 'active' : '';
+    const icon = isDone ? '✓' : String(i + 1);
+    return '<div class="progress-step ' + cls + '">' +
+      '<div class="step-icon">' + icon + '</div>' +
+      '<span>' + s.label + '</span></div>';
+  }).join('');
+  document.getElementById('thinkingDetail').textContent = detail || STEPS[Math.min(step, STEPS.length - 1)].detail;
+}
+
+async function analyze() {
+  const company = document.getElementById('companyInput').value.trim();
+  const role = document.getElementById('roleInput').value.trim();
+  if (!company) {
+    document.getElementById('companyInput').focus();
+    return;
+  }
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  document.getElementById('thinking').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+
+  // Terminal setup
+  const searchTerminal = document.getElementById('searchTerminal');
+  searchTerminal.innerHTML = '';
+  searchTerminal.style.display = 'block';
+  const initLine = document.createElement('span');
+  initLine.className = 'log-line faded';
+  initLine.textContent = '→  Initializing company research...';
+  searchTerminal.appendChild(initLine);
+
+  function _terminalLine(prefix) {
+    searchTerminal.querySelectorAll('.log-line').forEach(l => l.classList.add('faded'));
+    const line = document.createElement('span');
+    line.className = 'log-line';
+    const chev = document.createElement('span');
+    chev.className = 'log-chev';
+    chev.textContent = '›';
+    line.appendChild(chev);
+    line.appendChild(document.createTextNode(' ' + prefix));
+    searchTerminal.appendChild(line);
+    searchTerminal.scrollTop = searchTerminal.scrollHeight;
+  }
+
+  function addSearchLog(query) { _terminalLine('⌕ Searching: ' + query + '...'); }
+  function addAccessLog(url)   { _terminalLine('→ Accessing: ' + url); }
+
+  renderProgress(0, STEPS[0].detail);
+
+  let currentStep = 0;
+  const progressTimers = [];
+  function safeRenderProgress(step, detail) {
+    if (step > currentStep) {
+      currentStep = step;
+      renderProgress(step, detail);
+    }
+  }
+
+  progressTimers.push(setTimeout(() => safeRenderProgress(1, STEPS[1].detail), 3000));
+  progressTimers.push(setTimeout(() => safeRenderProgress(2, STEPS[2].detail), 9000));
+
+  // Plausible status lines while API waits
+  const statusQueries = [
+    company + ' Glassdoor reviews',
+    company + ' work culture Reddit',
+    company + ' employee experience 2025 2026',
+    company + ' recent news layoffs leadership',
+    (role ? company + ' ' + role + ' salary' : company + ' compensation Glassdoor')
+  ];
+  let _statusIdx = 0;
+  const statusTimer = setInterval(() => {
+    if (_statusIdx < statusQueries.length) addSearchLog(statusQueries[_statusIdx++]);
+  }, 3800);
+
+  try {
+    const userPrompt = 'Research this company and produce a Company Insider Report.\n\n' +
+      'Company: ' + company + '\n' +
+      (role ? 'Role being considered: ' + role + '\n' : '') +
+      '\nSearch steps:\n' +
+      '1. Search Glassdoor for "' + company + ' reviews" — note rating, review count, top themes\n' +
+      '2. Search Reddit for "' + company + ' work culture" and "r/' + company.toLowerCase().replace(/\s+/g, '') + '" — note real employee sentiment\n' +
+      '3. Search recent news for "' + company + ' 2025 2026 layoffs culture leadership" — note key developments\n' +
+      (role ? '4. Search "' + company + ' ' + role + ' salary Glassdoor" and "' + company + ' ' + role + ' interview experience"\n' : '') +
+      '\nAfter research, return only the JSON report.';
+
+    let messages = [{ role: 'user', content: userPrompt }];
+    let finalText = null;
+    let searchCount = 0;
+
+    while (!finalText) {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 8192,
+          temperature: 0,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          system: SYSTEM_PROMPT + '\n\nCRITICAL: When research is complete, return ONLY the JSON object. No preamble.',
+          messages
+        })
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
+        throw new Error(errMsg);
+      }
+
+      const responseContent = data.content || [];
+      const toolUseBlock = responseContent.find(b => b.type === 'tool_use');
+      const textBlocks = responseContent.filter(b => b.type === 'text' && b.text && b.text.trim());
+      const textBlock = textBlocks.length > 0 ? textBlocks[textBlocks.length - 1] : null;
+
+      // Server-side web searches (web-search beta)
+      const serverSearchBlocks = responseContent.filter(b => b.type === 'server_tool_use');
+      if (serverSearchBlocks.length > 0) {
+        clearInterval(statusTimer);
+        searchTerminal.innerHTML = '';
+        serverSearchBlocks.forEach(block => {
+          const q = block.input && block.input.query;
+          const u = block.input && block.input.url;
+          if (q) { addSearchLog(q); searchCount++; }
+          else if (u) { addAccessLog(u); searchCount++; }
+        });
+        if (searchCount >= 1) safeRenderProgress(1, STEPS[1].detail);
+        if (searchCount >= 3) safeRenderProgress(2, STEPS[2].detail);
+      }
+
+      if (toolUseBlock) {
+        searchCount++;
+        if (toolUseBlock.input && toolUseBlock.input.query) {
+          clearInterval(statusTimer);
+          addSearchLog(toolUseBlock.input.query);
+        } else if (toolUseBlock.input && toolUseBlock.input.url) {
+          clearInterval(statusTimer);
+          addAccessLog(toolUseBlock.input.url);
+        }
+        if (searchCount === 1) safeRenderProgress(1, STEPS[1].detail);
+        else if (searchCount >= 3) safeRenderProgress(2, STEPS[2].detail);
+
+        const trimmed = responseContent.filter(b => b.type === 'tool_use' || b.type === 'text');
+        messages.push({ role: 'assistant', content: trimmed });
+        messages.push({
+          role: 'user',
+          content: [{
+            type: 'tool_result',
+            tool_use_id: toolUseBlock.id,
+            content: 'Search completed. Continue research.'
+          }]
+        });
+      } else if (textBlock) {
+        safeRenderProgress(3, STEPS[3].detail);
+        finalText = textBlock.text;
+      } else {
+        throw new Error('Research timed out. Please try again.');
+      }
+    }
+
+    function extractJSON(str) {
+      const start = str.indexOf('{');
+      const end = str.lastIndexOf('}');
+      if (start === -1) throw new Error('No report data found in response.');
+      return JSON.parse(str.substring(start, end + 1).replace(/,\s*([\]}])/g, '$1'));
+    }
+
+    clearInterval(statusTimer);
+    const parsed = extractJSON(finalText);
+    renderResults(parsed);
+
+  } catch (err) {
+    clearInterval(statusTimer);
+    document.getElementById('errorBox').textContent = 'Research failed — please try again. ' + (err.message || '');
+    document.getElementById('errorBox').style.display = 'block';
+  } finally {
+    progressTimers.forEach(t => clearTimeout(t));
+    clearInterval(statusTimer);
+    document.getElementById('thinking').style.display = 'none';
+    btn.disabled = false;
+  }
+}
+
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderResults(data) {
+  const vibe = (data.overallVibe || 'MIXED').toUpperCase();
+  const vibeClass = vibe === 'THRIVING' ? 'thriving' : vibe === 'TROUBLED' ? 'troubled' : 'mixed';
+  const vibeIcons = { THRIVING: '🌟', MIXED: '⚡', TROUBLED: '⚠️' };
+  const vibeLabels = { THRIVING: 'Thriving Culture', MIXED: 'Mixed Signals', TROUBLED: 'Troubled Culture' };
+  const score = data.vibeScore || 50;
+
+  // Vibe card
+  const vibeCard = document.getElementById('vibeCard');
+  vibeCard.className = 'vibe-card ' + vibeClass;
+  document.getElementById('vibeIcon').textContent = vibeIcons[vibe] || '⚡';
+  document.getElementById('vibeTitle').textContent = vibeLabels[vibe] || 'Mixed Signals';
+  document.getElementById('vibeCompany').textContent = data.companyName + (data.roleFocus ? ' · ' + data.roleFocus : '');
+  document.getElementById('vibeBadge').textContent = score + ' / 100';
+  document.getElementById('vibeBadge').className = 'vibe-badge';
+  document.getElementById('vibeScoreLabel').textContent = score + ' / 100';
+  document.getElementById('oneLiner').textContent = data.oneLiner || '';
+
+  // They Say vs Reality
+  const tvrRows = document.getElementById('tvrRows');
+  const tvr = data.theyVsReality || [];
+  tvrRows.innerHTML = tvr.map(item => `
+    <div class="tvr-row">
+      <div class="tvr-cell">
+        <div class="tvr-topic-tag">${esc(item.topic)}</div>
+        <div class="tvr-label tvr-claim-label">They Say</div>
+        <div class="tvr-text">${esc(item.claim)}</div>
+      </div>
+      <div class="tvr-divider">
+        <div class="tvr-arrow">→</div>
+      </div>
+      <div class="tvr-cell">
+        <div style="height:21px;"></div>
+        <div class="tvr-label tvr-reality-label">The Reality</div>
+        <div class="tvr-text">${esc(item.reality)}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // What They Care About
+  const pills = data.whatTheyCareAbout || [];
+  document.getElementById('carePills').innerHTML = pills.map(p => `<div class="care-pill">${esc(p)}</div>`).join('');
+
+  // Interview Questions
+  const qs = data.interviewQuestions || [];
+  document.getElementById('iqList').innerHTML = qs.map(q => `
+    <div class="iq-item">
+      <div class="iq-q">${esc(q.question)}</div>
+      <div class="iq-why">${esc(q.why)}</div>
+    </div>
+  `).join('');
+
+  // Red/Green Flags
+  const redFlags = data.redFlags || [];
+  document.getElementById('redFlags').innerHTML = redFlags.length
+    ? redFlags.map(f => `<li><span class="flag-dot"></span><span>${esc(f)}</span></li>`).join('')
+    : '<li class="empty-flags">No significant red flags found.</li>';
+
+  const greenFlags = data.greenFlags || [];
+  document.getElementById('greenFlags').innerHTML = greenFlags.length
+    ? greenFlags.map(f => `<li><span class="flag-dot"></span><span>${esc(f)}</span></li>`).join('')
+    : '<li class="empty-flags">No notable green flags in data.</li>';
+
+  // Recent Developments
+  const news = data.recentDevelopments || [];
+  const newsSignalIcons = { positive: '↑', negative: '↓', neutral: '→' };
+  document.getElementById('newsList').innerHTML = news.length
+    ? news.map(n => `
+      <div class="news-item">
+        <div class="news-signal ${esc(n.signal)}">${newsSignalIcons[n.signal] || '→'}</div>
+        <div>
+          <div class="news-headline">${esc(n.headline)}</div>
+          <div class="news-translation">${esc(n.translation)}</div>
+        </div>
+      </div>
+    `).join('')
+    : '<div style="font-size:0.75rem;color:var(--muted);font-style:italic;">No significant recent developments found.</div>';
+
+  // Comp Intel
+  const ci = data.compensationIntel || {};
+  document.getElementById('compGrid').innerHTML = `
+    <div class="comp-card">
+      <div class="comp-label">Glassdoor Rating</div>
+      <div class="comp-value amber">${esc(ci.glassdoorRating || 'N/A')}</div>
+      <div class="comp-sub">${esc(ci.reviewCount ? ci.reviewCount + ' reviews' : 'Data not found')}</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-label">Typical Salary Range</div>
+      <div class="comp-value amber">${esc(ci.typicalSalaryRange || 'N/A')}</div>
+      <div class="comp-sub">Based on public data</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-label">Benefits</div>
+      <div class="comp-value" style="font-size:0.8rem;line-height:1.4;">${esc(ci.benefitsVerdict || 'Not assessed')}</div>
+    </div>
+  `;
+
+  // Insider Summary + Verdict
+  document.getElementById('insiderSummary').textContent = data.insiderSummary || '';
+
+  const verdict = (data.shouldApply || 'PROCEED WITH CAUTION').toUpperCase();
+  const verdictChip = document.getElementById('verdictChip');
+  if (verdict === 'APPLY') {
+    verdictChip.className = 'verdict-chip apply';
+    verdictChip.textContent = '✓ Apply';
+  } else if (verdict === 'INVESTIGATE MORE') {
+    verdictChip.className = 'verdict-chip warning';
+    verdictChip.textContent = '⚠ Investigate More';
+  } else {
+    verdictChip.className = 'verdict-chip caution';
+    verdictChip.textContent = '⚡ Proceed with Caution';
+  }
+
+  document.getElementById('results').style.display = 'block';
+
+  // Animate vibe score bar
+  setTimeout(() => {
+    document.getElementById('vibeFill').style.width = score + '%';
+  }, 100);
+
+  document.getElementById('vibeCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Glow the icon
+  const iconWrap = document.getElementById('iconWrap');
+  iconWrap.classList.add('glow');
+  setTimeout(() => iconWrap.classList.remove('glow'), 7000);
+}
+
+// Allow Enter key in inputs
+document.addEventListener('DOMContentLoaded', () => {
+  ['companyInput', 'roleInput'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') analyze();
+    });
+  });
+});
+</script>
+</body>
+</html>
