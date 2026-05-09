@@ -72,6 +72,9 @@ When editing the AI prompt, preserve this JSON schema — the frontend JS parses
 
 ## Changelog
 
+### 2026-05-09
+- **refactor(fraud-job-detector.html):** Removed PayAudit mode entirely (UI tab, HTML results section, JS prompt/functions). Removed market-rate pay comparison as a fraud signal; Compensation Claims signal now only flags actual fraud patterns (income guarantees, commission-only, sub-minimum-wage pay). Below-market pay alone no longer contributes to the fraud score.
+
 ### 2026-05-08 (5)
 - **feat(fraud-job-detector.html):** Added full DOL/court FLSA primary beneficiary test (all 7 factors + exempt-category footnotes) as a dedicated section in the PayAudit system prompt. Applied to every unpaid posting. Student-detected postings additionally score the posting against all 7 factors and report results in `nonprofitNote`.
 

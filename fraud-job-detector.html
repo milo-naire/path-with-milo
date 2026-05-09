@@ -1059,33 +1059,14 @@
         <div class="logo-tag" id="logoTag">Career Integrity Investigator · 2026</div>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;margin-top:6px;">
-      <div class="status-pill">
-        <div class="status-dot"></div>
-        Engine Online
-      </div>
-      <div class="tool-info-box" id="toolInfoBox">
-        <span id="toolInfoLabel">What is JobSentry?</span>
-        <div class="tool-info-content" id="toolInfoContent">
-          <strong>JobSentry</strong>Detects recruitment scams, ghost jobs, and fraud. Paste any job listing — it verifies the company via live web search, scores 6 fraud signals, and returns a LEGITIMATE / SUSPICIOUS / FRAUDULENT verdict with actionable guidance.
-        </div>
-      </div>
+    <div class="status-pill" style="margin-top:6px;">
+      <div class="status-dot"></div>
+      Engine Online
     </div>
   </header>
 
   <!-- Input -->
   <div class="input-section card">
-    <div class="mode-switcher">
-      <button class="mode-tab active" id="tabJobSentry" data-mode="jobsentry" onclick="setMode('jobsentry')">🛡 JobSentry</button>
-      <button class="mode-tab" id="tabPayAudit" data-mode="payaudit" onclick="setMode('payaudit')">💰 Audit</button>
-      <div class="mode-info">
-        <span class="mode-info-trigger">ⓘ</span>
-        <div class="mode-info-tooltip">
-          <div class="mode-info-row"><strong>🛡 JobSentry</strong>Detects scams, ghost jobs, and recruitment fraud. Uses web search to verify companies and scores 6 fraud signals.</div>
-          <div class="mode-info-row"><strong>💰 PayAudit</strong>Analyzes pay against 2026 market rates. Flags below-market wages, exploitation patterns, lump-sum scams, and pay-related fraud.</div>
-        </div>
-      </div>
-    </div>
     <div class="title-field">
       <div class="field-label">Job Title <span class="optional-tag">optional</span></div>
       <input type="text" id="jobTitle" placeholder="e.g. Digital Customer Success Program Coordinator" autocomplete="off" />
@@ -1101,7 +1082,7 @@
       </div>
       <div class="btn-row">
         <button class="clear-btn" onclick="clearInput()">✕ Clear</button>
-        <button class="analyze-btn" id="analyzeBtn" onclick="runActiveMode()">Investigate →</button>
+        <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">Investigate →</button>
       </div>
     </div>
   </div>
@@ -1215,25 +1196,6 @@
       </div>
     </div>
 
-    <!-- Salary (LEGITIMATE) -->
-    <div id="ciSalary" class="info-panel" style="display:none;">
-      <div class="panel-header">
-        <div class="panel-title">💰 Salary Analysis</div>
-        <div class="panel-sub">How this posting compares to 2026 market rates.</div>
-      </div>
-      <div class="two-col">
-        <div class="data-card">
-          <div class="panel-label">Salary in Posting</div>
-          <div class="data-value amber" id="ciSalaryMentioned"></div>
-        </div>
-        <div class="data-card">
-          <div class="panel-label">2026 Market Rate</div>
-          <div class="data-value amber" id="ciMarketRate"></div>
-          <div class="data-sub" id="ciMarketFineprint"></div>
-        </div>
-      </div>
-    </div>
-
     <!-- Better Path (SUSPICIOUS/FRAUDULENT) -->
     <div id="betterPath" class="info-panel" style="display:none;">
       <div class="panel-header">
@@ -1316,88 +1278,6 @@
 
   </div><!-- #results -->
 
-  <!-- ── PayAudit Results ───────────────────────────────────────────────── -->
-  <div id="payauditResults" style="display:none;">
-
-    <!-- Pay Verdict -->
-    <div id="paVerdictCard" class="pa-verdict-card">
-      <div class="pa-verdict-header">
-        <div class="pa-verdict-icon" id="paIcon"></div>
-        <div>
-          <div class="pa-verdict-title" id="paVerdictTitle"></div>
-          <div class="verdict-sub" id="paVerdictSub"></div>
-        </div>
-        <div class="pa-status-badge" id="paStatusBadge"></div>
-      </div>
-      <div id="paMarketBarWrap" style="display:none;">
-        <div class="risk-bar-label"><span>Market Rate Alignment</span><span id="paMarketPct"></span></div>
-        <div class="risk-bar"><div class="risk-fill" id="paMarketFill" style="width:0%;background:var(--purple)"></div></div>
-      </div>
-      <div class="verdict-summary" id="paSummary"></div>
-    </div>
-
-    <!-- Rutgers Compliance Banner (shown only when employer matches approved list) -->
-    <div id="paRutgersBanner" class="rutgers-banner" style="display:none;">
-      <div class="rutgers-banner-icon">🎓</div>
-      <div>
-        <div class="rutgers-banner-title">Rutgers Credit-Eligible Employer</div>
-        <div class="rutgers-banner-body">This organization is compliant with the Rutgers Internship &amp; Co-Op Course. Students who are interested in this role may be eligible to receive course credit.</div>
-      </div>
-    </div>
-
-    <!-- Rate vs Market -->
-    <div class="info-panel panel-accent-purple">
-      <div class="panel-header">
-        <div class="panel-title">💵 Rate Analysis</div>
-        <div class="panel-sub">Compensation breakdown against 2026 market standards.</div>
-      </div>
-      <div class="two-col">
-        <div class="data-card">
-          <div class="panel-label">Rate in Posting</div>
-          <div class="data-value" id="paRateValue" style="color:var(--purple)"></div>
-          <div class="data-sub" id="paRateAnalysis"></div>
-        </div>
-        <div class="data-card">
-          <div class="panel-label">2026 Market Rate</div>
-          <div class="data-value" id="paMarketRate" style="color:var(--purple)"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mathematical Breakdown (lump sum only) -->
-    <div id="paMathPanel" class="info-panel panel-accent-purple" style="display:none;">
-      <div class="panel-header">
-        <div class="panel-title">🧮 Lump Sum Breakdown</div>
-        <div class="panel-sub">Calculated at a standard 10 hrs/week intern schedule — all amounts in USD.</div>
-      </div>
-      <div class="pa-math-table">
-        <div class="pa-math-row"><span>Lump Sum</span><span id="paMathLump"></span></div>
-        <div class="pa-math-row"><span>Period</span><span id="paMathPeriod"></span></div>
-        <div class="pa-math-row"><span>Hours / Week</span><span id="paMathHrsWk"></span></div>
-        <div class="pa-math-row"><span>Total Hours</span><span id="paMathTotal"></span></div>
-        <div class="pa-math-row pa-math-result"><span>Effective Hourly Rate</span><span id="paMathHourly"></span></div>
-        <div class="pa-math-row pa-math-comparison"><span>Federal Min. Wage (2026)</span><span id="paMathMinWage"></span></div>
-      </div>
-      <div class="pa-below-min" id="paMathWarning" style="display:none;"></div>
-    </div>
-
-    <!-- Fraud Flags (conditional) -->
-    <div id="paFraudPanel" style="display:none;margin-top:20px;">
-      <div class="flags-card red">
-        <div class="flags-card-title">🚨 Compensation Fraud Flags</div>
-        <ul class="flag-list" id="paFraudList"></ul>
-      </div>
-    </div>
-
-    <!-- Audit Verdict -->
-    <div class="recommendation">
-      <div class="rec-title" style="color:var(--purple)">Audit Verdict</div>
-      <div class="rec-body" id="paActionableNote"></div>
-      <div class="pa-nonprofit-note" id="paNonprofitNote" style="display:none;"></div>
-    </div>
-
-  </div><!-- #payauditResults -->
-
   <div class="footer-note">
     A PathAtlas Intelligence Agent · Analysis is advisory only<br>
     Verify independently before sharing personal information
@@ -1406,19 +1286,6 @@
 </div>
 <script>
 const API_URL = window.location.protocol === 'file:' ? 'http://localhost:8787/api/analyze' : '/api/analyze';
-
-// Approved unpaid employers — loaded from approved-employers.json at startup.
-// Source: Google Form export. Key name is the raw form question text.
-let approvedEmployers = [];
-fetch('/approved-employers.json')
-  .then(r => r.json())
-  .then(data => {
-    const KEY = 'Q8 - COMPANY/ORGANIZATION NAME:';
-    approvedEmployers = data
-      .map(e => (e[KEY] || '').trim())
-      .filter(name => name.length > 3 && name.toUpperCase() !== 'COMPANY/ORGANIZATION NAME:');
-  })
-  .catch(() => {}); // fail silently — list is supplemental, not required
 
 const SYSTEM_PROMPT = `You are a cynical, experienced Fraud Investigator specializing in 2026 recruitment scams, ghost jobs, and task-based exploitation. Trained on two real-world datasets: 10,000 confirmed fake postings and a mixed dataset of 17,880 postings (866 fraudulent, 17,014 legitimate).
 
@@ -1458,7 +1325,7 @@ Freelance market rates (USD 2026):
 Full-time annual (USD 2026):
 • Software Engineer (mid): $110k-160k | Marketing Manager: $65k-110k
 • Accountant: $55k-85k | Healthcare/Nurse: $60k-95k | Customer Service: $35k-55k
-FLAG: Budget less than 20% of market rate = CRITICAL fraud signal
+FLAG as fraud signal ONLY if: pay would break down to below federal minimum wage ($7.25/hr), OR if commission-only with no base pay guarantee. Below-market pay alone is NOT a fraud indicator — do not penalize underpaid but legitimate postings.
 
 FILTER 4 — GHOST JOB DETECTION:
 Score 40-60 if: 100% generic JD with zero internal context, no specific team/tool/project mentions
@@ -1509,9 +1376,6 @@ CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }
     {"name": "Personal Data Requests", "score": 0-100},
     {"name": "Job Clarity & Realism", "score": 0-100}
   ],
-  "salaryInPosting": "Salary mentioned or 'Not mentioned'",
-  "marketRateShort": "2026 market rate numbers and experience only",
-  "marketRateFineprint": "One sentence on required skills/education level",
   "recommendation": "Direct actionable advice.",
   "companyInfo": {
     "show": boolean (true only if verdict is LEGITIMATE),
@@ -1625,7 +1489,7 @@ No formal interview required — just a quick 10-minute chat!`
 };
 
 const SIGNAL_TOOLTIPS = {
-  "Compensation Claims": "Evaluates whether the pay is realistic for the role. Vague ranges, guaranteed unrealistic amounts, or 'unlimited earning' language score high.",
+  "Compensation Claims": "Detects pay-related fraud patterns: guaranteed income promises, 'unlimited earning' language, commission-only with no base, or pay that would fall below federal minimum wage. Underpaid but legitimate postings do not score high here.",
   "Company Legitimacy": "Checks for verifiable company identity — named employer, professional domain, known brand. Generic or missing company info scores high.",
   "Contact Info Quality": "Assesses whether contact methods are professional. Personal Gmail/Outlook addresses, WhatsApp-only contact, or missing official channels score high.",
   "Language & Pressure": "Detects urgency tactics, emotional pressure, and vague phrasing. 'Act now,' 'limited spots,' and excessive enthusiasm score high.",
@@ -1654,7 +1518,6 @@ function clearInput() {
   document.getElementById('jobTitle').value = '';
   document.getElementById('jobInput').value = '';
   document.getElementById('results').style.display = 'none';
-  document.getElementById('payauditResults').style.display = 'none';
   document.getElementById('errorBox').style.display = 'none';
   document.getElementById('jobInput').focus();
 }
@@ -1923,7 +1786,6 @@ function renderResults(data) {
   // ── Company Info (LEGITIMATE only) ─────────────────────────────────────────
   const ci = data.companyInfo;
   const ciPanel = document.getElementById('companyInfo');
-  const ciSalaryPanel = document.getElementById('ciSalary');
 
   if (ci && ci.show) {
     function setCI(iconId, linkId, url, listedId, listed) {
@@ -1953,15 +1815,8 @@ function renderResults(data) {
       document.getElementById('ciLocations').style.display = 'none';
     }
     ciPanel.style.display = 'block';
-
-    // Salary panel
-    document.getElementById('ciSalaryMentioned').textContent = data.salaryInPosting || 'See posting';
-    document.getElementById('ciMarketRate').textContent = data.marketRateShort || '';
-    document.getElementById('ciMarketFineprint').textContent = data.marketRateFineprint || '';
-    ciSalaryPanel.style.display = 'block';
   } else {
     ciPanel.style.display = 'none';
-    ciSalaryPanel.style.display = 'none';
   }
 
   // ── Better Path (SUSPICIOUS/FRAUDULENT only) ────────────────────────────────
@@ -2059,365 +1914,6 @@ function renderResults(data) {
     document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-/* ── Mode Toggle ─────────────────────────────────────────────────────────── */
-let currentMode = 'jobsentry';
-
-const MODE_CONFIG = {
-  jobsentry: {
-    logoHTML:    'Job<span style="color:#D4882A">Sentry</span>',
-    logoTag:     'Career Integrity Investigator · 2026',
-    pageTitle:   'JobSentry — Career Integrity Investigator',
-    btnLabel:    'Investigate →',
-    strokeColor: '#D4882A',
-    fillColor:   'rgba(212,136,42,0.07)',
-    toolLabel:   'What is JobSentry?',
-    toolDesc:    '<strong>JobSentry</strong> detects recruitment scams, ghost jobs, and fraud. Paste any job listing — it verifies the company via live web search, scores 6 fraud signals, and returns a LEGITIMATE / SUSPICIOUS / FRAUDULENT verdict with actionable guidance.'
-  },
-  payaudit: {
-    logoHTML:    'Pay<span style="color:var(--purple)">Audit</span>',
-    logoTag:     'Compensation Compliance Auditor · 2026',
-    pageTitle:   'PayAudit — Compensation Compliance Auditor',
-    btnLabel:    'Audit →',
-    strokeColor: '#9B6DFF',
-    fillColor:   'rgba(155,109,255,0.07)',
-    toolLabel:   'What is PayAudit?',
-    toolDesc:    '<strong>PayAudit</strong> checks if a job\'s pay is fair and legal. It classifies compensation, runs the FLSA primary beneficiary test on unpaid roles, flags exploitation and pay fraud, and issues a compliance verdict against 2026 market rates.'
-  }
-};
-
-function setMode(mode) {
-  currentMode = mode;
-  const cfg = MODE_CONFIG[mode];
-  document.body.setAttribute('data-mode', mode);
-
-  // Tabs + button
-  document.getElementById('tabJobSentry').classList.toggle('active', mode === 'jobsentry');
-  document.getElementById('tabPayAudit').classList.toggle('active', mode === 'payaudit');
-  document.getElementById('analyzeBtn').textContent = cfg.btnLabel;
-
-  // Logo text + page title
-  document.getElementById('logoName').innerHTML = cfg.logoHTML;
-  document.getElementById('logoTag').textContent = cfg.logoTag;
-  document.title = cfg.pageTitle;
-
-  // Shield SVG colors
-  document.getElementById('svgShield').setAttribute('stroke', cfg.strokeColor);
-  document.getElementById('svgInner').setAttribute('fill', cfg.fillColor);
-  document.getElementById('svgCheck').setAttribute('stroke', cfg.strokeColor);
-
-  // Tool info box
-  document.getElementById('toolInfoLabel').textContent = cfg.toolLabel;
-  document.getElementById('toolInfoContent').innerHTML = cfg.toolDesc;
-
-  // Hide results on mode switch
-  document.getElementById('results').style.display = 'none';
-  document.getElementById('payauditResults').style.display = 'none';
-  document.getElementById('errorBox').style.display = 'none';
-}
-
-function runActiveMode() {
-  if (currentMode === 'payaudit') auditCompensation();
-  else analyze();
-}
-
-/* ── PayAudit System Prompt ─────────────────────────────────────────────── */
-const PAYAUDIT_PROMPT = `You are a Compensation Compliance Auditor specializing in 2026 labor market standards. Protect job seekers by analyzing job listing compensation for legality, fairness, and fraud.
-
-STEP 1 — CLASSIFICATION:
-PAID: Explicit hourly wage, salary, or stipend is stated.
-UNPAID: Explicitly unpaid, volunteer, or for-credit only.
-COMMISSION: "Commission only," "unlimited earning potential," or "performance-based" without a stated base salary.
-
-STEP 2 — FORENSIC PAY CHECKS:
-1. Market Rate Check: Compare offered pay to 2026 market rates. Flag any PAID role under 20% of fair market value as EXPLOITATION RISK.
-2. The SEO/Task Scam: Flag "SEO work," "data entry," or "social media engagement" roles offering a lump sum that breaks down to below minimum wage.
-3. Identity for Pay: Mark FRAUDULENT if a listing requires bank account, SSN, or passport to "verify payroll" before a formal offer letter.
-
-STEP 3 — MATHEMATICAL BREAKDOWN (required for any lump sum pay):
-Calculate effective hourly: lump sum ÷ (hoursPerWeek × weeks).
-Standard schedule: 10 hrs/week. Semester = 16 weeks. Quarter = 12 weeks. "3 months" = 13 weeks.
-Minimum wage reference: $7.25/hr federal (2026).
-
-PAY VERDICT OPTIONS:
-FAIR MARKET PAID     — Pay is ≥80% of 2026 market rate
-BELOW MARKET PAID    — Pay is 20–79% of 2026 market rate
-EXPLOITATION RISK    — Pay is <20% of 2026 market rate
-COMPLIANT UNPAID     — Unpaid at a verifiable non-profit or accredited educational partner
-COMMISSION ONLY      — No base salary; pure commission
-FRAUDULENT           — Requires financial credentials before offer, or is a clear pay scam
-
-2026 MARKET RATES (USD/hr):
-Software Engineer entry: $32-50 | mid: $55-85
-Data Entry: $12-20 | SEO Specialist: $22-50
-Social Media Manager: $18-40 | Content Writer: $20-50
-Virtual Assistant: $12-25 | Graphic Designer: $18-45
-Marketing Coordinator: $18-30 | Customer Service: $15-25
-
-FLSA COMPLIANCE — UNPAID INTERNSHIP STANDARD:
-For any UNPAID posting, apply the "primary beneficiary test" (DOL/court standard). No single factor is determinative; weigh all seven:
-1. No compensation expectation: Both parties clearly understand there is no pay. Any promise of compensation — express or implied — indicates employee status.
-2. Educational training: The internship provides training similar to an educational environment, including clinical or hands-on learning.
-3. Tied to formal education: The internship is integrated with coursework or earns academic credit.
-4. Accommodates academic calendar: Schedule aligns with the intern's academic commitments.
-5. Limited duration: Duration is limited to the period of beneficial learning — not open-ended labor.
-6. Complements, not displaces: The intern's work complements paid employees' work and provides significant educational benefit; it does not replace a paid position.
-7. No job entitlement: Both parties understand the internship does not guarantee a paid job afterward.
-
-FOOTNOTE — EXEMPT CATEGORIES (automatically COMPLIANT UNPAID if met):
-• Volunteers for state/local government agencies
-• Volunteers for non-profit food banks (humanitarian purpose)
-• Individuals volunteering freely for religious, charitable, civic, or humanitarian purposes at non-profit organizations, with no expectation of compensation
-• Unpaid internships at public sector or non-profit charitable organizations where intern volunteers without expectation of compensation are generally permissible
-
-For PAID roles or roles where internship status is not claimed: skip FLSA analysis.
-
-STUDENT AUDIENCE DETECTION:
-If the posting mentions "students," "college," "university," "undergraduate," "grad student," "internship," "for credit," "academic year," "campus," or similar terms, set isStudentPosting to true and adjust your output:
-• Use plain, jargon-free language throughout. Explain what the pay means in real terms for someone early in their career.
-• Score the posting against all 7 FLSA primary beneficiary factors above and note how many it satisfies in nonprofitNote.
-• In actionableNote, speak directly to a student: tell them whether this is worth their time, what to ask the employer before accepting, and how it compares to paid alternatives.
-• In nonprofitNote, note which FLSA factors are met or missing, and whether the org qualifies under the exempt categories (non-profit, government, humanitarian volunteer).
-
-CRITICAL OUTPUT RULE: Return ONLY a raw JSON object. Start with { and end with }. No text before or after.
-
-{
-  "payStatus": "PAID" | "UNPAID" | "COMMISSION",
-  "payVerdict": "FAIR MARKET PAID" | "BELOW MARKET PAID" | "EXPLOITATION RISK" | "COMPLIANT UNPAID" | "COMMISSION ONLY" | "FRAUDULENT",
-  "rate": "Exact dollar amount/range from posting, or 'Not mentioned'",
-  "rateAnalysis": "One sentence describing what the rate means in practice",
-  "marketRate2026": "2026 average for this role (numbers + experience level)",
-  "marketComparisonPct": number (0-200 where 100 = market rate) or null if unpaid/commission,
-  "mathematicalBreakdown": null | {
-    "lumpSum": "e.g. $500",
-    "period": "e.g. 1 semester (16 weeks)",
-    "hoursPerWeek": 10,
-    "totalHours": 160,
-    "estimatedHourly": "$3.13/hr",
-    "minimumWage2026": "$7.25/hr federal"
-  },
-  "fraudFlags": ["specific quoted text or behavior from posting"] ([] if none),
-  "actionableNote": "Direct 2-3 sentence advice. Use student-appropriate language if isStudentPosting is true.",
-  "nonprofitNote": "For UNPAID: whether org appears to be 501(c)(3), educational partner, or meets FLSA exemption. For PAID: 'N/A'.",
-  "isStudentPosting": boolean,
-  "summary": "2-3 sentences leading with the verdict. Match tone to audience (student vs. general job seeker)."
-}`;
-
-/* ── PayAudit Analysis ──────────────────────────────────────────────────── */
-async function auditCompensation() {
-  const text = document.getElementById('jobInput').value.trim();
-  const jobTitle = document.getElementById('jobTitle').value.trim();
-  if (!text) return;
-
-  const btn = document.getElementById('analyzeBtn');
-  btn.disabled = true;
-  document.getElementById('thinking').style.display = 'block';
-  document.getElementById('payauditResults').style.display = 'none';
-  document.getElementById('results').style.display = 'none';
-  document.getElementById('errorBox').style.display = 'none';
-
-  const auditSteps = [
-    { label: 'Reading compensation data',    detail: 'Extracting pay rate, structure, and terms...' },
-    { label: 'Comparing to market rates',    detail: 'Looking up 2026 benchmarks for this role...' },
-    { label: 'Running forensic pay checks',  detail: 'Checking for exploitation patterns and fraud...' },
-    { label: 'Issuing pay verdict',          detail: 'Calculating final compliance assessment...' }
-  ];
-
-  const searchTerminal = document.getElementById('searchTerminal');
-  searchTerminal.innerHTML = '';
-  searchTerminal.style.display = 'block';
-  const _initLine = document.createElement('span');
-  _initLine.className = 'log-line faded';
-  _initLine.textContent = '→  Initializing compensation audit...';
-  searchTerminal.appendChild(_initLine);
-
-  function _terminalLine(msg) {
-    searchTerminal.querySelectorAll('.log-line').forEach(l => l.classList.add('faded'));
-    const line = document.createElement('span');
-    line.className = 'log-line';
-    const chev = document.createElement('span');
-    chev.className = 'log-chev';
-    chev.textContent = '›';
-    line.appendChild(chev);
-    line.appendChild(document.createTextNode(' ' + msg));
-    searchTerminal.appendChild(line);
-    searchTerminal.scrollTop = searchTerminal.scrollHeight;
-  }
-
-  function renderAuditProgress(step, detail) {
-    const container = document.getElementById('progressSteps');
-    container.innerHTML = auditSteps.map((s, i) => {
-      const isDone = i < step, isActive = i === step;
-      const cls = isDone ? 'done' : isActive ? 'active' : '';
-      return '<div class="progress-step ' + cls + '">' +
-        '<div class="step-icon">' + (isDone ? '✓' : String(i + 1)) + '</div>' +
-        '<span>' + s.label + '</span></div>';
-    }).join('');
-    document.getElementById('thinkingDetail').textContent = detail || auditSteps[Math.min(step, auditSteps.length - 1)].detail;
-  }
-
-  renderAuditProgress(0, auditSteps[0].detail);
-  let currentStep = 0;
-  const timers = [];
-  function safeProgress(step, detail) {
-    if (step > currentStep) { currentStep = step; renderAuditProgress(step, detail); }
-  }
-  timers.push(setTimeout(() => safeProgress(1, auditSteps[1].detail), 1800));
-  timers.push(setTimeout(() => safeProgress(2, auditSteps[2].detail), 4500));
-
-  try {
-    _terminalLine('⌕ Parsing compensation structure...');
-
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 4096,
-        temperature: 0,
-        system: PAYAUDIT_PROMPT + (approvedEmployers.length
-          ? '\n\nAPPROVED UNPAID EMPLOYERS (pre-verified for-credit partners — treat these as COMPLIANT UNPAID if the posting is unpaid):\n' + approvedEmployers.join('\n')
-          : ''),
-        messages: [{
-          role: 'user',
-          content: (jobTitle ? 'Job Title: ' + jobTitle + '\n\n' : '') +
-            'Audit the compensation in this job posting and return only the JSON object:\n\n' + text
-        }]
-      })
-    });
-
-    const data = await response.json();
-    if (data.error) {
-      const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
-      throw new Error(errMsg);
-    }
-
-    safeProgress(3, auditSteps[3].detail);
-    _terminalLine('⌕ Calculating pay compliance verdict...');
-
-    const textBlocks = (data.content || []).filter(b => b.type === 'text' && b.text && b.text.trim());
-    const finalText = textBlocks.length > 0 ? textBlocks[textBlocks.length - 1].text : null;
-    if (!finalText) throw new Error('No audit data returned. Please try again.');
-
-    function extractJSON(str) {
-      const start = str.indexOf('{'), end = str.lastIndexOf('}');
-      if (start === -1) throw new Error('No valid audit data found.');
-      return JSON.parse(str.substring(start, end + 1).replace(/,\s*([\]}])/g, '$1'));
-    }
-
-    renderPayAuditResults(extractJSON(finalText));
-
-  } catch (err) {
-    document.getElementById('errorBox').textContent = 'Audit failed — please try again. ' + (err.message || '');
-    document.getElementById('errorBox').style.display = 'block';
-  } finally {
-    timers.forEach(t => clearTimeout(t));
-    document.getElementById('thinking').style.display = 'none';
-    btn.disabled = false;
-  }
-}
-
-/* ── PayAudit Results Renderer ──────────────────────────────────────────── */
-function renderPayAuditResults(data) {
-  const classMap = {
-    'FAIR MARKET PAID':  'fair',
-    'BELOW MARKET PAID': 'below',
-    'EXPLOITATION RISK': 'exploit',
-    'COMPLIANT UNPAID':  'unpaid',
-    'COMMISSION ONLY':   'commission',
-    'FRAUDULENT':        'fraudulent'
-  };
-  const iconMap = {
-    'FAIR MARKET PAID':  '✅',
-    'BELOW MARKET PAID': '⚠️',
-    'EXPLOITATION RISK': '🚨',
-    'COMPLIANT UNPAID':  '📋',
-    'COMMISSION ONLY':   '📊',
-    'FRAUDULENT':        '🚨'
-  };
-
-  const vClass = classMap[data.payVerdict] || 'below';
-  document.getElementById('paVerdictCard').className = 'pa-verdict-card ' + vClass;
-  document.getElementById('paIcon').textContent       = iconMap[data.payVerdict] || '💰';
-  document.getElementById('paVerdictTitle').textContent = data.payVerdict || '';
-  document.getElementById('paVerdictSub').textContent   = data.rateAnalysis || '';
-  document.getElementById('paStatusBadge').textContent  = data.payStatus || '';
-  document.getElementById('paSummary').textContent      = data.summary || '';
-
-  // Market alignment bar — paid roles only
-  const pct = data.marketComparisonPct;
-  const barWrap = document.getElementById('paMarketBarWrap');
-  if (pct !== null && pct !== undefined && data.payStatus === 'PAID') {
-    const barColor = pct >= 80 ? 'var(--green)' : pct >= 20 ? 'var(--amber)' : 'var(--red)';
-    document.getElementById('paMarketPct').textContent = pct + '% of market';
-    document.getElementById('paMarketFill').style.background = barColor;
-    barWrap.style.display = 'block';
-    setTimeout(() => { document.getElementById('paMarketFill').style.width = Math.min(pct, 100) + '%'; }, 100);
-  } else {
-    barWrap.style.display = 'none';
-  }
-
-  // Rate analysis
-  document.getElementById('paRateValue').textContent    = data.rate || 'Not mentioned';
-  document.getElementById('paRateAnalysis').textContent = data.rateAnalysis || '';
-  document.getElementById('paMarketRate').textContent   = data.marketRate2026 || '';
-
-  // Mathematical breakdown (lump sum)
-  const mb = data.mathematicalBreakdown;
-  const mathPanel = document.getElementById('paMathPanel');
-  if (mb) {
-    document.getElementById('paMathLump').textContent    = mb.lumpSum || '';
-    document.getElementById('paMathPeriod').textContent  = mb.period || '';
-    document.getElementById('paMathHrsWk').textContent   = (mb.hoursPerWeek || 10) + ' hrs/week';
-    document.getElementById('paMathTotal').textContent   = (mb.totalHours || '') + ' hrs';
-    document.getElementById('paMathHourly').textContent  = mb.estimatedHourly || '';
-    document.getElementById('paMathMinWage').textContent = mb.minimumWage2026 || '$7.25/hr federal';
-    const hrNum  = parseFloat((mb.estimatedHourly   || '0').replace(/[^0-9.]/g, ''));
-    const minNum = parseFloat((mb.minimumWage2026   || '7.25').replace(/[^0-9.]/g, ''));
-    const warnEl = document.getElementById('paMathWarning');
-    if (hrNum > 0 && hrNum < minNum) {
-      warnEl.textContent = '⚠ Effective rate is below federal minimum wage';
-      warnEl.style.display = 'block';
-    } else {
-      warnEl.style.display = 'none';
-    }
-    mathPanel.style.display = 'block';
-  } else {
-    mathPanel.style.display = 'none';
-  }
-
-  // Fraud flags
-  const flags = data.fraudFlags || [];
-  const fraudPanel = document.getElementById('paFraudPanel');
-  if (flags.length) {
-    document.getElementById('paFraudList').innerHTML = flags.map(f =>
-      '<li><span class="flag-dot"></span><span>' + f + '</span></li>').join('');
-    fraudPanel.style.display = 'block';
-  } else {
-    fraudPanel.style.display = 'none';
-  }
-
-  // Actionable note + nonprofit note
-  document.getElementById('paActionableNote').textContent = data.actionableNote || '';
-  const npEl = document.getElementById('paNonprofitNote');
-  if (data.nonprofitNote && data.nonprofitNote !== 'N/A') {
-    npEl.textContent = data.nonprofitNote;
-    npEl.style.display = 'block';
-  } else {
-    npEl.style.display = 'none';
-  }
-
-  // Rutgers approved employer check — case-insensitive substring match
-  const postingText = document.getElementById('jobInput').value.toLowerCase();
-  const isApproved = approvedEmployers.some(name =>
-    name.length >= 5 && postingText.includes(name.toLowerCase())
-  );
-  document.getElementById('paRutgersBanner').style.display = isApproved ? 'flex' : 'none';
-
-  document.getElementById('payauditResults').style.display = 'block';
-  setTimeout(() => {
-    document.getElementById('payauditResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 100);
-}
 
 </script>
 </body>
