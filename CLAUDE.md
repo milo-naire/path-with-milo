@@ -72,6 +72,11 @@ When editing the AI prompt, preserve this JSON schema — the frontend JS parses
 
 ## Changelog
 
+### 2026-05-11
+- **fix(fraud-job-detector.html):** Input card border changed to amber all around (was slate/blue with only the top edge amber via `::before`); border-color set to `rgba(212,136,42,0.4)` on `.input-section.card`.
+- **fix(fraud-job-detector.html):** Progress indicator now completes to 4/4 — added `safeRenderProgress(4, 'Analysis complete.')` call after parsing, so the final "Scoring fraud signals" step shows a checkmark instead of staying in the active/spinning state.
+- **fix(fraud-job-detector.html):** Removed "salary benchmarks 2026" from the terminal status animation loop (`statusQueries` array), eliminating salary benchmark messaging during analysis.
+
 ### 2026-05-09
 - **refactor(fraud-job-detector.html):** Removed PayAudit mode entirely (UI tab, HTML results section, JS prompt/functions). Removed market-rate pay comparison as a fraud signal; Compensation Claims signal now only flags actual fraud patterns (income guarantees, commission-only, sub-minimum-wage pay). Below-market pay alone no longer contributes to the fraud score.
 - **refactor(fraud-job-detector.html):** Commented out FILTER 3 (salary benchmark reference tables) from the JobSentry system prompt. The freelance and full-time market rate ranges are no longer sent to Claude during analysis.

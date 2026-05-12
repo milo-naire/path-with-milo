@@ -764,9 +764,7 @@
   .footer-note { text-align: center; font-size: 0.63rem; color: var(--muted); margin-top: 48px; letter-spacing: 0.06em; line-height: 2; }
 
   /* ─── Input card accent — switches by mode ───────────────────────────── */
-  /* border-top-color transparent lets the ::before be the sole top edge,
-     keeping all four sides at 1px visual thickness. */
-  .input-section.card { border-top-color: transparent; }
+  .input-section.card { border-color: rgba(212, 136, 42, 0.4); }
   .input-section.card::before {
     content: '';
     position: absolute;
@@ -1604,7 +1602,6 @@ async function analyze() {
     (jobTitle || 'employer') + ' careers page listing',
     'job posting legitimacy signals',
     'employer fraud pattern database',
-    'salary benchmarks 2026'
   ];
   let _statusIdx = 0;
   const statusTimer = setInterval(() => {
@@ -1716,6 +1713,7 @@ async function analyze() {
 
     clearInterval(statusTimer);
     const parsed = extractJSON(finalText);
+    safeRenderProgress(4, 'Analysis complete.');
     renderResults(parsed);
 
   } catch (err) {
