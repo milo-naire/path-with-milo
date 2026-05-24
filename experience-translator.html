@@ -606,6 +606,68 @@
   .copy-bullet-btn:hover { border-color: var(--amber-dim); color: var(--amber); }
   .copy-bullet-btn.copied { border-color: var(--green); color: var(--green); }
 
+  .bullet-actions { display: flex; gap: 6px; }
+  .bullet-save-actions { display: flex; gap: 6px; }
+
+  .edit-bullet-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 0.68rem;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .edit-bullet-btn:hover { border-color: var(--amber-dim); color: var(--amber); }
+
+  .save-bullet-btn {
+    background: var(--amber);
+    border: none;
+    border-radius: 7px;
+    color: #1A1815;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.68rem;
+    padding: 5px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .save-bullet-btn:hover { background: #FFC466; }
+
+  .cancel-edit-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 0.68rem;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .cancel-edit-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .bullet-edit-area {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--amber-dim);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    padding: 10px 12px;
+    outline: none;
+    resize: vertical;
+    min-height: 72px;
+    box-shadow: 0 0 0 3px rgba(255,179,71,0.08);
+  }
+
   /* ── Power Skills ────────────────────────────────────────── */
   .power-skills-section {
     background: var(--card);
@@ -1248,10 +1310,18 @@ function renderResults(data) {
         <div class="bullet-translated">
           <div class="bullet-trans-label">Translated</div>
           <div class="bullet-trans-text" id="bt-${i}">${escHtml(b.translated || '')}</div>
+          <textarea class="bullet-edit-area" id="bt-edit-${i}" style="display:none;" rows="3"></textarea>
         </div>
         <div class="bullet-footer">
           <div class="skill-pills">${skills}</div>
-          <button class="copy-bullet-btn" onclick="copyBullet(${i})">Copy</button>
+          <div class="bullet-actions" id="bt-actions-${i}">
+            <button class="copy-bullet-btn" onclick="copyBullet(${i})">Copy</button>
+            <button class="edit-bullet-btn" onclick="editBullet(${i})">Edit</button>
+          </div>
+          <div class="bullet-save-actions" id="bt-save-actions-${i}" style="display:none;">
+            <button class="cancel-edit-btn" onclick="cancelEdit(${i})">Cancel</button>
+            <button class="save-bullet-btn" onclick="saveBullet(${i})">Save</button>
+          </div>
         </div>
       </div>`;
   });
@@ -1318,6 +1388,44 @@ function atsColor(score) {
   return 'var(--red)';
 }
 
+// ── Edit helpers ──────────────────────────────────────────────────────────────
+function editBullet(i) {
+  const textEl    = document.getElementById('bt-' + i);
+  const editEl    = document.getElementById('bt-edit-' + i);
+  const actions   = document.getElementById('bt-actions-' + i);
+  const saveActs  = document.getElementById('bt-save-actions-' + i);
+  editEl.value = textEl.textContent;
+  textEl.style.display = 'none';
+  editEl.style.display = 'block';
+  actions.style.display = 'none';
+  saveActs.style.display = 'flex';
+  editEl.focus();
+}
+
+function saveBullet(i) {
+  const textEl    = document.getElementById('bt-' + i);
+  const editEl    = document.getElementById('bt-edit-' + i);
+  const actions   = document.getElementById('bt-actions-' + i);
+  const saveActs  = document.getElementById('bt-save-actions-' + i);
+  const newText = editEl.value.trim();
+  if (newText) textEl.textContent = newText;
+  textEl.style.display = '';
+  editEl.style.display = 'none';
+  actions.style.display = 'flex';
+  saveActs.style.display = 'none';
+}
+
+function cancelEdit(i) {
+  const textEl    = document.getElementById('bt-' + i);
+  const editEl    = document.getElementById('bt-edit-' + i);
+  const actions   = document.getElementById('bt-actions-' + i);
+  const saveActs  = document.getElementById('bt-save-actions-' + i);
+  textEl.style.display = '';
+  editEl.style.display = 'none';
+  actions.style.display = 'flex';
+  saveActs.style.display = 'none';
+}
+
 // ── Copy helpers ──────────────────────────────────────────────────────────────
 function copyBullet(index) {
   const text = document.getElementById('bt-' + index).textContent;
@@ -1333,7 +1441,7 @@ function copyBullet(index) {
 }
 
 function copyAll() {
-  const cards = document.querySelectorAll('[id^="bt-"]');
+  const cards = document.querySelectorAll('.bullet-trans-text');
   const text = Array.from(cards).map(el => '• ' + el.textContent).join('\n');
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.querySelector('.copy-all-btn');

@@ -73,6 +73,7 @@ When editing the AI prompt, preserve this JSON schema — the frontend JS parses
 ## Changelog
 
 ### 2026-05-23
+- **feat(experience-translator.html):** Inline bullet editing — each translated bullet now has an Edit button that opens an inline textarea pre-filled with the current text; Save commits the change, Cancel discards it. `copyAll` selector updated from `[id^="bt-"]` to `.bullet-trans-text` to exclude the new edit textareas.
 - **fix(experience-translator.html):** Renamed `translate()` to `runTranslate()` — `translate` is a built-in `HTMLElement` DOM property, so `onclick="translate()"` inside an inline handler's `with(this)` scope resolved to the button's boolean `.translate` attribute instead of the global function, silently throwing a TypeError and doing nothing.
 
 ### 2026-05-11
