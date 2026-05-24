@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Whisperer · Send Your Message</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:wght@300;400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+  :root {
+    --sand:      #F5EFE6;
+    --sand-2:    #EDE4D7;
+    --sand-3:    #DDD0BF;
+    --rose:        #D4A5A5;
+    --rose-deep:   #8E6E6E;
+    --rose-glow:   rgba(255, 209, 209, 0.28);
+    --terra:       #E29578;
+    --terra-press: #C97D60;
+    --terra-glow:  rgba(226, 149, 120, 0.22);
+    --shell:       #FFDDD2;
+    --sea:         #7BA7BC;
+    --sea-mist:    #A8DADC;
+    --sea-deep:    #4E7A8F;
+    --text-dark:  #2C2420;
+    --text-mid:   #6B5C52;
+    --text-soft:  #9E8C80;
+    --text-faint: #BFB0A3;
+    --serif: 'Playfair Display', Georgia, serif;
+    --mono:  'IBM Plex Mono', monospace;
+    --sans:  'DM Sans', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--sand);
+    color: var(--text-dark);
+    font-family: var(--sans);
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* ── OCEAN SCENE ── */
+  .ocean-scene {
+    width: 100%;
+    height: 240px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, #C5DDE9 0%, #8AB6CB 55%, #6897AD 100%);
+  }
+
+  .sun {
+    position: absolute;
+    top: 28px;
+    left: 18%;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 235, 170, 0.75);
+  }
+
+  .birds {
+    position: absolute;
+    top: 36px;
+    right: 16%;
+    opacity: 0.3;
+  }
+
+  .wave {
+    position: absolute;
+    bottom: 0;
+    width: 200%;
+    height: 72px;
+  }
+
+  .wave-1 { animation: drift 38s linear infinite; opacity: 0.5; fill: #9BBDCE; }
+  .wave-2 { animation: drift 55s linear infinite reverse; opacity: 0.38; fill: #BAD3DF; bottom: 5px; }
+  .wave-3 { animation: drift 28s linear infinite; opacity: 0.7; fill: #F5EFE6; bottom: -3px; }
+
+  @keyframes drift {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .bottle-wrap {
+    position: absolute;
+    bottom: 26px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: bob 5.5s ease-in-out infinite;
+    cursor: pointer;
+    filter: drop-shadow(0 5px 12px rgba(60, 90, 110, 0.3));
+    transition: filter 0.2s;
+  }
+
+  .bottle-wrap:hover { filter: drop-shadow(0 7px 18px rgba(60, 90, 110, 0.45)); }
+
+  @keyframes bob {
+    0%, 100% { transform: translateX(-50%) translateY(0) rotate(-2.5deg); }
+    50%       { transform: translateX(-50%) translateY(-9px) rotate(2deg); }
+  }
+
+  /* ── PAGE ── */
+  .page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 28px 72px;
+  }
+
+  /* ── TITLE ── */
+  .title-band {
+    text-align: center;
+    padding: 34px 0 26px;
+  }
+
+  .suite-crumb {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  h1.brand {
+    font-family: var(--serif);
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text-dark);
+    line-height: 1;
+  }
+
+  h1.brand em { font-style: italic; color: var(--rose-deep); }
+
+  .brand-sub {
+    font-size: 14px;
+    color: var(--text-mid);
+    font-style: italic;
+    font-weight: 300;
+    margin-top: 8px;
+    line-height: 1.6;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border: 1px solid var(--sand-3);
+    border-radius: 20px;
+    background: white;
+    margin-top: 12px;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--rose);
+    animation: pulse 2.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  /* ── BODY GRID ── */
+  .body-grid {
+    display: grid;
+    grid-template-columns: 1fr 285px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* ── PAPER CARD ── */
+  .paper-card, .scroll-card, .side-card {
+    background: #FFFDF9;
+    border-radius: 18px;
+    border: 1px solid var(--sand-3);
+    box-shadow: 0 2px 16px rgba(140, 110, 90, 0.07);
+  }
+
+  .paper-header {
+    padding: 26px 30px 18px;
+    border-bottom: 1px solid var(--sand-2);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .paper-icon {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--terra);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .paper-header h2 {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .paper-header p {
+    font-size: 12px;
+    color: var(--text-soft);
+    font-style: italic;
+    margin-top: 2px;
+  }
+
+  .paper-body { padding: 26px 30px 30px; }
+
+  /* ── FIELDS ── */
+  .field-stack { display: flex; flex-direction: column; gap: 22px; }
+  .field { display: flex; flex-direction: column; gap: 9px; }
+
+  .field-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .lnum {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--sand-2);
+    color: var(--text-mid);
+    font-size: 9px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .field-hint {
+    font-size: 10px; color: var(--text-faint);
+    font-style: italic; font-weight: 300;
+    margin-left: auto; letter-spacing: 0; text-transform: none;
+  }
+
+  input, select {
+    background: var(--sand);
+    border: 1px solid var(--sand-3);
+    border-radius: 12px;
+    color: var(--text-dark);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    width: 100%;
+  }
+
+  input::placeholder { color: var(--text-faint); font-style: italic; }
+
+  input:focus, select:focus {
+    background: white;
+    border-color: var(--terra);
+    box-shadow: 0 0 0 3px var(--terra-glow);
+  }
+
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239E8C80'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    cursor: pointer;
+  }
+
+  select option { background: #f5efe6; color: var(--text-dark); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* ── TONE PILLS ── */
+  .tone-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .tone-pill {
+    background: var(--sand-2);
+    border: 1px solid var(--sand-3);
+    border-radius: 20px;
+    color: var(--text-mid);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tone-pill:hover { border-color: var(--rose); color: var(--rose-deep); }
+
+  .tone-pill.active {
+    background: white;
+    border-color: var(--rose);
+    color: var(--rose-deep);
+    box-shadow: 0 1px 6px rgba(212, 165, 165, 0.2);
+  }
+
+  /* ── SEND BUTTON (wax seal) ── */
+  .btn-send {
+    background: var(--terra);
+    border: none;
+    border-radius: 14px;
+    color: #fff8f5;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    padding: 17px 32px;
+    cursor: pointer;
+    transition: background 0.15s, box-shadow 0.25s, transform 0.12s;
+    width: 100%;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-send:hover {
+    background: #d8896c;
+    box-shadow: 0 5px 24px var(--terra-glow);
+    transform: translateY(-1px);
+  }
+
+  .btn-send:active {
+    background: var(--terra-press);
+    transform: scale(0.985) translateY(1px);
+    box-shadow: 0 1px 6px var(--terra-glow);
+  }
+
+  .btn-send.loading { opacity: 0.75; pointer-events: none; }
+
+  /* Stamp ripple on press */
+  .btn-send::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    background: rgba(255,255,255,0);
+    transition: background 0.15s;
+  }
+
+  .btn-send:active::after { background: rgba(0,0,0,0.06); }
+
+  /* ── BOTTLE-SENT OVERLAY ── */
+  #bottleSentOverlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 999;
+    overflow: hidden;
+  }
+
+  .sent-bottle {
+    position: absolute;
+    bottom: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    animation: bottleSail 2.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  @keyframes bottleSail {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(0) rotate(0deg) scale(0.7); }
+    10%  { opacity: 1; }
+    60%  { opacity: 1; transform: translateX(30vw) translateY(-38vh) rotate(18deg) scale(1); }
+    90%  { opacity: 0.3; transform: translateX(55vw) translateY(-52vh) rotate(28deg) scale(0.8); }
+    100% { opacity: 0; transform: translateX(65vw) translateY(-58vh) rotate(32deg) scale(0.6); }
+  }
+
+  .sent-ripple {
+    position: absolute;
+    bottom: 28%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    border: 2px solid rgba(168, 218, 220, 0.7);
+    animation: rippleOut 1.4s ease-out forwards;
+    animation-delay: 0.15s;
+    opacity: 0;
+  }
+
+  .sent-ripple:nth-child(3) { animation-delay: 0.35s; width: 6px; height: 6px; }
+  .sent-ripple:nth-child(4) { animation-delay: 0.55s; width: 4px; height: 4px; }
+
+  @keyframes rippleOut {
+    0%   { opacity: 0.8; transform: translateX(-50%) scale(1); }
+    100% { opacity: 0; transform: translateX(-50%) scale(18); }
+  }
+
+  /* ── SCROLL OUTPUT ── */
+  .scroll-card {
+    border-color: rgba(212, 165, 165, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scroll-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 18%; right: 18%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--rose), transparent);
+    opacity: 0.5;
+  }
+
+  .scroll-header {
+    padding: 20px 26px 14px;
+    border-bottom: 1px solid var(--sand-2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .scroll-title {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .scroll-body { padding: 22px 26px 26px; }
+
+  /* ── GENERATED OUTPUT (special ops comms style) ── */
+  .generated-transmission {
+    font-family: 'Inter', 'DM Sans', sans-serif;
+    background: #FFFFFF;
+    color: #161B22;
+    border-left: 4px solid #D4A5A5;
+    padding: 1.5rem;
+    border-radius: 0 10px 10px 0;
+    font-size: 13.5px;
+    line-height: 1.85;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    min-height: 150px;
+  }
+
+  .message-empty {
+    min-height: 150px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 12px; text-align: center;
+    color: var(--text-faint);
+    font-style: italic; font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .message-loading {
+    min-height: 150px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .spinner { display: flex; gap: 6px; align-items: center; }
+
+  .spinner span {
+    width: 7px; height: 7px;
+    border-radius: 50%; background: var(--rose);
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+
+  .spinner span:nth-child(2) { animation-delay: 0.15s; }
+  .spinner span:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0.5); opacity: 0.4; }
+    40%           { transform: scale(1); opacity: 1; }
+  }
+
+  .btn-copy {
+    background: white;
+    border: 1px solid var(--sand-3);
+    border-radius: 20px;
+    color: var(--text-mid);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .btn-copy:hover { border-color: var(--rose); color: var(--rose-deep); }
+
+  .btn-copy.copied {
+    border-color: var(--rose); color: var(--rose-deep);
+    box-shadow: 0 0 10px rgba(255, 209, 209, 0.25);
+  }
+
+  .btn-copy:disabled { opacity: 0.35; pointer-events: none; }
+
+  /* Field note */
+  .field-note {
+    background: var(--sand);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: 18px;
+  }
+
+  .field-note-label {
+    font-family: var(--mono);
+    font-size: 9px; letter-spacing: 0.18em;
+    color: var(--sea-deep); text-transform: uppercase;
+    margin-bottom: 7px;
+    display: flex; align-items: center; gap: 7px;
+  }
+
+  .field-note-text {
+    font-size: 12.5px; line-height: 1.7;
+    color: var(--text-mid); font-style: italic;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+  .side-card { padding: 20px 22px; }
+
+  .side-card h3 {
+    font-family: var(--serif);
+    font-size: 14px; font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .log-badge {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--text-soft);
+    background: var(--sand-2);
+    border: 1px solid var(--sand-3);
+    padding: 2px 8px; border-radius: 10px;
+    margin-left: auto;
+  }
+
+  .log-list { display: flex; flex-direction: column; gap: 9px; }
+
+  .log-entry {
+    background: var(--sand);
+    border: 1px solid var(--sand-3);
+    border-radius: 12px;
+    padding: 11px 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .log-entry:hover { border-color: var(--rose); background: #FFF9F5; }
+
+  .log-meta {
+    font-family: var(--mono);
+    font-size: 9px; letter-spacing: 0.08em;
+    color: var(--text-faint); text-transform: uppercase;
+    margin-bottom: 5px;
+    display: flex; justify-content: space-between;
+  }
+
+  .log-preview {
+    font-size: 11.5px; color: var(--text-mid);
+    line-height: 1.55;
+    overflow: hidden; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+
+  .log-empty {
+    font-size: 12px; color: var(--text-faint);
+    font-style: italic; text-align: center;
+    padding: 14px 0; line-height: 1.7;
+  }
+
+  /* Intel */
+  .intel-list { display: flex; flex-direction: column; }
+
+  .intel-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--sand-2);
+  }
+
+  .intel-item:last-child { border-bottom: none; }
+
+  .intel-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--sea-mist); flex-shrink: 0;
+    margin-top: 5px; opacity: 0.9;
+  }
+
+  .intel-text { font-size: 12px; line-height: 1.65; color: var(--text-mid); }
+
+  /* Compass */
+  .compass-note {
+    font-size: 12px; color: var(--text-mid);
+    line-height: 1.65; font-style: italic; margin-bottom: 10px;
+  }
+
+  .compass-code {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--sea-deep); background: var(--sand);
+    padding: 2px 6px; border-radius: 6px;
+    border: 1px solid var(--sand-3);
+  }
+
+  .param-display {
+    font-family: var(--mono); font-size: 11px; color: var(--text-soft);
+  }
+
+  .param-display span { color: var(--rose-deep); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 720px) {
+    .body-grid { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    h1.brand { font-size: 28px; }
+    .paper-body { padding: 22px 22px 26px; }
+    .paper-header { padding: 22px 22px 16px; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-up { animation: fadeUp 0.4s ease forwards; }
+</style>
+</head>
+<body>
+
+<!-- OCEAN -->
+<div class="ocean-scene">
+  <div class="sun"></div>
+
+  <svg class="birds" width="80" height="22" viewBox="0 0 80 22" fill="none">
+    <path d="M0 11 Q5 7 10 11" stroke="rgba(50,70,90,0.45)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <path d="M18 7 Q23 3 28 7" stroke="rgba(50,70,90,0.45)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <path d="M38 15 Q43 11 48 15" stroke="rgba(50,70,90,0.38)" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M58 5 Q62 2 66 5" stroke="rgba(50,70,90,0.32)" stroke-width="1" fill="none" stroke-linecap="round"/>
+  </svg>
+
+  <!-- Bottle -->
+  <div class="bottle-wrap" onclick="bottleClick()">
+    <svg width="60" height="114" viewBox="0 0 60 114" fill="none">
+      <!-- Cork -->
+      <rect x="22" y="3" width="16" height="11" rx="3" fill="#B8895A" opacity="0.92"/>
+      <rect x="20" y="12" width="20" height="4" rx="1.5" fill="#9E7438" opacity="0.75"/>
+      <!-- Neck -->
+      <rect x="24" y="16" width="12" height="15" rx="2" fill="rgba(155,200,220,0.5)" stroke="rgba(95,150,175,0.45)" stroke-width="1"/>
+      <!-- Body -->
+      <path d="M16 35 Q12 46 12 64 Q12 92 30 100 Q48 92 48 64 Q48 46 44 35 Z" fill="rgba(150,200,220,0.42)" stroke="rgba(90,145,170,0.5)" stroke-width="1.2"/>
+      <!-- Glass shine -->
+      <path d="M18 41 Q16 55 17 69" stroke="rgba(255,255,255,0.45)" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+      <!-- Letter -->
+      <path d="M20 60 Q30 54 40 60 L40 80 Q30 86 20 80 Z" fill="rgba(255,248,235,0.68)" stroke="rgba(175,140,105,0.32)" stroke-width="0.8"/>
+      <line x1="23" y1="67" x2="37" y2="67" stroke="rgba(175,130,95,0.4)" stroke-width="0.8"/>
+      <line x1="23" y1="71" x2="35" y2="71" stroke="rgba(175,130,95,0.32)" stroke-width="0.7"/>
+      <line x1="23" y1="75" x2="33" y2="75" stroke="rgba(175,130,95,0.25)" stroke-width="0.6"/>
+      <!-- Neck join -->
+      <path d="M24 31 Q16 35 16 37" stroke="rgba(95,150,175,0.45)" stroke-width="1" fill="none"/>
+      <path d="M36 31 Q44 35 44 37" stroke="rgba(95,150,175,0.45)" stroke-width="1" fill="none"/>
+    </svg>
+  </div>
+
+  <svg class="wave wave-1" viewBox="0 0 1200 72" preserveAspectRatio="none">
+    <path d="M0 36 Q150 10 300 36 Q450 62 600 36 Q750 10 900 36 Q1050 62 1200 36 L1200 72 L0 72 Z"/>
+  </svg>
+  <svg class="wave wave-2" viewBox="0 0 1200 72" preserveAspectRatio="none">
+    <path d="M0 46 Q200 18 400 46 Q600 74 800 46 Q1000 18 1200 46 L1200 72 L0 72 Z"/>
+  </svg>
+  <svg class="wave wave-3" viewBox="0 0 1200 72" preserveAspectRatio="none">
+    <path d="M0 50 Q100 32 200 50 Q300 68 400 50 Q500 32 600 50 Q700 68 800 50 Q900 32 1000 50 Q1100 68 1200 50 L1200 72 L0 72 Z"/>
+  </svg>
+</div>
+
+<!-- BOTTLE SENT OVERLAY -->
+<div id="bottleSentOverlay" style="display:none;"></div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <div class="title-band">
+    <div class="suite-crumb">Navigator Suite · 2026</div>
+    <h1 class="brand">The <em>Whisperer</em></h1>
+    <p class="brand-sub">Write the message worth sending. Let it find its way.</p>
+    <div><span class="status-pill"><span class="status-dot"></span>Currents active</span></div>
+  </div>
+
+  <div class="body-grid">
+
+    <!-- MAIN -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <!-- COMPOSE -->
+      <div class="paper-card">
+        <div class="paper-header">
+          <div class="paper-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,248,245,0.95)" stroke-width="1.5"><path d="M20 14.66V20a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
+          </div>
+          <div>
+            <h2>Compose your message</h2>
+            <p>Tell the current where to take it</p>
+          </div>
+        </div>
+
+        <div class="paper-body">
+          <div class="field-stack">
+
+            <div class="field">
+              <div class="field-label">
+                <span class="lnum">1</span>
+                Who receives this
+                <span class="field-hint">— name, role, company</span>
+              </div>
+              <input type="text" id="targetContact" placeholder="e.g. Alumni at Google, Recruiter at Deloitte, PM at Stripe" />
+            </div>
+
+            <div class="two-col">
+              <div class="field">
+                <div class="field-label"><span class="lnum">2</span>Purpose</div>
+                <select id="objective">
+                  <option value="">Select...</option>
+                  <option value="informational">Coffee Chat / Info Interview</option>
+                  <option value="intel">Ask a Specific Question</option>
+                  <option value="followup">Follow Up After Contact</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="field-label"><span class="lnum">3</span>Channel</div>
+                <select id="channel">
+                  <option value="linkedin">LinkedIn DM</option>
+                  <option value="email">Cold Email</option>
+                  <option value="alumni">Alumni Network</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-label">
+                <span class="lnum">4</span>
+                The tide you're riding
+                <span class="field-hint">— skill or trend from your Compass</span>
+              </div>
+              <input type="text" id="strategicFocus" placeholder="e.g., The shift toward People Analytics in HR Tech" />
+            </div>
+
+            <div class="field">
+              <div class="field-label">
+                <span class="lnum">5</span>
+                Your offering
+                <span class="field-hint">— what earns a reply</span>
+              </div>
+              <input type="text" id="leverage" placeholder="e.g., My research on 2026 retention trends or my Python dashboard project" />
+            </div>
+
+            <div class="field">
+              <div class="field-label"><span class="lnum">6</span>Tone of voice</div>
+              <div class="tone-row">
+                <button class="tone-pill active" data-tone="tactical" onclick="setTone(this)">Tactical</button>
+                <button class="tone-pill" data-tone="precise" onclick="setTone(this)">Precise</button>
+                <button class="tone-pill" data-tone="direct" onclick="setTone(this)">Direct</button>
+                <button class="tone-pill" data-tone="collegial" onclick="setTone(this)">Collegial</button>
+              </div>
+            </div>
+
+          </div>
+
+          <div style="margin-top:28px;">
+            <button class="btn-send" id="generateBtn" onclick="generateScript()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 2L11 13M22 2L15 22 11 13 2 9 22 2z"/></svg>
+              Send your message
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- OUTPUT -->
+      <div class="scroll-card">
+        <div class="scroll-header">
+          <div class="scroll-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8E6E6E" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+            Your message
+          </div>
+          <button class="btn-copy" id="copyBtn" onclick="copyScript()" disabled>
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H4zm0 1.5h6a.5.5 0 01.5.5v8a.5.5 0 01-.5.5H4a.5.5 0 01-.5-.5V4a.5.5 0 01.5-.5z"/><path d="M10 1h2a2 2 0 012 2v8a2 2 0 01-2 2h-1v-1.5h1a.5.5 0 00.5-.5V3a.5.5 0 00-.5-.5h-2a.5.5 0 00-.5.5v1H8V3a2 2 0 012-2z"/></svg>
+            Copy
+          </button>
+        </div>
+        <div class="scroll-body">
+          <div class="message-empty" id="outputArea">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#C4B5AA" stroke-width="1"><path d="M22 2L11 13M22 2L15 22 11 13 2 9 22 2z"/></svg>
+            Your message will appear here,<br>sealed and ready to go.
+          </div>
+          <div class="field-note" id="fieldNote" style="display:none">
+            <div class="field-note-label">
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="#4E7A8F"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3a1 1 0 110 2 1 1 0 010-2zm0 3.5c.55 0 1 .45 1 1v3a1 1 0 11-2 0v-3c0-.55.45-1 1-1z"/></svg>
+              Why this works
+            </div>
+            <div class="field-note-text" id="fieldNoteText"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <div class="side-card">
+        <h3>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8E6E6E" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+          Past messages
+          <span class="log-badge" id="logCount">0 / 3</span>
+        </h3>
+        <div class="log-list" id="transmissionLog">
+          <div class="log-empty">Nothing sent yet.<br>Write your first one.</div>
+        </div>
+      </div>
+
+      <div class="side-card" style="background:#FFDDD2; border-color: #f0c4b8;">
+        <h3>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7BA7BC" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Navigator notes
+        </h3>
+        <div class="intel-list">
+          <div class="intel-item">
+            <span class="intel-dot"></span>
+            <div class="intel-text">Lead with a specific observation, not a compliment. Flattery gets filtered immediately.</div>
+          </div>
+          <div class="intel-item">
+            <span class="intel-dot"></span>
+            <div class="intel-text">State your ask in the first paragraph. The buried ask signals low confidence.</div>
+          </div>
+          <div class="intel-item">
+            <span class="intel-dot"></span>
+            <div class="intel-text">Reference a specific 2026 shift — it signals current intelligence, not just ambition.</div>
+          </div>
+          <div class="intel-item">
+            <span class="intel-dot"></span>
+            <div class="intel-text">One concrete ask, one concrete offering. Never write something that needs interpreting.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <h3>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7BA7BC" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg>
+          Compass bridge
+        </h3>
+        <p class="compass-note">
+          Add <span class="compass-code">?role=X&amp;skill=Y</span> to the URL to auto-fill from The Compass.
+        </p>
+        <div class="param-display">Params: <span id="urlParamDisplay">none detected</span></div>
+      </div>
+
+    </aside>
+  </div>
+</div>
+
+<script>
+  let currentTone = 'tactical', currentScript = '', transmissions = [];
+
+  (function(){
+    loadFromStorage(); parseURLParams(); renderLog();
+  })();
+
+  function parseURLParams() {
+    const p = new URLSearchParams(window.location.search);
+    const role = p.get('role'), skill = p.get('skill');
+    if (role) document.getElementById('targetContact').value = role;
+    if (skill) document.getElementById('strategicFocus').value = skill;
+    if (role || skill) {
+      const d = document.getElementById('urlParamDisplay');
+      d.innerHTML = `<span>${[role&&`role: ${role}`, skill&&`skill: ${skill}`].filter(Boolean).join(' · ')}</span>`;
+    }
+  }
+
+  function setTone(btn) {
+    document.querySelectorAll('.tone-pill').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); currentTone = btn.dataset.tone;
+  }
+
+  function bottleClick() {
+    const w = document.querySelector('.bottle-wrap');
+    w.style.animation='none';
+    w.style.transform='translateX(-50%) rotate(16deg) scale(1.1)';
+    setTimeout(()=>{w.style.transform='';w.style.animation='';},350);
+  }
+
+  function launchBottle() {
+    const overlay = document.getElementById('bottleSentOverlay');
+    overlay.style.display = 'block';
+    overlay.innerHTML = `
+      <div class="sent-ripple"></div>
+      <div class="sent-ripple"></div>
+      <div class="sent-ripple"></div>
+      <div class="sent-bottle">
+        <svg width="44" height="84" viewBox="0 0 60 114" fill="none">
+          <rect x="22" y="3" width="16" height="11" rx="3" fill="#B8895A" opacity="0.92"/>
+          <rect x="20" y="12" width="20" height="4" rx="1.5" fill="#9E7438" opacity="0.75"/>
+          <rect x="24" y="16" width="12" height="15" rx="2" fill="rgba(155,200,220,0.5)" stroke="rgba(95,150,175,0.45)" stroke-width="1"/>
+          <path d="M16 35 Q12 46 12 64 Q12 92 30 100 Q48 92 48 64 Q48 46 44 35 Z" fill="rgba(150,200,220,0.5)" stroke="rgba(90,145,170,0.55)" stroke-width="1.2"/>
+          <path d="M18 41 Q16 55 17 69" stroke="rgba(255,255,255,0.45)" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <path d="M20 60 Q30 54 40 60 L40 80 Q30 86 20 80 Z" fill="rgba(255,248,235,0.7)" stroke="rgba(175,140,105,0.3)" stroke-width="0.8"/>
+          <line x1="23" y1="67" x2="37" y2="67" stroke="rgba(175,130,95,0.4)" stroke-width="0.8"/>
+          <line x1="23" y1="71" x2="35" y2="71" stroke="rgba(175,130,95,0.3)" stroke-width="0.7"/>
+        </svg>
+      </div>`;
+    setTimeout(() => { overlay.style.display = 'none'; overlay.innerHTML = ''; }, 3000);
+  }
+
+  async function generateScript() {
+    const target   = document.getElementById('targetContact').value.trim();
+    const objective= document.getElementById('objective').value;
+    const channel  = document.getElementById('channel').value;
+    const focus    = document.getElementById('strategicFocus').value.trim();
+    const leverage = document.getElementById('leverage').value.trim();
+
+    if (!target||!objective||!focus) {
+      showState('error','Fill in who you\'re reaching, your purpose, and your strategic focus.');
+      return;
+    }
+
+    const btn = document.getElementById('generateBtn');
+    btn.classList.add('loading');
+    btn.innerHTML='<div class="spinner"><span></span><span></span><span></span></div>';
+    document.getElementById('copyBtn').disabled=true;
+    document.getElementById('fieldNote').style.display='none';
+    showState('loading');
+    launchBottle();
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model:'claude-sonnet-4-20250514', max_tokens:1000,
+          system:`You are an expert networking message writer helping students and early-career job seekers reach out to recruiters, hiring managers, HR professionals, and subject matter experts. Write real, copy-paste-ready messages — not templates with brackets. Use [Name] for the recipient and [Your Name] for the sender; write everything else with specific, natural language.
+
+The goal is usually: landing a coffee chat, asking a focused question, following up after an event, or making a genuine connection that could lead to a referral or interview.
+
+BANNED: "I'd love to pick your brain", "aspiring professional", "I hope this email finds you well", "I came across your profile", "just wanted to reach out", "would love to connect", "I'm a huge fan", "hope you're doing well"
+
+TONE: Confident, direct, and human. Not stiff. Not desperate. Sounds like a smart person writing, not a template. If the sender mentions a specific project or research angle, work it in concretely.
+
+Channel lengths: LinkedIn DM 80–130 words; Cold Email 150–230 words with subject line; Alumni Network 120–180 words.
+
+Return ONLY JSON: {"script":"the full ready-to-send message","fieldNote":"1–2 sentences naming the specific technique used (e.g. Specificity Signal, Reciprocity Hook, Shared Context Bridge) and why it works on a busy recruiter or hiring manager"}`,
+          messages:[{role:'user',content:buildPrompt(target,objective,channel,focus,leverage,currentTone)}]
+        })
+      });
+      const data = await res.json();
+      const parsed = JSON.parse(data.content[0].text.replace(/```json|```/g,'').trim());
+      currentScript = parsed.script;
+      showState('ready', currentScript);
+      document.getElementById('copyBtn').disabled=false;
+      if (parsed.fieldNote) {
+        document.getElementById('fieldNoteText').textContent=parsed.fieldNote;
+        document.getElementById('fieldNote').style.display='block';
+      }
+      saveTransmission(target,objective,currentScript);
+    } catch(e) {
+      showState('error','Something drifted off course. Check your connection and try again.');
+    }
+
+    btn.classList.remove('loading');
+    btn.innerHTML=`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 2L11 13M22 2L15 22 11 13 2 9 22 2z"/></svg> Send your message`;
+  }
+
+  function buildPrompt(target,objective,channel,focus,leverage,tone) {
+    const oMap={informational:'Coffee chat / informational interview — a 20-minute conversation about their career path or role',intel:'Specific question — a direct, focused question about the industry, company, or hiring process',followup:'Follow-up — following up after a prior interaction, event, or application'};
+    const cMap={linkedin:'LinkedIn DM',email:'Cold Email (include subject line)',alumni:'Alumni Network message'};
+    const tMap={tactical:'Confident and purposeful — knows what they want and why',precise:'Specific and research-led — references concrete details, no filler',direct:'Short and clear — gets to the ask fast, no preamble',collegial:'Warm and peer-like — personable but not overly casual'};
+    return `Write a ${cMap[channel]}:\n\nRecipient: ${target}\nPurpose: ${oMap[objective]}\nTopic / angle: ${focus}${leverage?`\nSender's relevant background: ${leverage}`:''}\nTone: ${tMap[tone]}\n\nWrite the actual message. Only bracket [Name] and [Your Name].`;
+  }
+
+  function showState(state,text) {
+    const a = document.getElementById('outputArea');
+    if (state==='loading') {
+      a.className='message-loading';
+      a.innerHTML='<div class="spinner"><span></span><span></span><span></span></div>';
+    } else if (state==='ready') {
+      a.className='generated-transmission fade-up'; a.textContent=text;
+    } else if (state==='error') {
+      a.className='message-empty';
+      a.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C4B5AA" stroke-width="1"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>${text}`;
+    } else {
+      a.className='message-empty';
+      a.innerHTML=`<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#C4B5AA" stroke-width="1"><path d="M22 2L11 13M22 2L15 22 11 13 2 9 22 2z"/></svg>Your message will appear here,<br>sealed and ready to go.`;
+    }
+  }
+
+  function copyScript() {
+    if (!currentScript) return;
+    navigator.clipboard.writeText(currentScript).then(()=>{
+      const b=document.getElementById('copyBtn');
+      b.classList.add('copied');
+      b.innerHTML=`<svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg> Copied`;
+      setTimeout(()=>{
+        b.classList.remove('copied');
+        b.innerHTML=`<svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H4zm0 1.5h6a.5.5 0 01.5.5v8a.5.5 0 01-.5.5H4a.5.5 0 01-.5-.5V4a.5.5 0 01.5-.5z"/><path d="M10 1h2a2 2 0 012 2v8a2 2 0 01-2 2h-1v-1.5h1a.5.5 0 00.5-.5V3a.5.5 0 00-.5-.5h-2a.5.5 0 00-.5.5v1H8V3a2 2 0 012-2z"/></svg> Copy`;
+      },2000);
+    });
+  }
+
+  function saveTransmission(target,objective,script) {
+    const e={target,objective,preview:script.substring(0,110),full:script,ts:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
+    transmissions.unshift(e);
+    if(transmissions.length>3) transmissions=transmissions.slice(0,3);
+    try{localStorage.setItem('whisperer_log',JSON.stringify(transmissions));}catch(e){}
+    renderLog();
+  }
+
+  function loadFromStorage(){
+    try{const s=localStorage.getItem('whisperer_log');if(s)transmissions=JSON.parse(s);}catch(e){transmissions=[];}
+  }
+
+  function renderLog(){
+    const log=document.getElementById('transmissionLog');
+    document.getElementById('logCount').textContent=`${transmissions.length} / 3`;
+    if(!transmissions.length){log.innerHTML='<div class="log-empty">Nothing sent yet.<br>Write your first one.</div>';return;}
+    const oL={informational:'Info Briefing',intel:'Intel Inquiry',followup:'Follow-up'};
+    log.innerHTML=transmissions.map((t,i)=>`
+      <div class="log-entry" onclick="restoreTransmission(${i})">
+        <div class="log-meta"><span>${t.target.substring(0,22)}${t.target.length>22?'…':''}</span><span>${t.ts}</span></div>
+        <div class="log-meta" style="margin-bottom:4px;color:var(--text-faint)">${oL[t.objective]||t.objective}</div>
+        <div class="log-preview">${t.preview}…</div>
+      </div>`).join('');
+  }
+
+  function restoreTransmission(idx){
+    const t=transmissions[idx]; if(!t)return;
+    currentScript=t.full; showState('ready',t.full);
+    document.getElementById('copyBtn').disabled=false;
+    document.getElementById('fieldNote').style.display='none';
+    document.getElementById('targetContact').value=t.target;
+  }
+</script>
+</body>
+</html>
