@@ -865,7 +865,7 @@ Examples:
 
     <div class="btn-row">
       <button class="clear-btn" onclick="clearAll()">✕ Clear</button>
-      <button class="translate-btn" id="translateBtn" onclick="translate()">Translate My Experience →</button>
+      <button class="translate-btn" id="translateBtn" onclick="runTranslate()">Translate My Experience →</button>
     </div>
   </div>
 
@@ -1129,7 +1129,7 @@ function safeProgress(step, detail) {
 }
 
 // ── Main translate function ────────────────────────────────────────────────────
-async function translate() {
+async function runTranslate() {
   const bullets = document.getElementById('bulletInput').value.trim();
   const sourceRole  = document.getElementById('sourceRole').value.trim();
   const targetRole  = document.getElementById('targetRole').value.trim();

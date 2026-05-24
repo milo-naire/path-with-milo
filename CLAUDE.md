@@ -72,6 +72,9 @@ When editing the AI prompt, preserve this JSON schema — the frontend JS parses
 
 ## Changelog
 
+### 2026-05-23
+- **fix(experience-translator.html):** Renamed `translate()` to `runTranslate()` — `translate` is a built-in `HTMLElement` DOM property, so `onclick="translate()"` inside an inline handler's `with(this)` scope resolved to the button's boolean `.translate` attribute instead of the global function, silently throwing a TypeError and doing nothing.
+
 ### 2026-05-11
 - **fix(fraud-job-detector.html):** Input card border changed to amber all around (was slate/blue with only the top edge amber via `::before`); border-color set to `rgba(212,136,42,0.4)` on `.input-section.card`.
 - **fix(fraud-job-detector.html):** Progress indicator now completes to 4/4 — added `safeRenderProgress(4, 'Analysis complete.')` call after parsing, so the final "Scoring fraud signals" step shows a checkmark instead of staying in the active/spinning state.
