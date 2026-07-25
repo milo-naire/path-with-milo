@@ -72,6 +72,9 @@ When editing the AI prompt, preserve this JSON schema — the frontend JS parses
 
 ## Changelog
 
+### 2026-07-25
+- **fix(compass.html):** Fixed "Unexpected end of JSON input" simulation error caused by the Claude Sonnet 5 migration — Sonnet 5 defaults to adaptive thinking ON when the `thinking` parameter is omitted (Sonnet 4.6 defaulted OFF), so `data.content[0]` could be a `thinking` block instead of `text`, leaving `raw` empty and `JSON.parse("")` throwing. Added `thinking: { type: "disabled" }` to the request payload (compass doesn't need reasoning for structured JSON extraction) and hardened the response parser to find the first `type: "text"` block instead of blindly indexing `content[0]`.
+
 ### 2026-07-24
 - **fix(compass.html, fraud-job-detector.html, company-insider.html, experience-translator.html):** Updated Anthropic model ID from `claude-sonnet-4-20250514`/`claude-sonnet-4-6` to `claude-sonnet-5` across all four tools' API calls.
 

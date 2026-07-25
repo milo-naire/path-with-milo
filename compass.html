@@ -1826,6 +1826,7 @@ Respond ONLY with valid JSON (no markdown, no code blocks, no preamble):
     const payload = {
       model: "claude-sonnet-5",
       max_tokens: 2000,
+      thinking: { type: "disabled" },
       messages: [{ role: "user", content: prompt }]
     };
 
@@ -1843,7 +1844,8 @@ Respond ONLY with valid JSON (no markdown, no code blocks, no preamble):
     }
 
     const data = await response.json();
-    const raw = data.content?.[0]?.text || "";
+    const textBlock = (data.content || []).find(b => b.type === "text" && b.text);
+    const raw = textBlock?.text || "";
 
     // Strip any markdown fences
     const clean = raw.replace(/```json|```/gi, "").trim();
