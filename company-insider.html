@@ -1076,7 +1076,7 @@ async function analyze() {
         body: JSON.stringify({
           model: 'claude-sonnet-5',
           max_tokens: 8192,
-          temperature: 0,
+          thinking: { type: 'disabled' },
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
           system: SYSTEM_PROMPT + '\n\nCRITICAL: When research is complete, return ONLY the JSON object. No preamble.',
           messages

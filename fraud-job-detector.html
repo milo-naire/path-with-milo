@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JobSentry — Career Integrity Investigator</title>
+<title>JobGuard — Career Integrity Investigator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:wght@400;500&family=Sora:wght@100..800&display=swap" rel="stylesheet">
@@ -800,7 +800,7 @@
     letter-spacing: 0.02em;
   }
 
-  .mode-tab[data-mode="jobsentry"].active {
+  .mode-tab[data-mode="jobguard"].active {
     border-color: #D4882A;
     color: #D4882A;
     background: rgba(212,136,42,0.08);
@@ -1038,7 +1038,7 @@
   }
 </style>
 </head>
-<body data-mode="jobsentry">
+<body data-mode="jobguard">
 <div class="container">
 
   <header>
@@ -1053,7 +1053,7 @@
         </svg>
       </div>
       <div class="logo-text">
-        <div class="logo-name" id="logoName">Job<span style="color:#D4882A">Sentry</span></div>
+        <div class="logo-name" id="logoName">Job<span style="color:#D4882A">Guard</span></div>
         <div class="logo-tag" id="logoTag">Career Integrity Investigator · 2026</div>
       </div>
     </div>
@@ -1625,7 +1625,7 @@ async function analyze() {
         body: JSON.stringify({
           model: 'claude-sonnet-5',
           max_tokens: 8192,
-          temperature: 0,
+          thinking: { type: 'disabled' },
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
           system: SYSTEM_PROMPT + '\n\nCRITICAL: When research is done, return ONLY the JSON object. No preamble.',
           messages

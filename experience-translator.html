@@ -1253,7 +1253,7 @@ async function runTranslate() {
       body: JSON.stringify({
         model: 'claude-sonnet-5',
         max_tokens: 4096,
-        temperature: 0.3,
+        thinking: { type: 'disabled' },
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userContent }]
       })

@@ -24,7 +24,7 @@ npx wrangler deploy
 
 ```
 index.html              → Hub/landing page linking to all tools
-fraud-job-detector.html → JobSentry: AI fraud detection for job postings
+fraud-job-detector.html → JobGuard: AI fraud detection for job postings
 compass.html            → The Compass: 90-day career planning simulator
 whisperer.html          → The Whisperer: networking tool (planned, not yet built)
 
@@ -35,7 +35,7 @@ employername.json        → 6 MB company name database (used for employer looku
 
 The Worker at `/api/analyze` is a thin proxy: it receives POST requests from the browser, forwards them verbatim to `https://api.anthropic.com/v1/messages` (adding the API key and required headers), and returns the response. All AI prompt engineering lives in the HTML files themselves.
 
-The `web-search-2025-03-05` beta header is active, enabling Claude's web search tool for company verification in JobSentry.
+The `web-search-2025-03-05` beta header is active, enabling Claude's web search tool for company verification in JobGuard.
 
 ## Design System
 
@@ -58,7 +58,7 @@ All pages share a unified visual language. Use these CSS variables — don't har
 
 **Amber is reserved** — it signals primary action or key emphasis only. Status states use green/amber/red.
 
-## AI Prompt Structure (JobSentry)
+## AI Prompt Structure (JobGuard)
 
 The fraud detector in `fraud-job-detector.html` sends a structured system prompt to Claude that enforces a strict JSON response schema with these top-level keys: `verdict`, `fraudScore`, `redFlags`, `legitimacySignals`, `signalBreakdown`, `companyVerification`, `salaryAnalysis`, `dataPrivacyAudit`, and `betterPath`. The six signals in `signalBreakdown` are: Compensation Claims, Company Legitimacy, Contact Quality, Language & Pressure, Personal Data Requests, Job Clarity.
 
@@ -66,7 +66,7 @@ When editing the AI prompt, preserve this JSON schema — the frontend JS parses
 
 ## AI Prompt Structure (The Translator / Company Insider)
 
-`company-insider.html` sends a structured system prompt that enforces this JSON response schema: `companyName`, `roleFocus`, `overallVibe`, `vibeScore`, `oneLiner`, `theyVsReality`, `whatTheyCareAbout`, `interviewQuestions`, `redFlags`, `greenFlags`, `recentDevelopments`, `compensationIntel`, `insiderSummary`, `shouldApply`. The tool uses the same `web_search_20250305` beta and agentic loop as JobSentry. `overallVibe` is one of `THRIVING | MIXED | TROUBLED`. `shouldApply` is one of `APPLY | PROCEED WITH CAUTION | INVESTIGATE MORE`.
+`company-insider.html` sends a structured system prompt that enforces this JSON response schema: `companyName`, `roleFocus`, `overallVibe`, `vibeScore`, `oneLiner`, `theyVsReality`, `whatTheyCareAbout`, `interviewQuestions`, `redFlags`, `greenFlags`, `recentDevelopments`, `compensationIntel`, `insiderSummary`, `shouldApply`. The tool uses the same `web_search_20250305` beta and agentic loop as JobGuard. `overallVibe` is one of `THRIVING | MIXED | TROUBLED`. `shouldApply` is one of `APPLY | PROCEED WITH CAUTION | INVESTIGATE MORE`.
 
 When editing the AI prompt, preserve this JSON schema — the frontend JS parses it directly by key name.
 
@@ -89,7 +89,7 @@ When editing the AI prompt, preserve this JSON schema — the frontend JS parses
 
 ### 2026-05-09
 - **refactor(fraud-job-detector.html):** Removed PayAudit mode entirely (UI tab, HTML results section, JS prompt/functions). Removed market-rate pay comparison as a fraud signal; Compensation Claims signal now only flags actual fraud patterns (income guarantees, commission-only, sub-minimum-wage pay). Below-market pay alone no longer contributes to the fraud score.
-- **refactor(fraud-job-detector.html):** Commented out FILTER 3 (salary benchmark reference tables) from the JobSentry system prompt. The freelance and full-time market rate ranges are no longer sent to Claude during analysis.
+- **refactor(fraud-job-detector.html):** Commented out FILTER 3 (salary benchmark reference tables) from the JobGuard system prompt. The freelance and full-time market rate ranges are no longer sent to Claude during analysis.
 
 ### 2026-05-08 (5)
 - **feat(fraud-job-detector.html):** Added full DOL/court FLSA primary beneficiary test (all 7 factors + exempt-category footnotes) as a dedicated section in the PayAudit system prompt. Applied to every unpaid posting. Student-detected postings additionally score the posting against all 7 factors and report results in `nonprofitNote`.
@@ -98,10 +98,10 @@ When editing the AI prompt, preserve this JSON schema — the frontend JS parses
 - **feat(fraud-job-detector.html):** PayAudit now loads `approved-employers.json` at page start and injects the list into the system prompt at audit time. Employers matching the list are treated as COMPLIANT UNPAID. JSON key is the raw Google Form question text (`Q8 - COMPANY/ORGANIZATION NAME:`); header/test rows are filtered out automatically.
 
 ### 2026-05-08 (3)
-- **fix(fraud-job-detector.html):** PayAudit UI fixes — purple border consistency across input card and all result panels in payaudit mode; fraud flags margin-top added to fix overlap with lump sum breakdown; example buttons hidden in payaudit mode; ⓘ hover tooltip added to mode switcher explaining the difference between JobSentry and PayAudit; PayAudit prompt updated with student audience detection (FLSA primary beneficiary test, student-friendly language in actionableNote, `isStudentPosting` JSON field)
+- **fix(fraud-job-detector.html):** PayAudit UI fixes — purple border consistency across input card and all result panels in payaudit mode; fraud flags margin-top added to fix overlap with lump sum breakdown; example buttons hidden in payaudit mode; ⓘ hover tooltip added to mode switcher explaining the difference between JobGuard and PayAudit; PayAudit prompt updated with student audience detection (FLSA primary beneficiary test, student-friendly language in actionableNote, `isStudentPosting` JSON field)
 
 ### 2026-05-08 (2)
-- **feat(fraud-job-detector.html):** Added PayAudit — a second agent mode toggled by a mode switcher inside the input card. PayAudit analyzes job listing compensation against 2026 market rates, classifies pay as PAID/UNPAID/COMMISSION, issues a verdict (FAIR MARKET PAID / BELOW MARKET PAID / EXPLOITATION RISK / COMPLIANT UNPAID / COMMISSION ONLY / FRAUDULENT), performs lump-sum hourly math breakdown, flags identity-for-pay fraud, and checks nonprofit/educational legitimacy for unpaid roles. Visual branding: JobSentry mode shows amber/orange top accent; PayAudit mode shifts to deep purple (`--purple: #9B6DFF`) across the card accent, analyze button, progress steps, and search terminal. The "Audit" toggle button turns purple on hover/active.
+- **feat(fraud-job-detector.html):** Added PayAudit — a second agent mode toggled by a mode switcher inside the input card. PayAudit analyzes job listing compensation against 2026 market rates, classifies pay as PAID/UNPAID/COMMISSION, issues a verdict (FAIR MARKET PAID / BELOW MARKET PAID / EXPLOITATION RISK / COMPLIANT UNPAID / COMMISSION ONLY / FRAUDULENT), performs lump-sum hourly math breakdown, flags identity-for-pay fraud, and checks nonprofit/educational legitimacy for unpaid roles. Visual branding: JobGuard mode shows amber/orange top accent; PayAudit mode shifts to deep purple (`--purple: #9B6DFF`) across the card accent, analyze button, progress steps, and search terminal. The "Audit" toggle button turns purple on hover/active.
 
 ### 2026-05-08
 - **feat(company-insider.html):** New tool — The Translator Machine. Input company name + optional role; Claude searches Glassdoor, Reddit, and recent news via web search and outputs a "Company Insider" cheat sheet with They Say vs. Reality decoder, culture signals, interview questions, red/green flags, recent developments, and compensation intel
